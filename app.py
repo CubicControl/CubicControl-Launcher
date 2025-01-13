@@ -1,3 +1,5 @@
+import signal
+
 from flask import Flask, request
 import time
 from mcstatus import JavaServer
@@ -110,13 +112,12 @@ def shutdown():
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
 
-    # Retrieve the Werkzeug server shutdown function
-    shutdown_func = request.environ.get('werkzeug.server.shutdown')
-    if shutdown_func is None:
-        return "Not running with the Werkzeug Server", 500
+    # Send the response to the client before shutting down
+    def delayed_shutdown():
+        time.sleep(2)  # Allow time for the client to finish processing
+        os.kill(os.getpid(), signal.SIGINT)
 
-    # Shutdown the server
-    shutdown_func()
+    threading.Thread(target=delayed_shutdown).start()
     return "Shutting down the server...", 200
 
 def send_rcon_command(command):
