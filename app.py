@@ -1,10 +1,11 @@
-from flask import Flask
+from flask import Flask, request
 import time
 from mcstatus import JavaServer
 from mcrcon import MCRcon
 import os
 import subprocess
 import pygetwindow as gw
+import threading
 
 app = Flask(__name__)
 
@@ -15,6 +16,7 @@ RCON_PORT = 27001
 RCON_PASSWORD = os.environ.get('RCON_PASSWORD')
 last_player_count = 0
 is_restarting = False
+ALLOWED_IPS = ['127.0.0.1']  # Add your trusted IP addresses here
 
 
 @app.route('/status', methods=['GET'])
@@ -31,7 +33,6 @@ def status():
         return "Server Machine is live!\nMinecraft Server is RESTARTING", 207
     else:
         return "Server Machine is OFFLINE", 500
-
 
 @app.route('/stop', methods=['POST'])
 def stop():
@@ -69,7 +70,7 @@ def start():
 def restart():
     global is_restarting
     if is_restarting:
-        return "Server is already restarting", 302
+        return "Server is already restarting", 400
 
     status_result = get_server_status()
     if status_result == "off":
@@ -77,14 +78,56 @@ def restart():
     elif status_result == "booting":
         return "Server is still booting, please wait...", 302
     elif status_result == "fully_loaded":
-        stop()
         is_restarting = True
-        time.sleep(20)
-        is_restarting = False
-        start()
+        threading.Thread(target=perform_restart).start()
         return "Server is restarting...", 200
     else:
         return "Error restarting server", 500
+
+@app.route('/players', methods=['GET'])
+def players():
+    global last_player_count
+    player_count = get_player_info()
+    if player_count is not None:
+        last_player_count = player_count
+        return f"Players online: {player_count}", 200
+    else:
+        return "Server is offline", 500
+
+@app.route('/ping', methods=['GET'])
+def get_server_ping():
+    try:
+        server = JavaServer(SERVER_IP, QUERY_PORT)
+        ping = server.ping()
+        return ping, 200
+    except Exception as e:
+        print(f"Error getting server ping: {e}")
+        return f"Error getting server ping: {e}", 500
+
+@app.route('/shutdown', methods=['POST'])
+def shutdown():
+    # Check if the request comes from an allowed IP
+    if request.remote_addr not in ALLOWED_IPS:
+        return "Unauthorized IP address", 403
+
+    # Retrieve the Authorization header from the client request
+    provided_auth_key = request.headers.get('Authorization')
+
+    # Retrieve the expected auth key from the environment
+    expected_auth_key = os.environ.get('SHUTDOWN_AUTH_KEY')
+
+    # Validate the Authorization token
+    if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
+        return "Unauthorized", 403
+
+    # Retrieve the Werkzeug server shutdown function
+    shutdown_func = request.environ.get('werkzeug.server.shutdown')
+    if shutdown_func is None:
+        return "Not running with the Werkzeug Server", 500
+
+    # Shutdown the server
+    shutdown_func()
+    return "Shutting down the server...", 200
 
 def send_rcon_command(command):
     """Send a command to the Minecraft server via RCON."""
@@ -124,25 +167,16 @@ def get_player_info():
         print("Error getting player info:", e)
         return None
 
-@app.route('/players', methods=['GET'])
-def players():
-    global last_player_count
-    player_count = get_player_info()
-    if player_count is not None:
-        last_player_count = player_count
-        return f"Players online: {player_count}", 200
-    else:
-        return "Server is offline", 500
-
-@app.route('/ping', methods=['GET'])
-def get_server_ping():
+def perform_restart():
+    """Perform the restart process in the background."""
     try:
-        server = JavaServer(SERVER_IP, QUERY_PORT)
-        ping = server.ping()
-        return ping, 200
-    except Exception as e:
-        print(f"Error getting server ping: {e}")
-        return f"Error getting server ping: {e}", 500
+        stop()
+        time.sleep(20)  # Wait for the server to stop
+        start()
+    finally:
+        global is_restarting
+        is_restarting = False
+
 
 
 if __name__ == '__main__':
