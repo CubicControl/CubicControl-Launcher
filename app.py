@@ -94,16 +94,6 @@ def players():
     else:
         return "Server is offline", 500
 
-@app.route('/ping', methods=['GET'])
-def get_server_ping():
-    try:
-        server = JavaServer(SERVER_IP, QUERY_PORT)
-        ping = server.ping()
-        return ping, 200
-    except Exception as e:
-        print(f"Error getting server ping: {e}")
-        return f"Error getting server ping: {e}", 500
-
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
     # Check if the request comes from an allowed IP
