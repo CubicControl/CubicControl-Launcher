@@ -1,6 +1,6 @@
 import signal
 
-from flask import Flask, request
+from flask import Flask, request, jsonify
 import time
 from mcstatus import JavaServer
 from mcrcon import MCRcon
@@ -20,6 +20,17 @@ last_player_count = 0
 is_restarting = False
 ALLOWED_IPS = ['127.0.0.1']  # Add your trusted IP addresses here
 
+@app.before_request
+def validate_auth_header():
+    # Retrieve the Authorization header from the client request
+    provided_auth_key = request.headers.get('Authorization')
+
+    # Retrieve the expected auth key from the environment
+    expected_auth_key = os.environ.get('AUTHKEY_SERVER_WEBSITE')
+
+    # Validate the Authorization token
+    if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
+        return "Unauthorized", 403
 
 @app.route('/status', methods=['GET'])
 def status():
