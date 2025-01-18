@@ -1,5 +1,5 @@
+import logging
 import signal
-
 from flask import Flask, request, jsonify
 import time
 from mcstatus import JavaServer
@@ -8,27 +8,44 @@ import os
 import subprocess
 import pygetwindow as gw
 import threading
+from flask_socketio import SocketIO
+import eventlet
 
 app = Flask(__name__)
+socketio = SocketIO(app, async_mode='eventlet' ,cors_allowed_origins="*")
 
 SERVER_IP = "localhost"
 QUERY_PORT = 27002
 RCON_PORT = 27001
-# get password from config environment variable
 RCON_PASSWORD = os.environ.get('RCON_PASSWORD')
 last_player_count = 0
 is_restarting = False
-ALLOWED_IPS = ['127.0.0.1']  # Add your trusted IP addresses here
+ALLOWED_IPS = ['127.0.0.1']
+
+# Configure logging to log to both file and console
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+    datefmt="%H-%M-%S"
+)
+
+file_handler = logging.FileHandler("flask_logs.txt")
+file_handler.setLevel(logging.INFO)
+file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%H-%M-%S"))
+
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s", datefmt="%H-%M-%S"))
+
+logging.getLogger().addHandler(file_handler)
+logging.getLogger().addHandler(console_handler)
+
+
 
 @app.before_request
 def validate_auth_header():
-    # Retrieve the Authorization header from the client request
     provided_auth_key = request.headers.get('Authorization')
-
-    # Retrieve the expected auth key from the environment
     expected_auth_key = os.environ.get('AUTHKEY_SERVER_WEBSITE')
-
-    # Validate the Authorization token
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
 
@@ -67,7 +84,6 @@ def start():
     status_result = get_server_status()
     if status_result == "fully_loaded":
         return "Server is already running", 400
-    # Start the server using a .bat inC:\VanillaServer\run.bat
     elif status_result == "booting":
         return "Server is still booting, please wait...", 400
     elif status_result == "restarting":
@@ -109,78 +125,85 @@ def players():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown():
-    # Check if the request comes from an allowed IP
-    if request.remote_addr not in ALLOWED_IPS:
+    if not request.remote_addr or request.remote_addr not in ALLOWED_IPS:
         return "Unauthorized IP address", 403
 
-    # Retrieve the Authorization header from the client request
     provided_auth_key = request.headers.get('Authorization')
-
-    # Retrieve the expected auth key from the environment
     expected_auth_key = os.environ.get('SHUTDOWN_AUTH_KEY')
-
-    # Validate the Authorization token
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
 
-    # Send the response to the client before shutting down
     def delayed_shutdown():
-        time.sleep(2)  # Allow time for the client to finish processing
+        time.sleep(2)
         os.kill(os.getpid(), signal.SIGINT)
 
     threading.Thread(target=delayed_shutdown).start()
     return "Shutting down the server...", 200
 
 def send_rcon_command(command):
-    """Send a command to the Minecraft server via RCON."""
     try:
         with MCRcon(SERVER_IP, RCON_PASSWORD, port=RCON_PORT) as mcr:
             mcr.command(command)
     except Exception as e:
-        print(f"Error sending RCON command: {e}")
+        logging.error(f"Error sending RCON command: {e}")
 
 def get_server_status():
     global is_restarting
     if is_restarting:
         return "restarting"
     try:
-        # Check if there's a window with the title 'MinecraftServer'
         windows = gw.getWindowsWithTitle('MinecraftServer')
         if windows:
             server = JavaServer(SERVER_IP, QUERY_PORT)
             try:
                 query = server.query()
                 if query:
-                    return "fully_loaded"  # Server is fully loaded and connectable
+                    return "fully_loaded"
             except Exception:
-                return "booting"  # Server is booting but not connectable yet
-        return "off"  # Server is off
+                return "booting"
+        return "off"
     except Exception as e:
-        print(f"Error checking server status: {e}")
+        logging.error(f"Error checking server status: {e}")
         return "error"
 
 def get_player_info():
-    """Get the number of players currently online using the query port."""
     try:
         server = JavaServer(SERVER_IP, QUERY_PORT)
         query = server.query()
         return query.players.online
     except ConnectionError as e:
-        print("Error getting player info:", e)
+        logging.error("Error getting player info:", e)
         return None
 
 def perform_restart():
-    """Perform the restart process in the background."""
     try:
         stop()
-        time.sleep(20)  # Wait for the server to stop
+        time.sleep(15)
         start()
     finally:
         global is_restarting
         is_restarting = False
 
+def broadcast_status_update():
+    status_result = get_server_status()
+    status_map = {
+        "fully_loaded": {"host_status": "online", "minecraft_status": "online"},
+        "booting": {"host_status": "online", "minecraft_status": "loading"},
+        "off": {"host_status": "online", "minecraft_status": "offline"},
+        "restarting": {"host_status": "online", "minecraft_status": "loading"},
+        "error": {"host_status": "offline", "minecraft_status": "offline"},
+    }
+    data = status_map.get(status_result, {"host_status": "offline", "minecraft_status": "offline"})
+    socketio.emit('status_update', data)
 
+def monitor_server_status():
+    while True:
+        broadcast_status_update()
+        eventlet.sleep(4)
+
+# Start the background task with eventlet.spawn
+eventlet.spawn(monitor_server_status)
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=37000)  # Change port if needed
-
+    print("Starting server...")
+    socketio.run(app, host='0.0.0.0', port=37000)
