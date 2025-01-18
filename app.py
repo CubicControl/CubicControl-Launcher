@@ -1,3 +1,4 @@
+import logging
 import signal
 
 from flask import Flask, request, jsonify
@@ -10,6 +11,22 @@ import pygetwindow as gw
 import threading
 
 app = Flask(__name__)
+
+date = time.strftime("%Y-%m-%d")
+
+# Set up logging
+log_file = f'{date}_ServerSideLogs.txt'
+file_handler = logging.FileHandler(log_file)
+file_handler.setLevel(logging.INFO)
+formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+file_handler.setFormatter(formatter)
+
+# Remove the default stream handler
+if app.logger.hasHandlers():
+    app.logger.handlers.clear()
+
+app.logger.addHandler(file_handler)
+app.logger.setLevel(logging.INFO)
 
 SERVER_IP = "localhost"
 QUERY_PORT = 27002
@@ -31,6 +48,18 @@ def validate_auth_header():
     # Validate the Authorization token
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
+
+@app.after_request
+def after_request_logger(response):
+    log_details = {
+        "method": request.method,
+        "url": request.url,
+        "status": response.status_code,
+        "remote_addr": request.remote_addr,
+        "user_agent": request.user_agent.string
+    }
+    app.logger.info(f"Request: {log_details}")
+    return response
 
 @app.route('/status', methods=['GET'])
 def status():
