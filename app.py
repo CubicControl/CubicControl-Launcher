@@ -142,15 +142,15 @@ def shutdown():
     if request.remote_addr not in ALLOWED_IPS:
         return "Unauthorized IP address", 403
 
-    # Retrieve the Authorization header from the client request
-    provided_auth_key = request.headers.get('Authorization')
+    # Retrieve the shutdown header from the client request
+    provided_auth_key = request.headers.get('shutdown-header')
 
     # Retrieve the expected auth key from the environment
     expected_auth_key = os.environ.get('SHUTDOWN_AUTH_KEY')
 
-    # Validate the Authorization token
-    if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
-        return "Unauthorized", 403
+    # Validate the shutdown header
+    if not provided_auth_key or provided_auth_key != expected_auth_key:
+        return "Unauthorized, incorrect shutdown-down header", 403
 
     # Send the response to the client before shutting down
     def delayed_shutdown():
@@ -207,7 +207,6 @@ def perform_restart():
     finally:
         global is_restarting
         is_restarting = False
-
 
 
 if __name__ == '__main__':
