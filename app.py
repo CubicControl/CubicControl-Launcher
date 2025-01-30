@@ -65,48 +65,39 @@ def after_request_logger(response):
 def status():
     status_result = get_server_status()
     if status_result == "fully_loaded":
-        return ("Server Machine is live!\n"
-                "Minecraft Server is ONLINE"), 200
-    elif status_result == "booting":
+        return "Server Machine is live!\nMinecraft Server is ONLINE", 200
+    if status_result == "booting":
         return "Server Machine is live!\nMinecraft Server is BOOTING", 205
-    elif status_result == "off":
+    if status_result == "off":
         return "Server Machine is live!\nMinecraft Server is OFFLINE", 206
-    elif status_result == "restarting":
+    if status_result == "restarting":
         return "Server Machine is live!\nMinecraft Server is RESTARTING", 207
-    else:
-        return "Server Machine is OFFLINE", 500
+    return "Server Machine is OFFLINE", 500
 
 @app.route('/stop', methods=['POST'])
 def stop():
     status_result = get_server_status()
     if status_result == "off":
         return "Server is already offline", 400
-    elif status_result == "fully_loaded":
+    if status_result == "fully_loaded":
         send_rcon_command("stop")
         return "Server is stopping...", 200
-    elif status_result == "booting":
+    if status_result == "booting":
         return "Processing, please wait...", 302
-    elif status_result == "restarting":
+    if status_result == "restarting":
         return "Server is restarting, please wait...", 305
-    else:
-        return "Error stopping server", 500
+    return "Error stopping server", 500
 
 @app.route('/start', methods=['POST'])
 def start():
     status_result = get_server_status()
-    if status_result == "fully_loaded":
-        return "Server is already running", 400
-    # Start the server using a .bat inC:\VanillaServer\run.bat
-    elif status_result == "booting":
-        return "Server is still booting, please wait...", 400
-    elif status_result == "restarting":
-        return "Server is restarting, please wait...", 400
-    elif status_result == "off":
+    if status_result in ["fully_loaded", "booting", "restarting"]:
+        return f"Server is already {status_result.replace('_', ' ')}", 400
+    if status_result == "off":
         os.chdir("C:\\VanillaServer")
         subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
         return "Server is starting...", 200
-    else:
-        return "Error starting server", 500
+    return "Error starting server", 500
 
 @app.route('/restart', methods=['POST'])
 def restart():
@@ -115,16 +106,13 @@ def restart():
         return "Server is already restarting", 400
 
     status_result = get_server_status()
-    if status_result == "off":
-        return "Server is already offline", 400
-    elif status_result == "booting":
-        return "Server is still booting, please wait...", 302
-    elif status_result == "fully_loaded":
+    if status_result in ["off", "booting"]:
+        return f"Server is already {status_result}", 400 if status_result == "off" else 302
+    if status_result == "fully_loaded":
         is_restarting = True
         threading.Thread(target=perform_restart).start()
         return "Server is restarting...", 200
-    else:
-        return "Error restarting server", 500
+    return "Error restarting server", 500
 
 @app.route('/players', methods=['GET'])
 def players():
@@ -173,17 +161,14 @@ def get_server_status():
     if is_restarting:
         return "restarting"
     try:
-        # Check if there's a window with the title 'MinecraftServer'
         windows = gw.getWindowsWithTitle('MinecraftServer')
         if windows:
-            server = JavaServer(SERVER_IP, QUERY_PORT)
             try:
-                query = server.query()
-                if query:
-                    return "fully_loaded"  # Server is fully loaded and connectable
+                query = JavaServer(SERVER_IP, QUERY_PORT).query()
+                return "fully_loaded" if query else "booting"
             except Exception:
-                return "booting"  # Server is booting but not connectable yet
-        return "off"  # Server is off
+                return "booting"
+        return "off"
     except Exception as e:
         print(f"Error checking server status: {e}")
         return "error"
@@ -191,24 +176,23 @@ def get_server_status():
 def get_player_info():
     """Get the number of players currently online using the query port."""
     try:
-        server = JavaServer(SERVER_IP, QUERY_PORT)
-        query = server.query()
+        query = JavaServer(SERVER_IP, QUERY_PORT).query()
         return query.players.online
     except ConnectionError as e:
-        print("Error getting player info:", e)
+        print(f"Error getting player info: {e}")
         return None
 
 def perform_restart():
     """Perform the restart process in the background."""
+    global is_restarting
     try:
         stop()
         time.sleep(20)  # Wait for the server to stop
         start()
     finally:
-        global is_restarting
         is_restarting = False
 
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=37000)  # Change port if needed
+    app.run(host='0.0.0.0', port=37000, debug=False)  # Change port if needed
 
