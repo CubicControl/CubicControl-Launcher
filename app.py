@@ -1,3 +1,4 @@
+import configparser
 import logging
 import signal
 
@@ -94,9 +95,17 @@ def start():
     if status_result in ["fully_loaded", "booting", "restarting"]:
         return f"Server is already {status_result.replace('_', ' ')}", 400
     if status_result == "off":
-        os.chdir("C:\\VanillaServer")
-        subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
-        return "Server is starting...", 200
+        try:
+            config_handler = ConfigFileHandler()
+            server_location = config_handler.get_value('Run.bat location')
+            os.chdir(server_location)
+            subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
+            return "Server is starting...", 200
+        except ValueError as e:
+            return str(e), 400
+        except Exception as e:
+            print(f"Error starting server: {e}")
+            return "Error starting server", 500
     return "Error starting server", 500
 
 @app.route('/restart', methods=['POST'])
@@ -192,7 +201,34 @@ def perform_restart():
     finally:
         is_restarting = False
 
+class ConfigFileHandler:
+    # Create a configuration file called config.ini
+    def __init__(self):
+        self.config_file = 'ServerConfig.ini'
+        self.config = configparser.ConfigParser()
+        self.config.optionxform = str
+
+    def create_config_file(self):
+        if not os.path.exists(self.config_file):
+            with open(self.config_file, 'w') as configfile:
+                self.config['PROPERTIES'] = {'Run.bat location': ''}
+                configfile.write("# Location of run.bat of the server you want to start\n")
+                self.config.write(configfile)
+
+    def get_value(self, value):
+        if not os.path.exists(self.config_file):
+            self.create_config_file()
+        self.config.read(self.config_file)
+        try:
+            prop_value = self.config.get('PROPERTIES', value)
+            if prop_value == '':
+                raise ValueError("Incorrect run.bat location. Please update the ServerConfig.ini file.")
+            return prop_value
+        except Exception as e:
+            print(f"Error retrieving value: {e}")
+            raise
 
 if __name__ == '__main__':
+    ConfigFileHandler().create_config_file()
     app.run(host='0.0.0.0', port=37000, debug=False)  # Change port if needed
 
