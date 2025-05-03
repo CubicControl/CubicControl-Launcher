@@ -16,7 +16,10 @@ app = Flask(__name__)
 date = time.strftime("%Y-%m-%d")
 
 # Set up logging
-log_file = f'{date}_ServerSideLogs.txt'
+log_dir = 'ServerLogs'
+if not os.path.exists(log_dir):
+    os.makedirs(log_dir)
+log_file = os.path.join(log_dir, f'{date}_ServerSideLogs.txt')
 file_handler = logging.FileHandler(log_file)
 file_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
