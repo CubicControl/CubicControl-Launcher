@@ -1,9 +1,16 @@
 import os
+import subprocess
 import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 
 from lib.configFileHandler import ConfigFileHandler
 from lib.server_properties import parse_server_properties, write_server_properties
+
+
+def _force_var_uppercase(var):
+    value = var.get()
+    if value != value.upper():
+        var.set(value.upper())
 
 
 class InitialSetupGUI:
@@ -55,8 +62,11 @@ class InitialSetupGUI:
         self.server_folder_var = tk.StringVar(value=self.initial_server_folder)
 
         self.rcon_password_env_var = tk.StringVar(value=self.initial_rcon_password_env)
+        self.rcon_password_env_var.trace_add("write", lambda name, index, mode: _force_var_uppercase(self.rcon_password_env_var))
         self.authkey_var = tk.StringVar(value=self.initial_authkey)
+        self.authkey_var.trace_add("write", lambda name, index, mode: _force_var_uppercase(self.authkey_var))
         self.shutdown_key_var = tk.StringVar(value=self.initial_shutdown_key)
+        self.shutdown_key_var.trace_add("write", lambda name, index, mode: _force_var_uppercase(self.shutdown_key_var))
 
         # Checkboxes will be displayed as always enabled & locked
         self.enable_rcon_bool = tk.BooleanVar(value=True)
@@ -98,7 +108,6 @@ class InitialSetupGUI:
         rcon_password_env_entry = ttk.Entry(
             mainframe,
             textvariable=self.rcon_password_env_var,
-            show="*",
             width=40
         )
         rcon_password_env_entry.grid(row=3, column=1, columnspan=2, sticky="ew")
@@ -127,11 +136,12 @@ class InitialSetupGUI:
         ).grid(row=7, column=0, columnspan=3, sticky="w")
 
         ttk.Label(mainframe, text="RCON password (rcon.password):").grid(row=8, column=0, sticky="w")
+        self.rcon_password_prop_var.set("Will match the RCON_PASSWORD environment variable")
         rcon_password_prop_entry = ttk.Entry(
             mainframe,
             textvariable=self.rcon_password_prop_var,
-            show="*",
-            width=40
+            width=40,
+            state="disabled"
         )
         rcon_password_prop_entry.grid(row=8, column=1, columnspan=2, sticky="ew")
 
@@ -207,10 +217,15 @@ class InitialSetupGUI:
         self.cfg_handler.set_value('Run.bat location', server_folder)
 
         # Update environment variables for this process
-        os.environ['RCON_PASSWORD'] = rcon_pass_env
-        os.environ['AUTHKEY_SERVER_WEBSITE'] = authkey
+        setx_cmds = [
+            f'setx RCON_PASSWORD "{rcon_pass_env}" >NUL',
+            f'setx AUTHKEY_SERVER_WEBSITE "{authkey}" >NUL'
+        ]
         if shutdown_key:
-            os.environ['SHUTDOWN_AUTH_KEY'] = shutdown_key
+            setx_cmds.append(f'setx SHUTDOWN_AUTH_KEY "{shutdown_key}" >NUL')
+
+        full_cmd = " && ".join(setx_cmds)
+        subprocess.run(full_cmd, shell=True)
 
         # Update server.properties
         props_path = os.path.join(server_folder, 'server.properties')
@@ -219,10 +234,10 @@ class InitialSetupGUI:
             with open(props_path, 'w', encoding='utf-8') as f:
                 f.write("# Minecraft server properties\n")
 
-        # Force these to true no matter what
+        # Always set rcon.password in server.properties to the env var value
         new_values = {
             'enable-rcon': 'true',
-            'rcon.password': self.rcon_password_prop_var.get().strip() or rcon_pass_env,
+            'rcon.password': rcon_pass_env,
             'rcon.port': rcon_port_text,
             'enable-query': 'true',
             'query.port': query_port_text,
