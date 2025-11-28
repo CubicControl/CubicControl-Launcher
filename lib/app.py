@@ -4,50 +4,28 @@ This file mirrors the original server API while emitting status updates over
 Socket.IO so consumers can subscribe instead of polling ``/status``.
 """
 
-import configparser
-import logging
 import os
 import signal
 import subprocess
 import threading
 import time
-from typing import Optional
 
 import pygetwindow as gw
 from flask import Flask, request
 from flask_socketio import SocketIO
-from mcstatus import JavaServer
 from mcrcon import MCRcon
+from mcstatus import JavaServer
+
+from lib import config, server_properties
+from lib.Logger import logger
+from lib.configFileHandler import ConfigFileHandler
+from lib.setup_gui import InitialSetupGUI
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
-date = time.strftime("%Y-%m-%d")
-
-# Set up logging
-log_dir = 'ServerLogs'
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
-log_file = os.path.join(log_dir, f'{date}_ServerSideLogs.txt')
-file_handler = logging.FileHandler(log_file)
-file_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
-
-if app.logger.hasHandlers():
-    app.logger.handlers.clear()
-
-app.logger.addHandler(file_handler)
-app.logger.setLevel(logging.INFO)
-
-SERVER_IP = "localhost"
-QUERY_PORT = 27002
-RCON_PORT = 27001
-RCON_PASSWORD = os.environ.get('RCON_PASSWORD')
-last_player_count = 0
 is_restarting = False
-ALLOWED_IPS = ['127.0.0.1']  # Add your trusted IP addresses here
-AUTH_KEY = os.environ.get('AUTHKEY_SERVER_WEBSITE') or "TEST"
+is_stopping = False
 
 _status_lock = threading.Lock()
 
@@ -55,7 +33,7 @@ _status_lock = threading.Lock()
 @app.before_request
 def validate_auth_header():
     provided_auth_key = request.headers.get('Authorization')
-    expected_auth_key = AUTH_KEY
+    expected_auth_key = config.AUTH_KEY
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
 
@@ -69,7 +47,7 @@ def after_request_logger(response):
         "remote_addr": request.remote_addr,
         "user_agent": request.user_agent.string
     }
-    app.logger.info(f"Request: {log_details}")
+    logger.info(f"Request: {log_details}")
     return response
 
 
@@ -87,13 +65,16 @@ def _status_message():
     status_result = get_server_status()
     if status_result == "fully_loaded":
         return "Server Machine is live!\nMinecraft Server is ONLINE", 200
-    if status_result == "booting":
-        return "Server Machine is live!\nMinecraft Server is BOOTING", 205
+    if status_result == "starting":
+        return "Server Machine is live!\nMinecraft Server is STARTING", 205
     if status_result == "off":
         return "Server Machine is live!\nMinecraft Server is OFFLINE", 206
     if status_result == "restarting":
         return "Server Machine is live!\nMinecraft Server is RESTARTING", 207
+    if status_result == "stopping":
+        return "Server Machine is live!\nMinecraft Server is STOPPING", 208
     return "Server Machine is OFFLINE", 500
+
 
 
 @socketio.on('connect')
@@ -114,14 +95,16 @@ def status():
 
 @app.route('/stop', methods=['POST'])
 def stop():
+    global is_stopping
     status_result = get_server_status()
     if status_result == "off":
         return "Server is already offline", 400
     if status_result == "fully_loaded":
+        is_stopping = True
         send_rcon_command("stop")
         _emit_status_update()
         return "Server is stopping...", 200
-    if status_result == "booting":
+    if status_result == "starting":
         return "Processing, please wait...", 302
     if status_result == "restarting":
         return "Server is restarting, please wait...", 305
@@ -131,7 +114,7 @@ def stop():
 @app.route('/start', methods=['POST'])
 def start():
     status_result = get_server_status()
-    if status_result in ["fully_loaded", "booting", "restarting"]:
+    if status_result in ["fully_loaded", "starting", "restarting"]:
         return f"Server is already {status_result.replace('_', ' ')}", 400
     if status_result == "off":
         try:
@@ -155,7 +138,7 @@ def restart():
         return "Server is already restarting", 400
 
     status_result = get_server_status()
-    if status_result in ["off", "booting"]:
+    if status_result in ["off", "starting"]:
         return f"Server is already {status_result}", 400 if status_result == "off" else 302
     if status_result == "fully_loaded":
         is_restarting = True
@@ -177,8 +160,8 @@ def players():
 
 
 @app.route('/shutdown', methods=['POST'])
-def shutdown():
-    if request.remote_addr not in ALLOWED_IPS:
+def shutdown_api():
+    if request.remote_addr not in config.ALLOWED_IPS:
         return "Unauthorized IP address", 403
 
     provided_auth_key = request.headers.get('shutdown-header')
@@ -197,27 +180,32 @@ def shutdown():
 
 def send_rcon_command(command):
     try:
-        with MCRcon(SERVER_IP, RCON_PASSWORD, port=RCON_PORT) as mcr:
+        with MCRcon(config.SERVER_IP, config.RCON_PASSWORD, port=config.RCON_PORT) as mcr:
             mcr.command(command)
     except Exception as e:  # pragma: no cover - defensive logging only
-        app.logger.error(f"Error sending RCON command: {e}. Please ensure RCON queries are enabled and the password and port are correct.")
+        logger.error(f"Error sending RCON command: {e}. Please ensure RCON queries are enabled and the password and port are correct.")
         print(f"Error sending RCON command: {e}. Please ensure RCON queries are enabled and the password and port are correct.")
         return f"Error sending RCON command: {e}"
 
 
-
 def get_server_status():
-    global is_restarting
+    global is_restarting, is_stopping
     if is_restarting:
         return "restarting"
+    if is_stopping:
+        windows = gw.getWindowsWithTitle('MinecraftServer')
+        if not windows:
+            is_stopping = False
+            return "off"
+        return "stopping"
     try:
         windows = gw.getWindowsWithTitle('MinecraftServer')
         if windows:
             try:
-                query = JavaServer(SERVER_IP, QUERY_PORT).query()
-                return "fully_loaded" if query else "booting"
+                query = JavaServer(config.SERVER_IP, config.QUERY_PORT).query()
+                return "fully_loaded" if query else "starting"
             except Exception:
-                return "booting"
+                return "starting"
         return "off"
     except Exception as e:  # pragma: no cover - defensive logging only
         print(f"Error checking server status: {e}")
@@ -226,7 +214,7 @@ def get_server_status():
 
 def get_player_info():
     try:
-        query = JavaServer(SERVER_IP, QUERY_PORT).query()
+        query = JavaServer(config.SERVER_IP, config.QUERY_PORT).query()
         return query.players.online
     except ConnectionError as e:  # pragma: no cover - defensive logging only
         print(f"Error getting player info: {e}")
@@ -252,41 +240,49 @@ def perform_restart():
             os.chdir(server_location)
             subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
         except Exception as e:
-            app.logger.error(f"Error starting server during restart: {e}")
+            logger.error(f"Error starting server during restart: {e}")
         finally:
             _emit_status_update()
 
     finally:
         is_restarting = False
 
+def needs_initial_setup() -> bool:
+    """Return True if we should show the Tkinter setup window before starting the server."""
+    # Check basic env vars
+    required_env = ['RCON_PASSWORD', 'AUTHKEY_SERVER_WEBSITE']
+    for name in required_env:
+        if not os.environ.get(name):
+            return True
 
-class ConfigFileHandler:
-    def __init__(self):
-        self.config_file = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'ServerConfig.ini')
-        self.config = configparser.ConfigParser()
-        self.config.optionxform = str
+    cfg = ConfigFileHandler()
+    try:
+        server_folder = cfg.get_value('Run.bat location')
+    except Exception:
+        return True
 
-    def create_config_file(self):
-        if not os.path.exists(self.config_file):
-            with open(self.config_file, 'w') as configfile:
-                self.config['PROPERTIES'] = {'Run.bat location': ''}
-                configfile.write("# Location of run.bat of the server you want to start\n")
-                self.config.write(configfile)
+    if not server_folder or not os.path.isdir(server_folder):
+        return True
 
-    def get_value(self, value):
-        if not os.path.exists(self.config_file):
-            self.create_config_file()
-        self.config.read(self.config_file)
-        try:
-            prop_value = self.config.get('PROPERTIES', value)
-            if prop_value == '':
-                raise ValueError("Incorrect run.bat location. Please update the ServerConfig.ini file.")
-            return prop_value
-        except Exception as e:
-            print(f"Error retrieving value: {e}")
-            raise
+    props_path = os.path.join(server_folder, 'server.properties')
+    if not os.path.exists(props_path):
+        return True
+
+    props = server_properties.parse_server_properties(props_path)
+    required_props = ['enable-rcon', 'rcon.password', 'rcon.port', 'enable-query', 'query.port']
+    for key in required_props:
+        if key not in props or not props[key]:
+            return True
+
+    return False
+
 
 
 if __name__ == '__main__':
     ConfigFileHandler().create_config_file()
+
+    # Run the setup GUI only if something important is missing
+    if needs_initial_setup():
+        InitialSetupGUI()
+
     socketio.run(app, host='0.0.0.0', port=37000, debug=False)
