@@ -115,12 +115,27 @@
 
     .main-grid {
       display: grid;
-      /* CHANGED: slightly wider min column and better expansion */
-      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      /* Left column: system + profile, right column: logs */
+      grid-template-columns: minmax(320px, 1.1fr) minmax(380px, 1.6fr);
+      grid-template-areas:
+        "system logs"
+        "profile logs";
       gap: 1.5rem;
       width: 100%;
       min-height: 70vh;
       align-items: flex-start;
+    }
+
+    .system-card {
+      grid-area: system;
+    }
+
+    .profile-card {
+      grid-area: profile;
+    }
+
+    .log-card {
+      grid-area: logs;
     }
 
     .card {
@@ -357,13 +372,42 @@
       overflow-y: auto;
     }
 
+    .service-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      margin-top: 0.75rem;
+    }
+
+    .service-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .service-label {
+      font-size: 0.9rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      min-width: 80px;
+    }
+
+    .service-buttons {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
     .drawer {
       position: fixed;
       inset: 0;
       background: rgba(0, 0, 0, 0.45);
       display: none;
-      align-items: flex-start;
-      justify-content: flex-end;
+      /* CHANGED: center the drawer instead of right-aligning */
+      align-items: center;
+      justify-content: center;
       padding: 2rem;
       z-index: 12;
       backdrop-filter: blur(2px);
@@ -431,7 +475,9 @@
     .toast {
       position: fixed;
       top: 16px;
-      right: 16px;
+      left: 50%;
+      /* start slightly above for animation */
+      transform: translate(-50%, -10px);
       background: rgba(17, 24, 39, 0.95);
       border: 1px solid var(--border);
       color: var(--text);
@@ -439,16 +485,16 @@
       border-radius: 10px;
       box-shadow: var(--shadow-lg);
       opacity: 0;
-      transform: translateY(-10px);
       transition: opacity 0.2s, transform 0.2s;
-      z-index: 10;
+      /* CHANGED: center top, always above everything */
+      z-index: 9999;
       min-width: 240px;
       pointer-events: none;
     }
 
     .toast.show {
       opacity: 1;
-      transform: translateY(0);
+      transform: translate(-50%, 0); /* animate straight down */
     }
 
     .toast.error {
@@ -560,7 +606,7 @@
 
 <div class="container">
   <div class="main-grid">
-    <div class="card">
+    <div class="card system-card">
       <div class="card-header-row">
         <h3>System Status</h3>
         <span class="soft-badge">Active: <span id="active-profile">None</span></span>
@@ -570,18 +616,35 @@
         <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
         <div id="server-status" class="status-chip status-off">Server: Stopped</div>
       </div>
-      <div class="btn-group">
-        <button id="start-server-btn" class="success">▶ Start Server</button>
-        <button id="stop-server-btn" class="danger">⏹ Stop Server</button>
-        <button id="start-api-btn" class="primary">Start API</button>
-        <button id="start-controller-btn" class="primary">Start Controller</button>
-        <button id="stop-api-btn" class="secondary">Stop API</button>
-        <button id="stop-controller-btn" class="secondary">Stop Controller</button>
+      <div class="service-controls">
+        <div class="service-row">
+          <span class="service-label">Server</span>
+          <div class="service-buttons">
+            <button id="start-server-btn" class="success">▶ Start</button>
+            <button id="stop-server-btn" class="danger">⏹ Stop</button>
+          </div>
+        </div>
+
+        <div class="service-row">
+          <span class="service-label">API</span>
+          <div class="service-buttons">
+            <button id="start-api-btn" class="success">▶ Start</button>
+            <button id="stop-api-btn" class="danger">⏹ Stop</button>
+          </div>
+        </div>
+
+        <div class="service-row">
+          <span class="service-label">Controller</span>
+          <div class="service-buttons">
+            <button id="start-controller-btn" class="success">▶ Start</button>
+            <button id="stop-controller-btn" class="danger">⏹ Stop</button>
+          </div>
+        </div>
       </div>
       <p id="status-text" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);"></p>
     </div>
 
-    <div class="card">
+    <div class="card profile-card">
       <div class="card-header-row">
         <h3>Profile Manager</h3>
         <span class="soft-badge">Profiles stored in <code>server_profiles.json</code></span>
@@ -596,7 +659,7 @@
       <p style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.9rem;">Use "Manage tools" to edit the selected profile or tweak its server.properties.</p>
     </div>
 
-    <div class="card log-panel">
+    <div class="card log-panel log-card">
       <h3>Live Server Logs</h3>
       <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Real-time output from the Minecraft server</p>
       <div id="logs"></div>
@@ -648,7 +711,7 @@
           <span class="soft-badge" id="properties-profile-label">Profile: None</span>
         </div>
         <div class="btn-row">
-          <button id="load-props-btn" class="secondary">📥 Load</button>
+          <button id="load-props-btn" class="secondary hidden">📥 Load</button>
           <button id="save-props-btn" class="primary">💾 Save</button>
         </div>
         <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
