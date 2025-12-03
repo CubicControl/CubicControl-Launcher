@@ -119,27 +119,38 @@
 
     .main-grid {
       display: grid;
-      /* Left column: system + profile, right column: logs */
-      grid-template-columns: minmax(320px, 1.1fr) minmax(380px, 1.6fr);
-      grid-template-areas:
-        "system logs"
-        "profile logs";
+      /* Three columns: system, profile, logs */
+      grid-template-columns: minmax(280px, 0.9fr) minmax(280px, 0.9fr) minmax(420px, 1.8fr);
+      grid-template-areas: "system profile logs";
       gap: 1.5rem;
       width: 100%;
-      min-height: 70vh;
+      min-height: 50vh;
       align-items: flex-start;
     }
 
-    .system-card {
-      grid-area: system;
+    .system-card { grid-area: system; }
+    .profile-card { grid-area: profile; }
+    .log-card { grid-area: logs; }
+
+    /* Responsive: collapse to two columns with logs spanning when window is narrower */
+    @media (max-width: 1400px) {
+      .main-grid {
+        grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
+        grid-template-areas:
+          "system profile"
+          "logs logs";
+      }
     }
 
-    .profile-card {
-      grid-area: profile;
-    }
-
-    .log-card {
-      grid-area: logs;
+    /* Responsive: single column stack on small screens */
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        grid-template-areas:
+          "system"
+          "profile"
+          "logs";
+      }
     }
 
     .card {
@@ -264,6 +275,28 @@
       display: flex;
       flex-direction: column;
       gap: 0.75rem;
+    }
+
+    /* NEW: stacked rows for system status + actions */
+    .system-status-rows {
+      display: grid;
+      gap: 0.75rem;
+      margin-top: 0.5rem;
+    }
+    .status-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      gap: 0.75rem;
+      padding: 0.6rem 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(17, 24, 39, 0.6);
+    }
+    .status-row .actions {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
     }
 
     .status-hero {
@@ -604,6 +637,8 @@
       border: 1px solid var(--border);
       border-radius: 12px;
       width: min(480px, 100%);
+      min-width: 320px;
+      max-width: 90vw;
       box-shadow: var(--shadow-lg);
       overflow: hidden;
     }
@@ -672,7 +707,6 @@
       position: fixed;
       top: 16px;
       left: 50%;
-      /* start slightly above for animation */
       transform: translate(-50%, -10px);
       background: rgba(17, 24, 39, 0.95);
       border: 1px solid var(--border);
@@ -682,11 +716,13 @@
       box-shadow: var(--shadow-lg);
       opacity: 0;
       transition: opacity 0.2s, transform 0.2s;
-      /* CHANGED: center top, always above everything */
       z-index: 9999;
-      min-width: 240px;
+      width: fit-content;
+      max-width: 90vw;
       pointer-events: none;
+      text-align: center;
     }
+
 
     .toast.show {
       opacity: 1;
@@ -757,6 +793,8 @@
       margin: 0;
     }
 
+
+
     @media (max-width: 1200px) {
       .main-grid {
         grid-template-columns: 1fr;
@@ -802,83 +840,68 @@
 
 <div class="container">
   <div class="main-grid">
-      <div class="card">
+      <div class="card system-card">
         <div class="card-header-row">
           <h3>System Status</h3>
           <span class="active-profile-pill" aria-live="polite">Active Profile: <span id="active-profile">None</span></span>
         </div>
         <div class="status-panel">
-        <div class="status-card-grid">
-          <div class="status-tile">
-            <div class="status-tile-label"><span>🗄</span><strong>API</strong></div>
-            <div id="api-status" class="status-chip status-off">API: Stopped</div>
+          <div class="system-status-rows">
+            <!-- API row -->
+            <div class="status-row">
+              <div id="api-status" class="status-chip status-off">API: Off</div>
+              <div class="actions">
+                <button id="start-api-btn" class="success">▶ Start</button>
+                <button id="stop-api-btn" class="danger">⏹ Stop</button>
+              </div>
+            </div>
+
+            <!-- Server row -->
+            <div class="status-row">
+              <div id="server-status" class="status-chip status-off">Server: Off</div>
+              <div class="actions">
+                <button id="start-server-btn" class="success">▶ Start</button>
+                <button id="stop-server-btn" class="danger">⏹ Stop</button>
+              </div>
+            </div>
+
+            <!-- Controller row -->
+            <div class="status-row">
+              <div id="controller-status" class="status-chip status-off">Controller: Off</div>
+              <div class="actions">
+                <button id="start-controller-btn" class="success">▶ Start</button>
+                <button id="stop-controller-btn" class="danger">⏹ Stop</button>
+              </div>
+            </div>
+
+            <!-- Playit row -->
+            <div class="status-row">
+              <div id="playit-status" class="status-chip status-off">Playit: Not configured</div>
+              <div class="actions">
+                <button id="start-playit-btn" class="success">▶ Start</button>
+                <button id="stop-playit-btn" class="danger">⏹ Stop</button>
+                <button id="playit-settings-btn" class="secondary">⚙ Path</button>
+              </div>
+            </div>
           </div>
-          <div class="status-tile">
-            <div class="status-tile-label"><span>🎮</span><strong>Minecraft Server</strong></div>
-            <div id="server-status" class="status-chip status-off">Server: Stopped</div>
-          </div>
-          <div class="status-tile">
-            <div class="status-tile-label"><span>🕹</span><strong>Controller</strong></div>
-            <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
-          </div>
-          <div class="status-tile">
-            <div class="status-tile-label"><span>🌐</span><strong>Playit Tunnel</strong></div>
-            <div id="playit-status" class="status-chip status-off">Playit Tunnel: Not configured</div>
-          </div>
+          <p id="status-text" style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);"></p>
         </div>
+      </div>
 
-        <div class="service-controls">
-          <div class="service-row">
-            <span class="service-label">Server</span>
-            <div class="service-buttons">
-              <button id="start-server-btn" class="success">▶ Start</button>
-              <button id="stop-server-btn" class="danger">⏹ Stop</button>
-            </div>
-          </div>
-
-          <div class="service-row">
-            <span class="service-label">API</span>
-            <div class="service-buttons">
-              <button id="start-api-btn" class="success">▶ Start</button>
-              <button id="stop-api-btn" class="danger">⏹ Stop</button>
-            </div>
-          </div>
-
-          <div class="service-row">
-            <span class="service-label">Controller</span>
-            <div class="service-buttons">
-              <button id="start-controller-btn" class="success">▶ Start</button>
-              <button id="stop-controller-btn" class="danger">⏹ Stop</button>
-            </div>
-          </div>
-
-          <div class="service-row">
-            <span class="service-label">Playit.gg Tunnel</span>
-            <div class="service-buttons">
-              <button id="start-playit-btn" class="success">▶ Start</button>
-              <button id="stop-playit-btn" class="danger">⏹ Stop</button>
-              <button id="playit-settings-btn" class="secondary">⚙ Path</button>
-            </div>
-          </div>
+      <div class="card profile-card">
+        <div class="card-header-row">
+          <h3>Profile Manager</h3>
+          <span class="soft-badge">Profiles stored in <code>server_profiles.json</code></span>
         </div>
-        <p id="status-text" style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);"></p>
+        <label for="profile-select">Select Profile</label>
+        <select id="profile-select"></select>
+        <div class="btn-row">
+          <button id="activate-btn" class="success">✓ Activate</button>
+          <button id="open-tools-btn" class="primary">🛠 Manage tools</button>
+          <button id="delete-profile-btn" class="danger">🗑 Delete</button>
+        </div>
+        <p style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.9rem;">Use "Manage tools" to edit the selected profile or tweak its server.properties.</p>
       </div>
-    </div>
-
-    <div class="card">
-      <div class="card-header-row">
-        <h3>Profile Manager</h3>
-        <span class="soft-badge">Profiles stored in <code>server_profiles.json</code></span>
-      </div>
-      <label for="profile-select">Select Profile</label>
-      <select id="profile-select"></select>
-      <div class="btn-row">
-        <button id="activate-btn" class="success">✓ Activate</button>
-        <button id="open-tools-btn" class="primary">🛠 Manage tools</button>
-        <button id="delete-profile-btn" class="danger">🗑 Delete</button>
-      </div>
-      <p style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.9rem;">Use "Manage tools" to edit the selected profile or tweak its server.properties.</p>
-    </div>
 
     <div class="card log-panel log-card">
       <h3>Live Server Logs</h3>

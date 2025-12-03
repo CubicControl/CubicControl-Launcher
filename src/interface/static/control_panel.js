@@ -62,16 +62,24 @@ function authHeaders(extra = {}) {
 }
 
 function setStatus(message, isError = false) {
-  if (statusText) {
-    statusText.textContent = '';
-  }
   if (!toastEl) return;
+
+  // Clear any existing timeout immediately
+  if (toastTimeout) {
+    clearTimeout(toastTimeout);
+    toastTimeout = null;
+  }
+
+  // Remove show class to reset animation
+  toastEl.classList.remove('show');
+
+  // Force reflow to restart animation
+  void toastEl.offsetWidth;
 
   toastEl.textContent = message;
   toastEl.classList.remove('error', 'success');
   toastEl.classList.add(isError ? 'error' : 'success', 'show');
 
-  if (toastTimeout) clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 2000);
 }
 
@@ -390,33 +398,62 @@ function closeDrawer() {
 }
 
 
-async function activateProfile(nameOverride) {
+// javascript
+// javascript
+async function activateProfile(nameOverride, forceRestart = false) {
   const name = typeof nameOverride === 'string' ? nameOverride : profileSelect.value;
-  if (!name) return;
-  if (name === activeProfileEl.textContent) {
-    return setStatus('Profile already active', true);
+  const activeName = (activeProfileEl.textContent || '').trim();
+  const targetName = (name || '').trim();
+  const shouldForce = Boolean(forceRestart);
+
+  if (!targetName) return;
+
+  const sameProfile = targetName.toLowerCase() === activeName.toLowerCase();
+
+  // If same profile and not forcing, inform and do nothing
+  if (sameProfile && !shouldForce) {
+    setStatus('Profile is already active', true);
+    return;
   }
-  showLoading(true, 'Switching profile…', 'Stopping active services and preparing the next profile.');
+
+  // If same profile and forcing, announce restart
+  if (sameProfile && shouldForce) {
+    setStatus('Restarting services for active profile...');
+  } else {
+    setStatus(`Switching to profile ${targetName}...`);
+  }
+
+  showLoading(true, sameProfile ? 'Restarting services…' : 'Switching profile…', 'Stopping services and preparing the profile.');
+
   try {
-    const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/activate`, {
+    const res = await fetch(`/api/profiles/${encodeURIComponent(targetName)}/activate`, {
       method: 'POST',
-      headers: authHeaders(),
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      // Hint to the server to force a restart when re\-activating the same profile
+      body: JSON.stringify({ force_restart: shouldForce }),
     });
+
+    // Try to parse JSON error gracefully
+    let err = null;
+    let body = null;
+    try { body = await res.json(); } catch (_) { /* no body */ }
+
     if (res.ok) {
-      setStatus(`Activated profile ${name}`);
-      activeProfileEl.textContent = name;
-      connectLogs(name);
+      setStatus(sameProfile ? `Restarted services for ${targetName}` : `Activated profile ${targetName}`);
+      activeProfileEl.textContent = targetName;
+      connectLogs(targetName);
       await refreshStatus();
     } else {
-      const err = await res.json();
-      setStatus(err.error || 'Failed to activate profile', true);
+      setStatus((body && body.error) || 'Failed to activate/restart profile', true);
     }
   } catch (error) {
-    setStatus('Unable to activate profile', true);
+    setStatus('Unable to activate/restart profile', true);
   } finally {
     showLoading(false);
   }
 }
+
+
 
 
 async function deleteProfile() {
@@ -504,7 +541,7 @@ async function saveProfile(evt) {
         cancelText: 'Not now',
       });
       if (shouldActivate) {
-        await activateProfile(body.name);
+        await activateProfile(body.name, true);
       } else {
         setStatus(`Saved profile ${body.name}`);
       }
@@ -517,7 +554,7 @@ async function saveProfile(evt) {
         cancelText: 'Later',
       });
       if (restartNow) {
-        await activateProfile(body.name);
+        await activateProfile(body.name, true);
       } else {
         setStatus('Changes saved. Restart services later to apply updates.');
       }
@@ -668,8 +705,7 @@ async function startController() {
 }
 
 async function stopApi() {
-  const status = await refreshStatus();
-  if (status && !status.api_running) {
+  if (lastStatus && !lastStatus.api_running) {
     setStatus('API is not running', true);
     return;
   }
@@ -682,8 +718,7 @@ async function stopApi() {
 }
 
 async function stopController() {
-  const status = await refreshStatus();
-  if (status && !status.controller_running) {
+  if (lastStatus && !lastStatus.controller_running) {
     setStatus('Controller is not running', true);
     return;
   }
@@ -731,15 +766,20 @@ async function promptForPlayitPath() {
 }
 
 async function startPlayit() {
-  const status = await refreshStatus();
-  if (!status.playit_configured) {
-    setStatus('No path is defined for Playit.exe', true);
-    await promptForPlayitPath();
+  // Ensure we have fresh status data
+  if (!lastStatus) {
     await refreshStatus();
-    return;
   }
 
-  if (status.playit_running) {
+  if (!lastStatus || !lastStatus.playit_configured) {
+    setStatus('Path to Playit.exe not configured', true);
+    const configured = await promptForPlayitPath();
+    if (!configured) return;
+    // Refresh after configuration
+    await refreshStatus();
+  }
+
+  if (lastStatus && lastStatus.playit_running) {
     setStatus('PlayitGG is already running', true);
     return;
   }
@@ -748,16 +788,9 @@ async function startPlayit() {
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'PlayitGG started');
-    await refreshStatus();
-    return;
-  }
-
-  if (body.require_path) {
-    setStatus('No path is defined for Playit.exe', true);
-    const saved = await promptForPlayitPath();
-    if (saved) {
-      await refreshStatus();
-    }
+  } else if (body.require_path) {
+    setStatus('Path to Playit.exe not configured', true);
+    await promptForPlayitPath();
   } else {
     setStatus(body.error || 'Failed to start PlayitGG', true);
   }
@@ -765,17 +798,19 @@ async function startPlayit() {
 }
 
 async function stopPlayit() {
-  const status = await refreshStatus();
-  if (!status.playit_configured) {
-    setStatus('No path is defined for Playit.exe', true);
-    await promptForPlayitPath();
+  // Ensure we have fresh status data
+  if (!lastStatus) {
     await refreshStatus();
+  }
+
+  if (!lastStatus || !lastStatus.playit_configured) {
+    setStatus('Path to Playit.exe not configured', true);
     return;
   }
 
-  if (!status.playit_running) {
-    setStatus('PlayitGG is already stopped', true);
-    return;
+  if (!lastStatus.playit_running) {
+    setStatus('PlayitGG is not running', true);
+    return; // Exit early, don't call refreshStatus
   }
 
   const res = await fetch('/api/stop/playit', { method: 'POST', headers: authHeaders() });
@@ -844,13 +879,14 @@ async function saveProperties() {
         cancelText: 'Later',
       });
       if (restartNow) {
-        await activateProfile(name);
+        await activateProfile(name, true);
       } else {
         setStatus('Properties saved. Restart services later to apply updates.');
       }
     }
   } else setStatus(body.error || 'Failed to save properties', true);
 }
+
 
 async function sendCommand(evt) {
   evt.preventDefault();

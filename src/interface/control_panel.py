@@ -92,13 +92,19 @@ def _validated_server_path(raw_path: str) -> str:
 
 def _validated_playit_path(raw_path: str) -> str:
     if not raw_path or not str(raw_path).strip():
-        raise ValueError("Path to PlayitGG.exe is required.")
+        raise ValueError("Path to Playit.exe is required.")
 
     path = Path(raw_path).expanduser()
     if not path.is_absolute():
-        raise ValueError("PlayitGG.exe path must be absolute.")
+        raise ValueError("Playit.exe path must be absolute.")
+
+    # If a directory is provided, look for playit.exe inside it
+    if path.is_dir():
+        path = path / "playit.exe"
+
     if not path.exists() or not path.is_file():
-        raise ValueError("PlayitGG.exe path must point to an existing file.")
+        raise ValueError("Playit.exe path must point to an existing file.")
+
     return str(path)
 
 
@@ -200,7 +206,7 @@ def _is_api_running(profile: Optional[ServerProfile]) -> bool:
 def _playit_path() -> str:
     handler = ConfigFileHandler()
     try:
-        return handler.get_value("PlayitGG location", allow_empty=True).strip()
+        return handler.get_value("Playit location", allow_empty=True).strip()
     except Exception:
         return ""
 
@@ -221,12 +227,17 @@ def _start_playit_process(path: Optional[str] = None) -> bool:
 
     exe_path = path or _playit_path()
     if not exe_path:
-        raise ValueError("Path to PlayitGG.exe is not configured.")
+        raise ValueError("Path to Playit.exe is not configured.")
 
     validated_path = _validated_playit_path(exe_path)
     env = os.environ.copy()
-    playit_process = subprocess.Popen([validated_path], cwd=str(Path(validated_path).parent), env=env)
-    logger.info("PlayitGG started with PID %s", playit_process.pid)
+    playit_process = subprocess.Popen(
+        [validated_path],
+        cwd=str(Path(validated_path).parent),
+        env=env,
+        creationflags=subprocess.CREATE_NEW_CONSOLE
+    )
+    logger.info("Playit.exe started with PID %s", playit_process.pid)
     return True
 
 
@@ -242,7 +253,7 @@ def _stop_playit_process() -> bool:
     except subprocess.TimeoutExpired:
         playit_process.kill()
     finally:
-        logger.info("PlayitGG process stopped")
+        logger.info("Playit process stopped")
         playit_process = None
     playit_process = None
     return True
@@ -342,7 +353,7 @@ def _ensure_playit_running() -> None:
     try:
         _start_playit_process()
     except Exception as exc:  # pragma: no cover - defensive guard
-        logger.warning("Unable to start PlayitGG automatically: %s", exc)
+        logger.warning("Unable to start Playit.exe automatically: %s", exc)
 
 
 def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
@@ -537,21 +548,21 @@ def set_playit_path():
     payload = request.get_json(force=True) or {}
     raw_path = str(payload.get("path", "")).strip()
     if not raw_path:
-        return jsonify({"error": "Path to PlayitGG.exe is required"}), 400
+        return jsonify({"error": "Path to Playit.exe is required"}), 400
 
     try:
         validated = _validated_playit_path(raw_path)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    ConfigFileHandler().set_value("PlayitGG location", validated)
+    ConfigFileHandler().set_value("Playit location", validated)
     started = False
     try:
         started = _start_playit_process(validated)
     except Exception as exc:  # pragma: no cover - defensive guard
-        logger.warning("Unable to start PlayitGG after saving path: %s", exc)
+        logger.warning("Unable to start Playit after saving path: %s", exc)
 
-    return jsonify({"message": "PlayitGG path saved", "playit_running": _is_playit_running(), "started": started})
+    return jsonify({"message": "Playit path saved", "playit_running": _is_playit_running(), "started": started})
 
 @app.route("/api/server/state", methods=["GET"])
 def server_state():
@@ -696,7 +707,7 @@ def start_playit():
         return jsonify({"error": "No path is defined for Playit.exe", "require_path": True}), 400
 
     if _is_playit_running():
-        return jsonify({"error": "PlayitGG is already running"}), 400
+        return jsonify({"error": "Playit is already running"}), 400
 
     try:
         started = _start_playit_process(path)
@@ -705,7 +716,7 @@ def start_playit():
     except Exception as exc:  # pragma: no cover - defensive guard
         return jsonify({"error": str(exc)}), 500
 
-    message = "PlayitGG started" if started else "PlayitGG already running"
+    message = "Playit started" if started else "Playit already running"
     return jsonify({"message": message, "running": _is_playit_running()})
 
 
@@ -738,12 +749,12 @@ def stop_playit():
         return jsonify({"error": "No path is defined for Playit.exe", "require_path": True}), 400
 
     if not _is_playit_running():
-        return jsonify({"error": "PlayitGG is already stopped"}), 400
+        return jsonify({"error": "Playit is already stopped"}), 400
 
     if _stop_playit_process():
-        return jsonify({"message": "PlayitGG stopped"})
+        return jsonify({"message": "Playit stopped"})
 
-    return jsonify({"error": "PlayitGG is already stopped"}), 400
+    return jsonify({"error": "Playit is already stopped"}), 400
 
 
 @app.route("/api/stop/server", methods=["POST"])

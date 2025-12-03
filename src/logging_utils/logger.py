@@ -1,21 +1,18 @@
-from datetime import datetime
 import logging
 from pathlib import Path
+from datetime import datetime
 
+log_dir = Path(__file__).resolve().parents[2] / "logs"
+log_dir.mkdir(exist_ok=True)
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
-LOG_DIR = PROJECT_ROOT / "logs"
-LOG_DIR.mkdir(exist_ok=True)
-LOG_FILE = LOG_DIR / f"{datetime.utcnow():%Y-%m-%d}_ServerSideLogs.txt"
+log_file = log_dir / f"control_panel_{datetime.now().strftime('%Y%m%d')}.log"
 
-logger = logging.getLogger('ServerLogger')
-file_handler = logging.FileHandler(LOG_FILE)
-file_handler.setLevel(logging.INFO)
-formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
-file_handler.setFormatter(formatter)
+handler = logging.FileHandler(log_file, encoding='utf-8')
+handler.setFormatter(logging.Formatter(
+    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+))
 
-if logger.hasHandlers():
-    logger.handlers.clear()
-
-logger.addHandler(file_handler)
+logger = logging.getLogger('control_panel')
 logger.setLevel(logging.INFO)
+logger.addHandler(handler)
+logger.addHandler(logging.StreamHandler())  # Also log to console

@@ -1,0 +1,133 @@
+2025-12-03 22:53:13,285 - control_panel - INFO - Starting control panel UI
+2025-12-03 22:54:23,765 - control_panel - INFO - API started for profile 'Vanilla' with PID 26888
+2025-12-03 22:54:23,765 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 22:54:25,379 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 22:54:27,788 - control_panel - INFO - Playit.exe started with PID 32380
+2025-12-03 22:54:36,830 - control_panel - INFO - Playit process stopped
+2025-12-03 22:54:39,229 - control_panel - INFO - Playit.exe started with PID 33592
+2025-12-03 22:54:42,107 - control_panel - INFO - Playit process stopped
+2025-12-03 22:58:13,821 - control_panel - INFO - Starting control panel UI
+2025-12-03 22:58:17,390 - control_panel - INFO - Playit.exe started with PID 31156
+2025-12-03 22:58:23,441 - control_panel - INFO - API started for profile 'Vanilla' with PID 28556
+2025-12-03 22:58:23,442 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 22:58:25,080 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 22:58:28,413 - control_panel - INFO - Playit process stopped
+2025-12-03 22:58:33,163 - control_panel - INFO - Playit.exe started with PID 16064
+2025-12-03 22:58:37,692 - control_panel - INFO - Playit process stopped
+2025-12-03 23:03:23,411 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:03:26,782 - control_panel - INFO - Playit.exe started with PID 31628
+2025-12-03 23:03:31,338 - control_panel - INFO - API started for profile 'Vanilla' with PID 27528
+2025-12-03 23:03:31,339 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:03:32,964 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:03:54,944 - control_panel - INFO - Playit process stopped
+2025-12-03 23:03:57,451 - control_panel - INFO - Playit.exe started with PID 16076
+2025-12-03 23:06:55,845 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:06:57,912 - control_panel - INFO - Playit.exe started with PID 32516
+2025-12-03 23:07:03,959 - control_panel - INFO - API started for profile 'Vanilla' with PID 21164
+2025-12-03 23:07:03,960 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:07:07,558 - control_panel - INFO - Playit process stopped
+2025-12-03 23:07:09,777 - control_panel - INFO - Playit.exe started with PID 31116
+2025-12-03 23:08:34,219 - control_panel - INFO - Playit process stopped
+2025-12-03 23:08:37,134 - control_panel - INFO - Playit.exe started with PID 16752
+2025-12-03 23:09:08,618 - control_panel - INFO - Playit.exe started with PID 10760
+2025-12-03 23:09:12,556 - control_panel - INFO - Playit.exe started with PID 19648
+2025-12-03 23:09:53,545 - control_panel - INFO - Playit process stopped
+2025-12-03 23:12:28,175 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:12:32,304 - control_panel - INFO - Playit.exe started with PID 13212
+2025-12-03 23:12:38,343 - control_panel - INFO - API started for profile 'Vanilla' with PID 29984
+2025-12-03 23:12:38,344 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:12:40,019 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:13:42,386 - control_panel - INFO - API process stopped
+2025-12-03 23:13:58,798 - control_panel - INFO - Playit process stopped
+2025-12-03 23:15:00,362 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:15:00,414 - control_panel - INFO - Playit.exe started with PID 27808
+2025-12-03 23:15:01,398 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:15:06,447 - control_panel - INFO - API started for profile 'Vanilla' with PID 14488
+2025-12-03 23:15:06,447 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:15:11,966 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:16:29,951 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:16:30,699 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:16:31,050 - control_panel - INFO - Playit.exe started with PID 22120
+2025-12-03 23:16:35,604 - control_panel - INFO - API started for profile 'Vanilla' with PID 33108
+2025-12-03 23:16:35,605 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:16:36,977 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:16:40,941 - control_panel - INFO - Playit process stopped
+2025-12-03 23:17:20,424 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:18:25,902 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:18:26,121 - control_panel - INFO - Playit.exe started with PID 17604
+2025-12-03 23:18:27,423 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:18:30,650 - control_panel - INFO - API started for profile 'Vanilla' with PID 26312
+2025-12-03 23:18:30,651 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:18:35,889 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:18:38,131 - control_panel - INFO - Playit process stopped
+2025-12-03 23:19:34,112 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:19:35,056 - control_panel - INFO - Playit.exe started with PID 25924
+2025-12-03 23:19:35,676 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:19:39,605 - control_panel - INFO - API started for profile 'Vanilla' with PID 35736
+2025-12-03 23:19:39,606 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:19:40,982 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:19:42,632 - control_panel - INFO - Playit process stopped
+2025-12-03 23:20:23,944 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:20:30,727 - control_panel - INFO - Playit.exe started with PID 31140
+2025-12-03 23:20:35,262 - control_panel - INFO - API started for profile 'Vanilla' with PID 32436
+2025-12-03 23:20:35,263 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:20:36,936 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:20:37,659 - control_panel - INFO - Playit process stopped
+2025-12-03 23:20:43,341 - control_panel - INFO - Playit.exe started with PID 32964
+2025-12-03 23:20:45,999 - control_panel - INFO - Playit process stopped
+2025-12-03 23:23:08,610 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:23:13,900 - control_panel - INFO - Playit.exe started with PID 34176
+2025-12-03 23:23:19,929 - control_panel - INFO - API started for profile 'Vanilla' with PID 28300
+2025-12-03 23:23:19,930 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:23:21,618 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:23:25,692 - control_panel - INFO - Playit process stopped
+2025-12-03 23:28:41,759 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:28:42,085 - control_panel - INFO - Playit.exe started with PID 12008
+2025-12-03 23:28:42,535 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:28:48,115 - control_panel - INFO - API started for profile 'Vanilla' with PID 26592
+2025-12-03 23:28:48,116 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:28:49,459 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:29:18,107 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:29:19,064 - control_panel - INFO - Playit.exe started with PID 19212
+2025-12-03 23:29:19,683 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:29:23,604 - control_panel - INFO - API started for profile 'Vanilla' with PID 5104
+2025-12-03 23:29:23,605 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:29:24,947 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:32:37,810 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:32:41,194 - control_panel - INFO - Playit.exe started with PID 12156
+2025-12-03 23:32:47,231 - control_panel - INFO - API started for profile 'Vanilla' with PID 12516
+2025-12-03 23:32:47,232 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:32:48,848 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:32:56,661 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:34:51,153 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:37:31,612 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:37:31,843 - control_panel - INFO - Playit.exe started with PID 25828
+2025-12-03 23:37:37,885 - control_panel - INFO - API started for profile 'Vanilla' with PID 28612
+2025-12-03 23:37:37,886 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:37:38,953 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:42:39,803 - control_panel - INFO - Starting control panel UI
+2025-12-03 23:42:42,831 - control_panel - INFO - Playit.exe started with PID 29712
+2025-12-03 23:42:48,869 - control_panel - INFO - API started for profile 'Vanilla' with PID 33128
+2025-12-03 23:42:48,870 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:42:50,536 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:43:07,565 - control_panel - INFO - API process stopped
+2025-12-03 23:43:09,600 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-03 23:43:13,667 - control_panel - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 23:43:15,659 - control_panel - INFO - API started for profile 'TEST' with PID 33612
+2025-12-03 23:43:15,661 - control_panel - INFO - Controller started for profile 'TEST'
+2025-12-03 23:43:16,375 - control_panel - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 23:43:16,571 - control_panel - INFO - Request: {'method': 'GET', 'url': 'http://localhost:37000/status', 'status': 206, 'remote_addr': '127.0.0.1', 'user_agent': 'python-requests/2.32.3'}
+2025-12-03 23:43:26,215 - control_panel - INFO - Request: {'method': 'GET', 'url': 'http://localhost:37000/status', 'status': 403, 'remote_addr': '127.0.0.1', 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'}
+2025-12-03 23:43:26,343 - control_panel - INFO - Request: {'method': 'GET', 'url': 'http://localhost:37000/favicon.ico', 'status': 403, 'remote_addr': '127.0.0.1', 'user_agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/142.0.0.0 Safari/537.36'}
+2025-12-03 23:43:44,958 - control_panel - INFO - Playit.exe started with PID 22316
+2025-12-03 23:43:54,511 - control_panel - INFO - Playit.exe started with PID 31516
+2025-12-03 23:44:17,723 - control_panel - INFO - API process stopped
+2025-12-03 23:44:19,758 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-03 23:44:23,626 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:44:25,809 - control_panel - INFO - API started for profile 'Vanilla' with PID 15224
+2025-12-03 23:44:25,810 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-03 23:44:26,786 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 23:44:31,991 - control_panel - INFO - Playit process stopped
+2025-12-03 23:44:38,875 - control_panel - INFO - Playit.exe started with PID 9152
+2025-12-03 23:44:56,453 - control_panel - INFO - Playit process stopped
+2025-12-03 23:46:09,241 - control_panel - INFO - Controller started for profile 'Vanilla'
