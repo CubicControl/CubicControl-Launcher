@@ -5,6 +5,8 @@ import sys
 from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
+import logging
+import warnings
 
 import time
 import requests
@@ -22,27 +24,43 @@ from src.logging_utils.logger import logger
 
 APP_DIR = Path(__file__).resolve().parent
 
+warnings.filterwarnings(
+    "ignore",
+    message=r"Werkzeug appears to be used in a production deployment",
+)
+
+show_server_banner = lambda *args, **kwargs: None  # hide Flask banner
+
+for noisy in ("werkzeug", "engineio", "socketio", "flask_socketio"):
+    logging.getLogger(noisy).setLevel(logging.ERROR)
+
 app = Flask(
     __name__,
     template_folder=str(APP_DIR / "templates"),
     static_folder=str(APP_DIR / "static"),
 )
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
-
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode="threading",
+    logger=False,
+    engineio_logger=False,
+)
 
 @app.before_request
 def _validate_web_auth():
-    # Protect web app JSON APIs with the same bearer key as the backend API
-    if not request.path.startswith("/api/"):
+    if request.path.startswith('/socket.io'):
+        return None
+    if not request.path.startswith('/api/'):
         return None
 
     expected = settings.AUTH_KEY
     if not expected:
         return None
 
-    provided = request.headers.get("Authorization", "")
-    if provided != f"Bearer {expected}":
-        return jsonify({"error": "Unauthorized"}), 403
+    provided = request.headers.get('Authorization', '')
+    if provided != f'Bearer {expected}':
+        return jsonify({'error': 'Unauthorized'}), 403
     return None
 
 store = ServerProfileStore()
@@ -692,4 +710,4 @@ def auto_start_services():
 
 if __name__ == "__main__":
     logger.info("Starting control panel UI")
-    socketio.run(app, host="0.0.0.0", port=38000, debug=False)
+    socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)

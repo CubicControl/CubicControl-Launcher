@@ -16,22 +16,6 @@
       "pc_sleep_after_inactivity": true,
       "description": "",
       "env_scope": "per_server"
-    },
-    "TEST": {
-      "name": "TEST",
-      "server_path": "D:\\",
-      "server_ip": "localhost",
-      "run_script": "run.bat",
-      "rcon_password": "wPj7xjFN5L_P6BG8wtbmUg",
-      "rcon_port": 27001,
-      "query_port": 27002,
-      "auth_key": "SECRETKEYSPIRIT",
-      "shutdown_key": "",
-      "inactivity_limit": 1800,
-      "polling_interval": 60,
-      "pc_sleep_after_inactivity": true,
-      "description": "",
-      "env_scope": "per_server"
     }
   }
 }
