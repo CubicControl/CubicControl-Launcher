@@ -7,6 +7,7 @@ from threading import Thread
 from typing import Dict, List, Optional
 
 import eventlet
+import time
 import requests
 from mcstatus import JavaServer
 
@@ -296,7 +297,7 @@ def _stream_server_output(profile_name: str, proc: subprocess.Popen) -> None:
         # Emit to all connected clients
         try:
             socketio.emit("log_line", {"message": line, "profile": profile_name, "source": "server"}, namespace='/')
-            eventlet.sleep(0)  # Yield to allow emission to be processed
+            time.sleep(0.01)
         except Exception as e:
             logger.error(f"Error emitting log line: {e}")
     proc.wait()
@@ -328,7 +329,8 @@ def _start_server_process(profile: ServerProfile) -> bool:
 
     server_processes[profile.name] = proc
     server_log_buffers.pop(profile.name, None)
-    thread = eventlet.spawn(_stream_server_output, profile.name, proc)
+    thread = Thread(target=_stream_server_output, args=(profile.name, proc), daemon=True)
+    thread.start()
     server_log_threads[profile.name] = thread
     logger.info(f"Server started with PID {proc.pid}")
     return True

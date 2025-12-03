@@ -491,7 +491,6 @@ function init() {
   document.getElementById('start-controller-btn').addEventListener('click', startController);
   document.getElementById('stop-api-btn').addEventListener('click', stopApi);
   document.getElementById('stop-controller-btn').addEventListener('click', stopController);
-  document.getElementById('load-props-btn').addEventListener('click', loadProperties);
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
   if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
   if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);

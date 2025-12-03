@@ -441,16 +441,16 @@
     .drawer-body {
       padding: 1rem 1.25rem 1.25rem;
       overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+      align-items: start;
       gap: 1rem;
       width: 100%;
     }
 
     .drawer-body > .card {
       width: 100%;
-      max-width: 800px;
+      height: 100%;
     }
 
     .drawer-close {
@@ -711,18 +711,17 @@
         </form>
       </div>
 
-      <div class="card server-properties-panel" id="properties-panel">
-        <div class="card-header-row">
-          <h3>Server Properties</h3>
-          <span class="soft-badge" id="properties-profile-label">Profile: None</span>
+        <div class="card server-properties-panel" id="properties-panel">
+          <div class="card-header-row">
+            <h3>Server Properties</h3>
+            <span class="soft-badge" id="properties-profile-label">Profile: None</span>
+          </div>
+          <div class="btn-row">
+            <button id="save-props-btn" class="primary">💾 Save</button>
+          </div>
+          <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
+          <small>Edit server.properties for the selected profile</small>
         </div>
-        <div class="btn-row">
-          <button id="load-props-btn" class="secondary hidden">📥 Load</button>
-          <button id="save-props-btn" class="primary">💾 Save</button>
-        </div>
-        <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
-        <small>Edit server.properties for the selected profile</small>
-      </div>
     </div>
   </div>
 </div>
