@@ -664,6 +664,7 @@
         <div id="api-status" class="status-chip status-off">API: Stopped</div>
         <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
         <div id="server-status" class="status-chip status-off">Server: Stopped</div>
+        <div id="playit-status" class="status-chip status-off">Playit Tunnel: Not configured</div>
       </div>
       <div class="service-controls">
         <div class="service-row">
@@ -687,6 +688,15 @@
           <div class="service-buttons">
             <button id="start-controller-btn" class="success">▶ Start</button>
             <button id="stop-controller-btn" class="danger">⏹ Stop</button>
+          </div>
+        </div>
+
+        <div class="service-row">
+          <span class="service-label">Playit.gg Tunnel</span>
+          <div class="service-buttons">
+            <button id="start-playit-btn" class="success">▶ Start</button>
+            <button id="stop-playit-btn" class="danger">⏹ Stop</button>
+            <button id="playit-settings-btn" class="secondary">⚙ Path</button>
           </div>
         </div>
       </div>

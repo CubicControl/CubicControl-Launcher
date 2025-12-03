@@ -14,7 +14,10 @@ class ConfigFileHandler:
     def create_config_file(self):
         if not self.config_file.exists():
             with open(self.config_file, 'w', encoding='utf-8') as configfile:
-                self.config['PROPERTIES'] = {'Run.bat location': ''}
+                self.config['PROPERTIES'] = {
+                    'Run.bat location': '',
+                    'PlayitGG location': '',
+                }
                 configfile.write("# Location of run.bat of the server you want to start\n")
                 self.config.write(configfile)
 

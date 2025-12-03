@@ -10,6 +10,7 @@ const propsBox = document.getElementById('properties');
 const apiChip = document.getElementById('api-status');
 const controllerChip = document.getElementById('controller-status');
 const serverChip = document.getElementById('server-status');
+const playitChip = document.getElementById('playit-status');
 const drawer = document.getElementById('profile-drawer');
 const drawerTitle = document.getElementById('drawer-title');
 const propertiesPanel = document.getElementById('properties-panel');
@@ -23,6 +24,7 @@ let socket;
 let cachedProfiles = [];
 let currentLogProfile = '';
 let selectedProfile = '';
+let playitPrompted = false;
 
 const defaultProfile = {
   name: '',
@@ -87,6 +89,15 @@ function updateServerChip(state) {
   } else {
     serverChip.classList.add('status-off');
   }
+}
+
+function updatePlayitChip(configured, running) {
+  if (!playitChip) return;
+  const label = configured ? (running ? 'Playit Tunnel: Running' : 'Playit Tunnel: Stopped') : 'Playit Tunnel: Not configured';
+  playitChip.textContent = label;
+  playitChip.classList.toggle('status-on', Boolean(configured && running));
+  playitChip.classList.toggle('status-off', !configured || !running);
+  playitChip.classList.toggle('status-starting', false);
 }
 
 function toggleDrawer(open) {
@@ -166,6 +177,7 @@ async function refreshStatus() {
   setChip(apiChip, Boolean(data.api_running), 'API');
   setChip(controllerChip, Boolean(data.controller_running), 'Controller');
   setChip(serverChip, Boolean(data.server_running), 'Server');
+  updatePlayitChip(Boolean(data.playit_configured), Boolean(data.playit_running));
 
   let serverState = data.server_running ? 'running' : 'stopped';
   try {
@@ -195,6 +207,19 @@ async function refreshStatus() {
   if (active && active !== currentLogProfile) {
     connectLogs(active);
   }
+
+  const startPlayitBtn = document.getElementById('start-playit-btn');
+  const stopPlayitBtn = document.getElementById('stop-playit-btn');
+  const playitSettingsBtn = document.getElementById('playit-settings-btn');
+  if (startPlayitBtn && stopPlayitBtn) {
+    startPlayitBtn.disabled = !data.playit_configured || data.playit_running;
+    stopPlayitBtn.disabled = !data.playit_running;
+  }
+  if (playitSettingsBtn) {
+    playitSettingsBtn.disabled = false;
+  }
+
+  return data;
 }
 
 
@@ -266,8 +291,8 @@ function closeDrawer() {
 }
 
 
-async function activateProfile() {
-  const name = profileSelect.value;
+async function activateProfile(nameOverride) {
+  const name = nameOverride || profileSelect.value;
   if (!name) return;
   if (name === activeProfileEl.textContent) {
     return setStatus('Profile already active', true);
@@ -351,18 +376,25 @@ async function saveProfile(evt) {
   });
   const body = await res.json();
   if (res.ok) {
+    const isNew = !exists;
     setStatus(`${exists ? 'Updated' : 'Saved'} profile ${body.name}`);
-    if (!exists) {
+    if (isNew) {
       showLoading(true, 'Profile saved', 'Initializing the new instance...');
     }
     await refreshStatus();
     profileSelect.value = body.name;
     fillFormFromProfile(body);
-    connectLogs(body.name);
     setDrawerMode(`Manage ${body.name}`, true, body.name);
     loadProperties(body.name);
     closeDrawer();
-    if (!exists) {
+
+    if (isNew) {
+      const shouldActivate = window.confirm(`Start profile "${body.name}" now? This will stop services for the current profile.`);
+      if (shouldActivate) {
+        await activateProfile(body.name);
+      } else {
+        setStatus(`Saved profile ${body.name}`);
+      }
       setTimeout(() => showLoading(false), 1200);
     }
   } else {
@@ -475,6 +507,65 @@ async function stopController() {
   await refreshStatus();
 }
 
+async function promptForPlayitPath() {
+  const provided = window.prompt('Enter the full path to PlayitGG.exe');
+  if (provided === null) {
+    setStatus('PlayitGG path not updated', true);
+    return false;
+  }
+  const path = provided.trim();
+  if (!path) {
+    setStatus('PlayitGG path is required', true);
+    return false;
+  }
+
+  const res = await fetch('/api/playit/path', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ path }),
+  });
+  const body = await res.json();
+  if (res.ok) {
+    setStatus('PlayitGG path saved');
+    await refreshStatus();
+    return true;
+  }
+
+  setStatus(body.error || 'Unable to save PlayitGG path', true);
+  return false;
+}
+
+async function startPlayit() {
+  const res = await fetch('/api/start/playit', { method: 'POST', headers: authHeaders() });
+  const body = await res.json();
+  if (res.ok) {
+    setStatus(body.message || 'PlayitGG started');
+    await refreshStatus();
+    return;
+  }
+
+  if (body.require_path) {
+    const saved = await promptForPlayitPath();
+    if (saved) {
+      return startPlayit();
+    }
+  } else {
+    setStatus(body.error || 'Failed to start PlayitGG', true);
+  }
+  await refreshStatus();
+}
+
+async function stopPlayit() {
+  const res = await fetch('/api/stop/playit', { method: 'POST', headers: authHeaders() });
+  const body = await res.json();
+  if (res.ok) {
+    setStatus(body.message || 'PlayitGG stopped');
+  } else {
+    setStatus(body.error || 'Failed to stop PlayitGG', true);
+  }
+  await refreshStatus();
+}
+
 function propsToText(map) {
   return Object.entries(map || {})
     .map(([k, v]) => `${k}=${v}`)
@@ -553,6 +644,12 @@ function init() {
   document.getElementById('start-controller-btn').addEventListener('click', startController);
   document.getElementById('stop-api-btn').addEventListener('click', stopApi);
   document.getElementById('stop-controller-btn').addEventListener('click', stopController);
+  const startPlayitBtn = document.getElementById('start-playit-btn');
+  const stopPlayitBtn = document.getElementById('stop-playit-btn');
+  const playitSettingsBtn = document.getElementById('playit-settings-btn');
+  if (startPlayitBtn) startPlayitBtn.addEventListener('click', startPlayit);
+  if (stopPlayitBtn) stopPlayitBtn.addEventListener('click', stopPlayit);
+  if (playitSettingsBtn) playitSettingsBtn.addEventListener('click', promptForPlayitPath);
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
   if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
   if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);
@@ -566,10 +663,14 @@ function init() {
   profileSelect.addEventListener('change', () => {
     selectedProfile = profileSelect.value;
   });
-  refreshStatus().then(() => {
+  refreshStatus().then((data) => {
     const current = profileSelect.value;
     if (current) {
       connectLogs(current);
+    }
+    if (data && !data.playit_configured && !playitPrompted) {
+      playitPrompted = true;
+      promptForPlayitPath();
     }
   });
   setInterval(refreshStatus, 5000);
