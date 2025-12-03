@@ -25,12 +25,16 @@ class ServerController:
         log_directory.mkdir(parents=True, exist_ok=True)
         log_file = log_directory / f"{datetime.date.today()}_MinecraftControllerLogs.log"
 
-        logging.basicConfig(
-            filename=log_file,
-            level=logging.INFO,
-            format='%(asctime)s - %(levelname)s - %(message)s'
-        )
         self.logger = logging.getLogger(f'Controller-{profile.name}')
+        self.logger.setLevel(logging.INFO)
+        self.logger.propagate = False
+
+        file_handler = logging.FileHandler(log_file, encoding="utf-8")
+        file_handler.setLevel(logging.INFO)
+        file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+
+        if not any(isinstance(h, logging.FileHandler) and h.baseFilename == file_handler.baseFilename for h in self.logger.handlers):
+            self.logger.addHandler(file_handler)
 
         self.last_active_time = time.time()
         self.server_offline_logged = False

@@ -134,6 +134,13 @@ class ServerProfileStore:
             return None
         return self._profiles.get(self.active_profile_name)
 
+    def delete_profile(self, name: str) -> None:
+        if name in self._profiles:
+            del self._profiles[name]
+            if self.active_profile_name == name:
+                self.active_profile_name = next(iter(self._profiles), None)
+            self._save()
+
     def update_properties(self, name: str, updates: Dict[str, str]) -> Dict[str, str]:
         profile = self.get_profile(name)
         if not profile:

@@ -2,7 +2,10 @@ import os
 import subprocess
 import sys
 from pathlib import Path
-from typing import Dict
+from threading import Thread
+from typing import Dict, Optional
+
+import requests
 
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
@@ -23,19 +26,41 @@ socketio = SocketIO(app, cors_allowed_origins="*")
 
 store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
+controller_threads: Dict[str, Thread] = {}
+api_process: Optional[subprocess.Popen] = None
 
 
 # ---------- Helpers ----------
+def _validated_server_path(raw_path: str) -> str:
+    if not raw_path or not str(raw_path).strip():
+        raise ValueError("Server folder is required and cannot be empty.")
+
+    path = Path(raw_path).expanduser()
+    if not path.is_absolute():
+        raise ValueError("Server folder must be an absolute path (e.g. C:/Servers/Vanilla or /srv/mc/vanilla).")
+    if path.exists() and not path.is_dir():
+        raise ValueError("Server folder must refer to a directory, not a file.")
+    try:
+        path.mkdir(parents=True, exist_ok=True)
+    except Exception as exc:  # pragma: no cover - defensive guard
+        raise ValueError(f"Unable to create or access the server folder: {exc}") from exc
+    return str(path)
+
+
 def _profile_from_request(data: Dict) -> ServerProfile:
     sleep_flag = data.get("pc_sleep_after_inactivity", True)
     if not isinstance(sleep_flag, bool):
         sleep_flag = str(sleep_flag).strip().lower() in {"1", "true", "yes", "on"}
 
+    name = (data.get("name") or "").strip()
+    if not name:
+        raise ValueError("Profile name is required.")
+
     return ServerProfile(
-        name=data["name"],
-        server_path=data["server_path"],
+        name=name,
+        server_path=_validated_server_path(data.get("server_path", "")),
         server_ip=data.get("server_ip", "localhost"),
-        run_script=data.get("run_script", "run.bat"),
+        run_script=(data.get("run_script") or "run.bat").strip(),
         rcon_password=data.get("rcon_password", ""),
         rcon_port=int(data.get("rcon_port", 27001)),
         query_port=int(data.get("query_port", 27002)),
@@ -59,6 +84,110 @@ def _apply_profile_environment(profile: ServerProfile) -> None:
     os.environ["RCON_PORT"] = str(profile.rcon_port)
 
 
+def _is_api_running(profile: Optional[ServerProfile]) -> bool:
+    global api_process
+    if api_process and api_process.poll() is None:
+        return True
+
+    if not profile:
+        return False
+
+    headers = {"Authorization": f"Bearer {profile.auth_key}"} if profile.auth_key else {}
+    try:
+        resp = requests.get("http://localhost:37000/status", headers=headers, timeout=1.5)
+        return resp.status_code < 500
+    except requests.RequestException:
+        return False
+
+
+def _start_api_process(profile: ServerProfile) -> bool:
+    global api_process
+    if _is_api_running(profile):
+        return False
+
+    _apply_profile_environment(profile)
+    env = os.environ.copy()
+    env.update(
+        {
+            "RCON_PASSWORD": profile.rcon_password,
+            "AUTHKEY_SERVER_WEBSITE": profile.auth_key,
+            "SHUTDOWN_AUTH_KEY": profile.shutdown_key,
+            "QUERY_PORT": str(profile.query_port),
+            "RCON_PORT": str(profile.rcon_port),
+        }
+    )
+    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
+
+    cmd = [sys.executable, "-m", "src.api.server_app"]
+    api_process = subprocess.Popen(cmd, env=env)
+    logger.info("API started for profile '%s' with PID %s", profile.name, api_process.pid)
+    return True
+
+
+def _stop_api_process(profile: Optional[ServerProfile]) -> bool:
+    global api_process
+    if api_process and api_process.poll() is None:
+        api_process.terminate()
+        try:
+            api_process.wait(timeout=5)
+        except subprocess.TimeoutExpired:  # pragma: no cover - defensive guard
+            api_process.kill()
+        finally:
+            logger.info("API process stopped")
+            api_process = None
+        return True
+
+    if profile:
+        headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": profile.shutdown_key}
+        try:
+            requests.post("http://localhost:37000/shutdown", headers=headers, timeout=2)
+            return True
+        except requests.RequestException:
+            return False
+    return False
+
+
+def _controller_running(name: str) -> bool:
+    thread = controller_threads.get(name)
+    return bool(thread and thread.is_alive())
+
+
+def _start_controller(profile: ServerProfile) -> bool:
+    if _controller_running(profile.name):
+        return False
+    controller = ServerController(profile)
+    controllers[profile.name] = controller
+    thread = controller.start_in_thread()
+    controller_threads[profile.name] = thread
+    logger.info("Controller started for profile '%s'", profile.name)
+    return True
+
+
+def _stop_controller(name: str) -> bool:
+    controller = controllers.get(name)
+    if controller:
+        controller.stop()
+    thread = controller_threads.get(name)
+    if thread and thread.is_alive():
+        thread.join(timeout=2)
+    stopped = name in controllers
+    controllers.pop(name, None)
+    controller_threads.pop(name, None)
+    return stopped
+
+
+def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
+    if not profile:
+        return
+    profile.ensure_scaffold()
+    ConfigFileHandler().set_value('Run.bat location', str(profile.root))
+    _apply_profile_environment(profile)
+    if not _is_api_running(profile):
+        _start_api_process(profile)
+    if not _controller_running(profile.name):
+        _start_controller(profile)
+
+
 # ---------- Routes ----------
 @app.route("/")
 def index():
@@ -72,6 +201,8 @@ def status():
             "message": "ServerSide control panel",
             "active_profile": store.active_profile_name,
             "profiles": [p.to_dict() for p in store.list_profiles()],
+            "api_running": _is_api_running(store.active_profile),
+            "controller_running": _controller_running(store.active_profile_name or ""),
         }
     )
 
@@ -82,10 +213,30 @@ def profiles():
         return jsonify([p.to_dict() for p in store.list_profiles()])
 
     payload = request.get_json(force=True)
-    profile = _profile_from_request(payload)
+    try:
+        profile = _profile_from_request(payload)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
     profile.ensure_scaffold()
     store.upsert_profile(profile)
+    if store.active_profile_name == profile.name:
+        _ensure_services_running(profile)
     return jsonify(profile.to_dict()), 201
+
+
+@app.route("/api/profiles/<name>", methods=["GET", "DELETE"])
+def profile_detail(name: str):
+    profile = store.get_profile(name)
+    if not profile:
+        return jsonify({"error": "Profile not found"}), 404
+
+    if request.method == "GET":
+        return jsonify(profile.to_dict())
+
+    _stop_controller(name)
+    store.delete_profile(name)
+    return jsonify({"message": f"Profile '{name}' deleted"})
 
 
 @app.route("/api/profiles/<name>/activate", methods=["POST"])
@@ -93,6 +244,7 @@ def set_active(name: str):
     profile = store.set_active(name)
     ConfigFileHandler().set_value('Run.bat location', str(profile.root))
     _apply_profile_environment(profile)
+    _ensure_services_running(profile)
     return jsonify(profile.to_dict())
 
 
@@ -133,20 +285,11 @@ def start_api():
     if not profile:
         return jsonify({"error": "No active profile"}), 400
 
-    _apply_profile_environment(profile)
-    env = os.environ.copy()
-    env.update({
-        "RCON_PASSWORD": profile.rcon_password,
-        "AUTHKEY_SERVER_WEBSITE": profile.auth_key,
-        "SHUTDOWN_AUTH_KEY": profile.shutdown_key,
-        "QUERY_PORT": str(profile.query_port),
-        "RCON_PORT": str(profile.rcon_port),
-    })
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
+    if _is_api_running(profile):
+        return jsonify({"message": "API already running"})
 
-    cmd = [sys.executable, "-m", "src.api.server_app"]
-    subprocess.Popen(cmd, env=env)
-    return jsonify({"message": "API starting", "cmd": cmd})
+    _start_api_process(profile)
+    return jsonify({"message": "API starting"})
 
 
 @app.route("/api/start/controller", methods=["POST"])
@@ -155,10 +298,34 @@ def start_controller():
     if not profile:
         return jsonify({"error": "No active profile"}), 400
 
-    controller = ServerController(profile)
-    controllers[profile.name] = controller
-    controller.start_in_thread()
+    if _controller_running(profile.name):
+        return jsonify({"message": "Controller already running", "profile": profile.name})
+
+    _start_controller(profile)
     return jsonify({"message": "Controller started", "profile": profile.name})
+
+
+@app.route("/api/stop/api", methods=["POST"])
+def stop_api():
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    stopped = _stop_api_process(profile)
+    if stopped:
+        return jsonify({"message": "API stopped"})
+    return jsonify({"error": "API was not running"}), 400
+
+
+@app.route("/api/stop/controller", methods=["POST"])
+def stop_controller():
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    if _stop_controller(profile.name):
+        return jsonify({"message": "Controller stopped"})
+    return jsonify({"error": "Controller was not running"}), 400
 
 
 @app.route("/api/logs/<name>")
@@ -204,6 +371,11 @@ def follow_logs(payload):
                     socketio.sleep(1)
 
     socketio.start_background_task(stream_file, latest)
+
+
+@app.before_first_request
+def auto_start_services():
+    _ensure_services_running(store.active_profile)
 
 
 if __name__ == "__main__":

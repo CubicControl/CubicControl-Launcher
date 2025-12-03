@@ -3,11 +3,20 @@ const activeProfileEl = document.getElementById('active-profile');
 const statusText = document.getElementById('status-text');
 const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
+const apiChip = document.getElementById('api-status');
+const controllerChip = document.getElementById('controller-status');
 let socket;
+let cachedProfiles = [];
 
 function setStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.style.color = isError ? 'var(--del-color, #c62828)' : 'inherit';
+}
+
+function setChip(chipEl, isOn, label) {
+  chipEl.textContent = `${label}: ${isOn ? 'Running' : 'Stopped'}`;
+  chipEl.classList.toggle('status-on', isOn);
+  chipEl.classList.toggle('status-off', !isOn);
 }
 
 function toDict(form) {
@@ -26,12 +35,30 @@ function toDict(form) {
   return payload;
 }
 
+function fillFormFromProfile(profile) {
+  if (!profile) return;
+  const form = document.getElementById('profile-form');
+  form.name.value = profile.name || '';
+  form.server_path.value = profile.server_path || '';
+  form.description.value = profile.description || '';
+  form.server_ip.value = profile.server_ip || '';
+  form.run_script.value = profile.run_script || '';
+  form.rcon_password.value = profile.rcon_password || '';
+  form.rcon_port.value = profile.rcon_port || 27001;
+  form.query_port.value = profile.query_port || 27002;
+  form.auth_key.value = profile.auth_key || '';
+  form.shutdown_key.value = profile.shutdown_key || '';
+  form.inactivity_limit.value = profile.inactivity_limit || 1800;
+  form.polling_interval.value = profile.polling_interval || 60;
+  form.pc_sleep_after_inactivity.checked = Boolean(profile.pc_sleep_after_inactivity);
+}
+
 async function refreshStatus() {
   const res = await fetch('/api/status');
   const data = await res.json();
-  const profiles = data.profiles || [];
+  cachedProfiles = data.profiles || [];
   profileSelect.innerHTML = '';
-  profiles.forEach((p) => {
+  cachedProfiles.forEach((p) => {
     const opt = document.createElement('option');
     opt.value = p.name;
     opt.textContent = p.name;
@@ -39,14 +66,31 @@ async function refreshStatus() {
     profileSelect.appendChild(opt);
   });
   activeProfileEl.textContent = data.active_profile || 'None';
+  setChip(apiChip, Boolean(data.api_running), 'API');
+  setChip(controllerChip, Boolean(data.controller_running), 'Controller');
 }
 
 function connectLogs(profile) {
+  if (!profile) {
+    logsEl.textContent = '';
+    if (socket) socket.disconnect();
+    return;
+  }
   if (socket) {
     socket.disconnect();
   }
   socket = io();
   logsEl.textContent = '';
+  if (profile) {
+    fetch(`/api/logs/${encodeURIComponent(profile)}`)
+      .then((res) => res.json())
+      .then((body) => {
+        (body.lines || []).forEach((line) => {
+          logsEl.textContent += `${line}\n`;
+        });
+        logsEl.scrollTop = logsEl.scrollHeight;
+      });
+  }
   socket.on('connect', () => {
     socket.emit('follow_logs', { profile });
   });
@@ -65,6 +109,7 @@ async function activateProfile() {
     setStatus(`Activated profile ${name}`);
     activeProfileEl.textContent = name;
     connectLogs(name);
+    refreshStatus();
   } else {
     const err = await res.json();
     setStatus(err.error || 'Failed to activate profile', true);
@@ -83,6 +128,28 @@ async function bootstrapProfile() {
   }
 }
 
+function loadSelectedProfile() {
+  const name = profileSelect.value;
+  if (!name) return setStatus('Choose a profile first', true);
+  const found = cachedProfiles.find((p) => p.name === name);
+  fillFormFromProfile(found);
+  setStatus(`Loaded ${name} into the form`);
+}
+
+async function deleteProfile() {
+  const name = profileSelect.value;
+  if (!name) return setStatus('Choose a profile first', true);
+  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}`, { method: 'DELETE' });
+  const body = await res.json();
+  if (res.ok) {
+    setStatus(body.message || 'Profile deleted');
+    await refreshStatus();
+    connectLogs(profileSelect.value);
+  } else {
+    setStatus(body.error || 'Unable to delete profile', true);
+  }
+}
+
 async function createProfile(evt) {
   evt.preventDefault();
   const payload = toDict(evt.target);
@@ -94,8 +161,9 @@ async function createProfile(evt) {
   const body = await res.json();
   if (res.status === 201) {
     setStatus(`Saved profile ${body.name}`);
-    evt.target.reset();
     await refreshStatus();
+    profileSelect.value = body.name;
+    connectLogs(body.name);
   } else {
     setStatus(body.error || 'Unable to save profile', true);
   }
@@ -104,8 +172,10 @@ async function createProfile(evt) {
 async function startApi() {
   const res = await fetch('/api/start/api', { method: 'POST' });
   const body = await res.json();
-  if (res.ok) setStatus(body.message || 'API starting');
-  else setStatus(body.error || 'Failed to start API', true);
+  if (res.ok) {
+    setStatus(body.message || 'API starting');
+  } else setStatus(body.error || 'Failed to start API', true);
+  refreshStatus();
 }
 
 async function startController() {
@@ -113,6 +183,23 @@ async function startController() {
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller started');
   else setStatus(body.error || 'Failed to start controller', true);
+  refreshStatus();
+}
+
+async function stopApi() {
+  const res = await fetch('/api/stop/api', { method: 'POST' });
+  const body = await res.json();
+  if (res.ok) setStatus(body.message || 'API stopped');
+  else setStatus(body.error || 'Failed to stop API', true);
+  refreshStatus();
+}
+
+async function stopController() {
+  const res = await fetch('/api/stop/controller', { method: 'POST' });
+  const body = await res.json();
+  if (res.ok) setStatus(body.message || 'Controller stopped');
+  else setStatus(body.error || 'Failed to stop controller', true);
+  refreshStatus();
 }
 
 function propsToText(map) {
@@ -168,14 +255,29 @@ function init() {
   document.getElementById('profile-form').addEventListener('submit', createProfile);
   document.getElementById('activate-btn').addEventListener('click', activateProfile);
   document.getElementById('bootstrap-btn').addEventListener('click', bootstrapProfile);
+  document.getElementById('load-form-btn').addEventListener('click', loadSelectedProfile);
+  document.getElementById('delete-profile-btn').addEventListener('click', deleteProfile);
   document.getElementById('start-api-btn').addEventListener('click', startApi);
   document.getElementById('start-controller-btn').addEventListener('click', startController);
+  document.getElementById('stop-api-btn').addEventListener('click', stopApi);
+  document.getElementById('stop-controller-btn').addEventListener('click', stopController);
   document.getElementById('load-props-btn').addEventListener('click', loadProperties);
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
+  profileSelect.addEventListener('change', () => {
+    const name = profileSelect.value;
+    const found = cachedProfiles.find((p) => p.name === name);
+    fillFormFromProfile(found);
+    connectLogs(name);
+  });
   refreshStatus().then(() => {
     const current = profileSelect.value;
-    if (current) connectLogs(current);
+    if (current) {
+      const found = cachedProfiles.find((p) => p.name === current);
+      fillFormFromProfile(found);
+      connectLogs(current);
+    }
   });
+  setInterval(refreshStatus, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', init);
