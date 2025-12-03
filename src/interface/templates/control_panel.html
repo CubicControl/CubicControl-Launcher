@@ -6,38 +6,43 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     :root {
-      --primary: #3b82f6;
-      --primary-hover: #2563eb;
-      --success: #10b981;
-      --success-hover: #059669;
-      --danger: #ef4444;
-      --danger-hover: #dc2626;
-      --warning: #f59e0b;
-      --secondary: #6b7280;
-      --secondary-hover: #4b5563;
-      --bg: #f9fafb;
-      --card-bg: #ffffff;
-      --border: #e5e7eb;
-      --text: #111827;
-      --text-muted: #6b7280;
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
-      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+      --primary: #60a5fa;
+      --primary-hover: #3b82f6;
+      --success: #34d399;
+      --success-hover: #10b981;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --warning: #fbbf24;
+      --secondary: #94a3b8;
+      --secondary-hover: #cbd5e1;
+      --bg: #0b1220;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.45);
     }
 
     * { margin: 0; padding: 0; box-sizing: border-box; }
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: var(--bg);
+      background: radial-gradient(circle at 10% 20%, rgba(96, 165, 250, 0.08), transparent 25%),
+        radial-gradient(circle at 90% 10%, rgba(52, 211, 153, 0.07), transparent 20%),
+        radial-gradient(circle at 30% 80%, rgba(249, 115, 22, 0.05), transparent 25%),
+        var(--bg);
       color: var(--text);
       line-height: 1.6;
+      min-height: 100vh;
     }
 
     header {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      background: linear-gradient(135deg, #0f172a 0%, #111827 60%, #1f2937 100%);
       color: white;
       padding: 2rem;
       box-shadow: var(--shadow-lg);
+      border-bottom: 1px solid var(--border);
     }
 
     header h1 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; }
@@ -51,16 +56,17 @@
       z-index: 100;
       margin: -2rem -2rem 2rem;
       padding: 1rem 2rem;
-      background: #dbeafe;
+      background: rgba(59, 130, 246, 0.1);
       border-left: 4px solid var(--primary);
-      color: #1e40af;
+      color: #dbeafe;
       display: none;
       box-shadow: var(--shadow);
       animation: slideDown 0.3s ease;
+      backdrop-filter: blur(4px);
     }
 
     .status-banner.show { display: block; }
-    .status-banner.error { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+    .status-banner.error { background: rgba(248, 113, 113, 0.12); border-color: var(--danger); color: #fecaca; }
 
     @keyframes slideDown {
       from { transform: translateY(-100%); opacity: 0; }
@@ -72,12 +78,12 @@
     .grid-3 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
 
     .card {
-      background: var(--card-bg);
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.9), rgba(24, 33, 50, 0.9));
       border-radius: 12px;
       padding: 1.5rem;
       box-shadow: var(--shadow);
       border: 1px solid var(--border);
-      transition: transform 0.2s, box-shadow 0.2s;
+      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
     }
 
     .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
@@ -90,6 +96,7 @@
       display: flex;
       align-items: center;
       gap: 0.5rem;
+      letter-spacing: 0.01em;
     }
 
     .card h3::before {
@@ -115,8 +122,9 @@
       border-radius: 8px;
       font-size: 0.9rem;
       font-weight: 500;
-      background: var(--bg);
+      background: rgba(31, 41, 55, 0.8);
       border: 1px solid var(--border);
+      color: var(--text);
     }
 
     .status-chip::before {
@@ -127,9 +135,9 @@
       background: var(--secondary);
     }
 
-    .status-chip.status-on { background: #d1fae5; border-color: var(--success); color: #065f46; }
+    .status-chip.status-on { background: rgba(16, 185, 129, 0.14); border-color: #16a34a; color: #bbf7d0; }
     .status-chip.status-on::before { background: var(--success); animation: pulse 2s infinite; }
-    .status-chip.status-off { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+    .status-chip.status-off { background: rgba(248, 113, 113, 0.14); border-color: var(--danger); color: #fecaca; }
     .status-chip.status-off::before { background: var(--danger); }
 
     @keyframes pulse {
@@ -154,14 +162,16 @@
       border: 1px solid var(--border);
       border-radius: 8px;
       font-size: 1rem;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
       font-family: inherit;
+      background: rgba(30, 41, 59, 0.8);
+      color: var(--text);
     }
 
     input:focus, select:focus, textarea:focus {
       outline: none;
       border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
     }
 
     textarea { resize: vertical; min-height: 120px; font-family: 'Courier New', monospace; }
@@ -182,6 +192,7 @@
       cursor: pointer;
       transition: all 0.2s;
       font-family: inherit;
+      color: #0b1220;
     }
 
     button.primary {
@@ -197,7 +208,7 @@
 
     button.success {
       background: var(--success);
-      color: white;
+      color: #052e16;
     }
 
     button.success:hover {
@@ -207,7 +218,7 @@
 
     button.danger {
       background: var(--danger);
-      color: white;
+      color: #450a0a;
     }
 
     button.danger:hover {
@@ -217,7 +228,7 @@
 
     button.secondary {
       background: var(--secondary);
-      color: white;
+      color: #0b1220;
     }
 
     button.secondary:hover {
@@ -228,14 +239,15 @@
     #logs {
       height: 400px;
       overflow-y: auto;
-      background: #1e1e1e;
-      color: #d4d4d4;
+      background: #0b1220;
+      color: #d1d5db;
       padding: 1rem;
       border-radius: 8px;
       font-family: 'Courier New', monospace;
-      font-size: 0.85rem;
-      line-height: 1.5;
-      border: 1px solid #333;
+      font-size: 0.9rem;
+      line-height: 1.6;
+      border: 1px solid var(--border);
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
     }
 
     #logs::-webkit-scrollbar { width: 8px; }
@@ -350,9 +362,10 @@
           <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
           <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
           <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
-          <label>RCON Password<input type="text" name="rcon_password" placeholder="Required for server control" /></label>
-          <label>RCON Port<input type="number" name="rcon_port" value="27001" /></label>
-          <label>Query Port<input type="number" name="query_port" value="27002" /></label>
+          <label class="full-width">RCON Settings (auto-managed)
+            <input type="text" value="RCON + Query locked to controller defaults" disabled />
+            <small>Ports 27001/27002 and a generated password are applied automatically.</small>
+          </label>
           <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
           <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
           <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
@@ -369,8 +382,8 @@
     </div>
 
     <div class="card" style="margin-top: 1.5rem;">
-      <h3>Live Controller Logs</h3>
-      <p style="margin-bottom: 1rem; color: var(--text-muted);">Real-time logs from the active controller</p>
+      <h3>Live Server Logs</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">Real-time output from the Minecraft server (including nogui)</p>
       <div id="logs"></div>
     </div>
   </div>

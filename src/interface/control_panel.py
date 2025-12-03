@@ -1,15 +1,17 @@
 import os
+import secrets
 import subprocess
 import sys
 from pathlib import Path
 from threading import Thread
-from typing import Dict, Optional
+from typing import Dict, List, Optional
 
 import requests
 
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
 
+from src.config import settings
 from src.config.config_file_handler import ConfigFileHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
@@ -29,6 +31,8 @@ controllers: Dict[str, ServerController] = {}
 controller_threads: Dict[str, Thread] = {}
 api_process: Optional[subprocess.Popen] = None
 server_processes: Dict[str, subprocess.Popen] = {}
+server_log_threads: Dict[str, Thread] = {}
+server_log_buffers: Dict[str, List[str]] = {}
 
 
 # ---------- Helpers ----------
@@ -48,6 +52,20 @@ def _validated_server_path(raw_path: str) -> str:
     return str(path)
 
 
+def _ensure_server_properties_exists(server_path: Path) -> None:
+    server_properties_path = server_path / "server.properties"
+    if not server_properties_path.exists():
+        raise ValueError(
+            "server.properties not found in the server folder. Please run the server once to generate it before saving."
+        )
+
+
+def _generate_rcon_password(existing: Optional[str]) -> str:
+    if existing:
+        return existing
+    return secrets.token_urlsafe(16)
+
+
 def _profile_from_request(data: Dict) -> ServerProfile:
     sleep_flag = data.get("pc_sleep_after_inactivity", True)
     if not isinstance(sleep_flag, bool):
@@ -57,14 +75,20 @@ def _profile_from_request(data: Dict) -> ServerProfile:
     if not name:
         raise ValueError("Profile name is required.")
 
+    existing_profile = store.get_profile(name)
+    server_path = Path(_validated_server_path(data.get("server_path", "")))
+    _ensure_server_properties_exists(server_path)
+
+    rcon_password = _generate_rcon_password(existing_profile.rcon_password if existing_profile else None)
+
     return ServerProfile(
         name=name,
-        server_path=_validated_server_path(data.get("server_path", "")),
+        server_path=str(server_path),
         server_ip=data.get("server_ip", "localhost"),
         run_script=(data.get("run_script") or "run.bat").strip(),
-        rcon_password=data.get("rcon_password", ""),
-        rcon_port=int(data.get("rcon_port", 27001)),
-        query_port=int(data.get("query_port", 27002)),
+        rcon_password=rcon_password,
+        rcon_port=settings.RCON_PORT,
+        query_port=settings.QUERY_PORT,
         auth_key=data.get("auth_key", ""),
         shutdown_key=data.get("shutdown_key", ""),
         inactivity_limit=int(data.get("inactivity_limit", 1800)),
@@ -73,6 +97,23 @@ def _profile_from_request(data: Dict) -> ServerProfile:
         description=data.get("description", ""),
         env_scope=data.get("env_scope", "per_server"),
     )
+
+
+def _enforce_rcon_defaults(profile: ServerProfile) -> ServerProfile:
+    updated = False
+    if profile.rcon_port != settings.RCON_PORT:
+        profile.rcon_port = settings.RCON_PORT
+        updated = True
+    if profile.query_port != settings.QUERY_PORT:
+        profile.query_port = settings.QUERY_PORT
+        updated = True
+    if not profile.rcon_password:
+        profile.rcon_password = _generate_rcon_password(None)
+        updated = True
+
+    if updated:
+        store.upsert_profile(profile)
+    return profile
 
 
 def _apply_profile_environment(profile: ServerProfile) -> None:
@@ -180,6 +221,7 @@ def _stop_controller(name: str) -> bool:
 def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
     if not profile:
         return
+    profile = _enforce_rcon_defaults(profile)
     profile.ensure_scaffold()
     profile.sync_server_properties()
     ConfigFileHandler().set_value('Run.bat location', str(profile.root))
@@ -194,6 +236,27 @@ def _is_server_running(profile_name: str) -> bool:
     """Check if the Minecraft server process is running."""
     proc = server_processes.get(profile_name)
     return proc is not None and proc.poll() is None
+
+
+def _append_server_log(profile_name: str, line: str) -> None:
+    buffer = server_log_buffers.setdefault(profile_name, [])
+    buffer.append(line)
+    if len(buffer) > 400:
+        server_log_buffers[profile_name] = buffer[-400:]
+
+
+def _stream_server_output(profile_name: str, proc: subprocess.Popen) -> None:
+    stdout = proc.stdout
+    if not stdout:
+        return
+
+    for raw_line in stdout:
+        if raw_line is None:
+            break
+        line = raw_line.rstrip("\n")
+        _append_server_log(profile_name, line)
+        socketio.emit("log_line", {"message": line, "profile": profile_name, "source": "server"})
+    proc.wait()
 
 
 def _start_server_process(profile: ServerProfile) -> bool:
@@ -215,10 +278,16 @@ def _start_server_process(profile: ServerProfile) -> bool:
         cwd=str(profile.root),
         shell=True,
         stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
+        stderr=subprocess.STDOUT,
+        text=True,
+        bufsize=1,
     )
 
     server_processes[profile.name] = proc
+    server_log_buffers.pop(profile.name, None)
+    thread = Thread(target=_stream_server_output, args=(profile.name, proc), daemon=True)
+    server_log_threads[profile.name] = thread
+    thread.start()
     logger.info(f"Server started with PID {proc.pid}")
     return True
 
@@ -244,6 +313,7 @@ def _stop_server_process(profile: ServerProfile) -> bool:
             proc.kill()
         logger.info(f"Server process stopped for profile '{profile.name}'")
         server_processes.pop(profile.name, None)
+        server_log_threads.pop(profile.name, None)
         return True
 
     return False
@@ -450,13 +520,15 @@ def read_logs(name: str):
     if not profile:
         return jsonify({"error": "Profile not found"}), 404
 
-    profile.ensure_scaffold()
-    log_files = sorted(profile.controller_log_dir.glob("*_MinecraftControllerLogs.log"), reverse=True)
-    if not log_files:
-        return jsonify({"logs": []})
-    latest = log_files[0]
-    tail = latest.read_text(encoding="utf-8", errors="ignore").splitlines()[-200:]
-    return jsonify({"log_file": str(latest), "lines": tail})
+    if _is_server_running(profile.name) and server_log_buffers.get(profile.name):
+        return jsonify({"log_file": "live:process", "lines": server_log_buffers.get(profile.name, [])[-200:]})
+
+    latest_log = profile.root / "logs" / "latest.log"
+    if latest_log.exists():
+        tail = latest_log.read_text(encoding="utf-8", errors="ignore").splitlines()[-200:]
+        return jsonify({"log_file": str(latest_log), "lines": tail})
+
+    return jsonify({"logs": [], "message": "No server logs available yet"})
 
 
 # ---------- Socket log streaming ----------
@@ -468,25 +540,13 @@ def follow_logs(payload):
         emit("log_line", {"message": "No profile available"})
         return
 
-    profile.ensure_scaffold()
-    log_files = sorted(profile.controller_log_dir.glob("*_MinecraftControllerLogs.log"), reverse=True)
-    if not log_files:
-        emit("log_line", {"message": "No log file yet"})
-        return
+    for line in server_log_buffers.get(profile.name, [])[-200:]:
+        emit("log_line", {"message": line})
 
-    latest = log_files[0]
-
-    def stream_file(path: Path):
-        with path.open("r", encoding="utf-8", errors="ignore") as f:
-            f.seek(0, os.SEEK_END)
-            while True:
-                line = f.readline()
-                if line:
-                    emit("log_line", {"message": line.rstrip()})
-                else:
-                    socketio.sleep(1)
-
-    socketio.start_background_task(stream_file, latest)
+    latest_log = profile.root / "logs" / "latest.log"
+    if not _is_server_running(profile.name) and latest_log.exists():
+        for line in latest_log.read_text(encoding="utf-8", errors="ignore").splitlines()[-200:]:
+            emit("log_line", {"message": line})
 
 
 @app.before_first_request

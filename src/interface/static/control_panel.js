@@ -32,7 +32,7 @@ function toDict(form) {
   data.forEach((value, key) => {
     if (key === 'pc_sleep_after_inactivity') {
       payload[key] = true;
-    } else if (['rcon_port', 'query_port', 'inactivity_limit', 'polling_interval'].includes(key)) {
+    } else if (['inactivity_limit', 'polling_interval'].includes(key)) {
       payload[key] = Number(value || 0);
     } else {
       payload[key] = value;
@@ -56,9 +56,6 @@ function fillFormFromProfile(profile) {
   form.description.value = profile.description || '';
   form.server_ip.value = profile.server_ip || '';
   form.run_script.value = profile.run_script || '';
-  form.rcon_password.value = profile.rcon_password || '';
-  form.rcon_port.value = profile.rcon_port || 27001;
-  form.query_port.value = profile.query_port || 27002;
   form.auth_key.value = profile.auth_key || '';
   form.shutdown_key.value = profile.shutdown_key || '';
   form.inactivity_limit.value = profile.inactivity_limit || 1800;
