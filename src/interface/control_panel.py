@@ -54,7 +54,7 @@ def _validate_web_auth():
     if not request.path.startswith('/api/'):
         return None
 
-    expected = settings.AUTH_KEY
+    expected = settings.ADMIN_AUTH_KEY
     if not expected:
         return None
 
@@ -238,6 +238,7 @@ def _stop_playit_process() -> bool:
         playit_process.kill()
     finally:
         logger.info("PlayitGG process stopped")
+        playit_process = None
     playit_process = None
     return True
 
@@ -506,7 +507,7 @@ def _send_profile_command(profile: ServerProfile, command: str) -> str:
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return render_template("control_panel.html", auth_key=settings.AUTH_KEY)
+    return render_template("control_panel.html", auth_key=settings.ADMIN_AUTH_KEY)
 
 
 @app.route("/api/status")
@@ -687,7 +688,10 @@ def start_server():
 def start_playit():
     path = _playit_path()
     if not path:
-        return jsonify({"error": "PlayitGG.exe path is not configured", "require_path": True}), 400
+        return jsonify({"error": "No path is defined for Playit.exe", "require_path": True}), 400
+
+    if _is_playit_running():
+        return jsonify({"error": "PlayitGG is already running"}), 400
 
     try:
         started = _start_playit_process(path)
@@ -725,9 +729,16 @@ def stop_controller():
 
 @app.route("/api/stop/playit", methods=["POST"])
 def stop_playit():
+    if not _playit_path():
+        return jsonify({"error": "No path is defined for Playit.exe", "require_path": True}), 400
+
+    if not _is_playit_running():
+        return jsonify({"error": "PlayitGG is already stopped"}), 400
+
     if _stop_playit_process():
         return jsonify({"message": "PlayitGG stopped"})
-    return jsonify({"error": "PlayitGG was not running"}), 400
+
+    return jsonify({"error": "PlayitGG is already stopped"}), 400
 
 
 @app.route("/api/stop/server", methods=["POST"])

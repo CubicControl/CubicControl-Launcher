@@ -53,8 +53,9 @@ let toastTimeout;
 
 function authHeaders(extra = {}) {
   const headers = { ...extra };
-  if (window.AUTH_KEY) {
-    headers.Authorization = `Bearer ${window.AUTH_KEY}`;
+  const key = window.ADMIN_AUTH_KEY || window.AUTH_KEY;
+  if (key) {
+    headers.Authorization = `Bearer ${key}`;
   }
   return headers;
 }
@@ -136,7 +137,7 @@ async function ensurePlayitConfigured() {
   }
   if (lastStatus && lastStatus.playit_configured) return true;
 
-  setStatus('Set the PlayitGG.exe path before controlling the tunnel.', true);
+  setStatus('No path is defined for Playit.exe', true);
   await promptForPlayitPath();
   return Boolean(lastStatus && lastStatus.playit_configured);
 }
@@ -157,13 +158,20 @@ function setChip(chipEl, isOn, label) {
 function updateServerChip(state) {
   if (!serverChip) return;
   const stateText = state || 'stopped';
-  const pretty = stateText === 'starting' ? 'Starting...' : stateText.charAt(0).toUpperCase() + stateText.slice(1);
+  const pretty =
+    stateText === 'starting'
+      ? 'Starting...'
+      : stateText === 'stopping'
+        ? 'Stopping...'
+        : stateText.charAt(0).toUpperCase() + stateText.slice(1);
   serverChip.textContent = `Server: ${pretty}`;
-  serverChip.classList.remove('status-on', 'status-off', 'status-starting');
+  serverChip.classList.remove('status-on', 'status-off', 'status-starting', 'status-stopping');
   if (stateText === 'running') {
     serverChip.classList.add('status-on');
   } else if (stateText === 'starting') {
     serverChip.classList.add('status-starting');
+  } else if (stateText === 'stopping') {
+    serverChip.classList.add('status-stopping');
   } else {
     serverChip.classList.add('status-off');
   }
@@ -255,7 +263,6 @@ async function refreshStatus() {
   activeProfileEl.textContent = data.active_profile || 'None';
   setChip(apiChip, Boolean(data.api_running), 'API');
   setChip(controllerChip, Boolean(data.controller_running), 'Controller');
-  setChip(serverChip, Boolean(data.server_running), 'Server');
   updatePlayitChip(Boolean(data.playit_configured), Boolean(data.playit_running));
 
   let serverState = data.server_running ? 'running' : 'stopped';
@@ -524,15 +531,44 @@ async function stopServer() {
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
 
+  let currentState = null;
+  try {
+    const stateRes = await fetch('/api/server/state', { headers: authHeaders() });
+    if (stateRes.ok) {
+      const stateBody = await stateRes.json();
+      currentState = stateBody.state;
+    }
+  } catch (err) {
+    // ignore; fall back to lastStatus
+  }
+
+  if (!currentState && lastStatus) {
+    currentState = lastStatus.server_running ? 'running' : 'stopped';
+  }
+
+  if (currentState === 'stopped' || currentState === 'inactive') {
+    setStatus('Server is not running', true);
+    updateServerChip('stopped');
+    if (startBtn && stopBtn) {
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    }
+    return;
+  }
+
   const res = await fetch('/api/stop/server', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
-    setStatus(body.message || 'Server stopped');
+    setStatus(body.message || 'Server stopping');
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    updateServerChip('stopping');
     pollServerShutdown();
   } else {
     setStatus(body.error || 'Failed to stop server', true);
+    if ((body.error || '').toLowerCase().includes('not running')) {
+      updateServerChip('stopped');
+    }
   }
   await refreshStatus();
 }
@@ -643,8 +679,18 @@ async function promptForPlayitPath() {
 }
 
 async function startPlayit() {
-  const configured = await ensurePlayitConfigured();
-  if (!configured) return;
+  const status = lastStatus || (await refreshStatus());
+  if (!status.playit_configured) {
+    setStatus('No path is defined for Playit.exe', true);
+    await promptForPlayitPath();
+    await refreshStatus();
+    return;
+  }
+
+  if (status.playit_running) {
+    setStatus('PlayitGG is already running', true);
+    return;
+  }
 
   const res = await fetch('/api/start/playit', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
@@ -655,9 +701,10 @@ async function startPlayit() {
   }
 
   if (body.require_path) {
+    setStatus('No path is defined for Playit.exe', true);
     const saved = await promptForPlayitPath();
     if (saved) {
-      return startPlayit();
+      await refreshStatus();
     }
   } else {
     setStatus(body.error || 'Failed to start PlayitGG', true);
@@ -666,8 +713,18 @@ async function startPlayit() {
 }
 
 async function stopPlayit() {
-  const configured = await ensurePlayitConfigured();
-  if (!configured) return;
+  const status = lastStatus || (await refreshStatus());
+  if (!status.playit_configured) {
+    setStatus('No path is defined for Playit.exe', true);
+    await promptForPlayitPath();
+    await refreshStatus();
+    return;
+  }
+
+  if (!status.playit_running) {
+    setStatus('PlayitGG is already stopped', true);
+    return;
+  }
 
   const res = await fetch('/api/stop/playit', { method: 'POST', headers: authHeaders() });
   const body = await res.json();

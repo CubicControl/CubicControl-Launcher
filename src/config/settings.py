@@ -8,3 +8,4 @@ last_player_count = 0
 is_restarting = False
 ALLOWED_IPS = ['127.0.0.1']  # Add your trusted IP addresses here
 AUTH_KEY = os.environ.get('AUTHKEY_SERVER_WEBSITE') or "TEST"
+ADMIN_AUTH_KEY = os.environ.get('ADMIN_AUTH_KEY') or "ADMIN_TEST"

@@ -5,7 +5,8 @@
   <title>ServerSide Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    window.AUTH_KEY = "{{ auth_key }}";
+    window.ADMIN_AUTH_KEY = "{{ auth_key }}";
+    window.AUTH_KEY = window.ADMIN_AUTH_KEY;
   </script>
   <style>
     :root {
@@ -245,6 +246,17 @@
 
     .status-chip.status-starting::before {
       background: var(--warning);
+      animation: pulse 1.6s infinite;
+    }
+
+    .status-chip.status-stopping {
+      background: linear-gradient(135deg, rgba(248, 113, 113, 0.18), rgba(248, 113, 113, 0.08));
+      border-color: var(--danger);
+      color: #fecaca;
+    }
+
+    .status-chip.status-stopping::before {
+      background: var(--danger);
       animation: pulse 1.6s infinite;
     }
 
