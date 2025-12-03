@@ -790,23 +790,12 @@
 
 <div class="container">
   <div class="main-grid">
-    <div class="card">
-      <div class="card-header-row">
-        <h3>System Status</h3>
-        <span class="active-profile-pill" aria-live="polite">Active Profile: <span id="active-profile">None</span></span>
-      </div>
-      <div class="status-panel">
-        <div class="status-hero">
-          <div>
-            <h4>Live services</h4>
-            <p class="status-subtitle">Monitor and control every process from one place.</p>
-          </div>
-          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
-            <span class="soft-badge">Uptime monitor enabled</span>
-            <span class="soft-badge">Playit.gg ready</span>
-          </div>
+      <div class="card">
+        <div class="card-header-row">
+          <h3>System Status</h3>
+          <span class="active-profile-pill" aria-live="polite">Active Profile: <span id="active-profile">None</span></span>
         </div>
-
+        <div class="status-panel">
         <div class="status-card-grid">
           <div class="status-tile">
             <div class="status-tile-label"><span>🗄</span><strong>API</strong></div>
@@ -920,7 +909,7 @@
             </label>
             <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
             <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
-            <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
+            <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="1800" /></label>
             <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
             <div class="checkbox-wrapper full-width">
               <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />

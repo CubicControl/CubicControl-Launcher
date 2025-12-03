@@ -43,7 +43,7 @@ const defaultProfile = {
   run_script: 'run.bat',
   auth_key: '',
   shutdown_key: '',
-  inactivity_limit: 120,
+  inactivity_limit: 1800,
   polling_interval: 60,
   pc_sleep_after_inactivity: true,
 };
@@ -446,6 +446,7 @@ async function saveProfile(evt) {
   const body = await res.json();
   if (res.ok) {
     const isNew = !exists;
+    const isActiveProfile = activeProfileEl && activeProfileEl.textContent === body.name;
     setStatus(`${exists ? 'Updated' : 'Saved'} profile ${body.name}`);
     if (isNew) {
       showLoading(true, 'Profile saved', 'Initializing the new instance...');
@@ -470,6 +471,18 @@ async function saveProfile(evt) {
         setStatus(`Saved profile ${body.name}`);
       }
       setTimeout(() => showLoading(false), 1200);
+    } else if (isActiveProfile) {
+      const { confirmed: restartNow } = await showDialog({
+        title: 'Restart services now?',
+        message: 'Changes to this active profile require services to restart to take effect. Restart now?',
+        confirmText: 'Restart now',
+        cancelText: 'Later',
+      });
+      if (restartNow) {
+        await activateProfile(body.name);
+      } else {
+        setStatus('Changes saved. Restart services later to apply updates.');
+      }
     }
   } else {
     setStatus(body.error || 'Unable to save profile', true);
@@ -692,8 +705,23 @@ async function saveProperties() {
     body: JSON.stringify(payload),
   });
   const body = await res.json();
-  if (res.ok) setStatus('Properties saved');
-  else setStatus(body.error || 'Failed to save properties', true);
+  if (res.ok) {
+    setStatus('Properties saved');
+    const isActiveProfile = activeProfileEl && activeProfileEl.textContent === name;
+    if (isActiveProfile) {
+      const { confirmed: restartNow } = await showDialog({
+        title: 'Restart services now?',
+        message: 'Property changes need a restart of the active services to take effect. Restart now?',
+        confirmText: 'Restart now',
+        cancelText: 'Later',
+      });
+      if (restartNow) {
+        await activateProfile(name);
+      } else {
+        setStatus('Properties saved. Restart services later to apply updates.');
+      }
+    }
+  } else setStatus(body.error || 'Failed to save properties', true);
 }
 
 async function sendCommand(evt) {
