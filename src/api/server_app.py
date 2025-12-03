@@ -15,10 +15,14 @@ from mcstatus import JavaServer
 from src.config import settings
 from src.config.config_file_handler import ConfigFileHandler
 from src.logging_utils.logger import logger
-from src.minecraft import server_properties
 
 app = Flask(__name__)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(
+    app,
+    cors_allowed_origins="*",
+    async_mode='threading',
+    transports=['polling']  # Only use polling, not websocket
+)
 
 is_restarting = False
 is_stopping = False
@@ -27,8 +31,16 @@ last_player_count = 0
 
 @app.before_request
 def validate_auth_header():
+    # Skip Socket.IO handshake and transports
+    if request.path.startswith('/socket.io'):
+        return
+
     provided_auth_key = request.headers.get('Authorization')
     expected_auth_key = settings.AUTH_KEY
+
+    if not expected_auth_key:
+        return  # no auth configured
+
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
 
@@ -286,4 +298,10 @@ def perform_restart():
 if __name__ == '__main__':
     ConfigFileHandler().create_config_file()
 
-    socketio.run(app, host='0.0.0.0', port=37000, debug=False)
+    socketio.run(
+        app,
+        host='0.0.0.0',
+        port=37000,
+        debug=False,
+        allow_unsafe_werkzeug=True,  # explicitly allow Werkzeug
+    )

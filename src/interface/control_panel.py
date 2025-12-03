@@ -32,18 +32,25 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 
 @app.before_request
 def _validate_web_auth():
+    # Skip auth for SocketIO and WebSocket upgrade requests
+    if request.path.startswith("/socket.io"):
+        return
+
+    # Skip static files
+    if request.path.startswith("/static/"):
+        return
+
     # Protect web app JSON APIs with the same bearer key as the backend API
     if not request.path.startswith("/api/"):
-        return None
+        return
 
     expected = settings.AUTH_KEY
     if not expected:
-        return None
+        return
 
     provided = request.headers.get("Authorization", "")
     if provided != f"Bearer {expected}":
         return jsonify({"error": "Unauthorized"}), 403
-    return None
 
 store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
@@ -692,4 +699,4 @@ def auto_start_services():
 
 if __name__ == "__main__":
     logger.info("Starting control panel UI")
-    socketio.run(app, host="0.0.0.0", port=38000, debug=False)
+    socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)
