@@ -6,10 +6,10 @@ from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
 
-import eventlet
 import time
 import requests
 from mcstatus import JavaServer
+from mcrcon import MCRcon
 
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit, join_room
@@ -27,7 +27,23 @@ app = Flask(
     template_folder=str(APP_DIR / "templates"),
     static_folder=str(APP_DIR / "static"),
 )
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+
+
+@app.before_request
+def _validate_web_auth():
+    # Protect web app JSON APIs with the same bearer key as the backend API
+    if not request.path.startswith("/api/"):
+        return None
+
+    expected = settings.AUTH_KEY
+    if not expected:
+        return None
+
+    provided = request.headers.get("Authorization", "")
+    if provided != f"Bearer {expected}":
+        return jsonify({"error": "Unauthorized"}), 403
+    return None
 
 store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
@@ -379,10 +395,18 @@ def _stop_server_process(profile: ServerProfile) -> bool:
     for _ in range(20):
         if not _query_server_online(profile) and not _is_server_running(profile.name):
             return True
-        eventlet.sleep(1)
+        time.sleep(1)
 
     logger.warning(f"Unable to confirm server stop for profile '{profile.name}'")
     return stop_attempted
+
+
+def _send_profile_command(profile: ServerProfile, command: str) -> str:
+    if not command.strip():
+        raise ValueError("Command cannot be empty")
+
+    with MCRcon(profile.server_ip, profile.rcon_password, port=profile.rcon_port) as mcr:
+        return mcr.command(command)
 
 
 
@@ -390,7 +414,7 @@ def _stop_server_process(profile: ServerProfile) -> bool:
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return render_template("control_panel.html")
+    return render_template("control_panel.html", auth_key=settings.AUTH_KEY)
 
 
 @app.route("/api/status")
@@ -425,8 +449,9 @@ def manage_profiles():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
+    was_active = store.active_profile_name == profile.name
     store.upsert_profile(profile)
-    if store.active_profile_name == profile.name:
+    if was_active:
         _ensure_services_running(profile)
     return jsonify(profile.to_dict()), 201
 
@@ -581,8 +606,31 @@ def stop_server():
         except Exception as exc:  # pragma: no cover - defensive guard
             logger.error("Failed to stop server for profile '%s': %s", profile.name, exc)
 
-    eventlet.spawn_n(_stop_async)
+    socketio.start_background_task(_stop_async)
     return jsonify({"message": f"Stopping server for profile '{profile.name}'"})
+
+
+@app.route("/api/server/command", methods=["POST"])
+def send_command():
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    payload = request.get_json(force=True) or {}
+    command = str(payload.get("command", "")).strip()
+    if not command:
+        return jsonify({"error": "Command cannot be empty"}), 400
+
+    state = _server_state(profile)
+    if state.get("state") != "running":
+        return jsonify({"error": "Server is not running"}), 400
+
+    try:
+        output = _send_profile_command(profile, command)
+        return jsonify({"message": output or "Command sent"})
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.error("Failed to send command via RCON: %s", exc)
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/api/logs/<name>")

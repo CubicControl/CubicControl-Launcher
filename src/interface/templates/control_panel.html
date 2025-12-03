@@ -4,6 +4,9 @@
   <meta charset="utf-8" />
   <title>ServerSide Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>
+    window.AUTH_KEY = "{{ auth_key }}";
+  </script>
   <style>
     :root {
       --primary: #60a5fa;
@@ -365,6 +368,22 @@
       flex-direction: column;
     }
 
+    .command-row {
+      margin-top: 1rem;
+      display: grid;
+      gap: 0.35rem;
+    }
+
+    .command-input-row {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .command-input-row input {
+      flex: 1;
+    }
+
     .server-properties-panel {
       display: flex;
       flex-direction: column;
@@ -627,8 +646,8 @@
 
 <div class="loading-overlay" id="loading-overlay" aria-live="polite" aria-busy="true">
   <div class="loading-card">
-    <p style="margin-bottom: 0.35rem; font-weight: 600;">Switching profile…</p>
-    <small>Stopping active services and preparing the next profile.</small>
+    <p id="loading-title" style="margin-bottom: 0.35rem; font-weight: 600;">Switching profile…</p>
+    <small id="loading-subtitle">Stopping active services and preparing the next profile.</small>
   </div>
 </div>
 
@@ -693,6 +712,14 @@
       <h3>Live Server Logs</h3>
       <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Real-time output from the Minecraft server</p>
       <div id="logs"></div>
+      <form id="command-form" class="command-row">
+        <label for="command-input">Send RCON command to the running server</label>
+        <div class="command-input-row">
+          <input id="command-input" type="text" placeholder="say Server maintenance starting" />
+          <button type="submit" class="primary">Send</button>
+        </div>
+        <small style="color: var(--text-muted);">Available when the server is running and RCON is enabled.</small>
+      </form>
     </div>
   </div>
 </div>
