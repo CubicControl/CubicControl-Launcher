@@ -20,11 +20,20 @@ const addProfileBtn = document.getElementById('add-profile-btn');
 const openToolsBtn = document.getElementById('open-tools-btn');
 const commandForm = document.getElementById('command-form');
 const commandInput = document.getElementById('command-input');
+const dialogOverlay = document.getElementById('dialog-overlay');
+const dialogTitle = document.getElementById('dialog-title');
+const dialogMessage = document.getElementById('dialog-message');
+const dialogInputWrapper = document.getElementById('dialog-input-wrapper');
+const dialogInput = document.getElementById('dialog-input');
+const dialogConfirmBtn = document.getElementById('dialog-confirm-btn');
+const dialogCancelBtn = document.getElementById('dialog-cancel-btn');
+const dialogCloseBtn = document.getElementById('dialog-close-btn');
 let socket;
 let cachedProfiles = [];
 let currentLogProfile = '';
 let selectedProfile = '';
 let playitPrompted = false;
+let dialogResolver = null;
 
 const defaultProfile = {
   name: '',
@@ -61,6 +70,63 @@ function setStatus(message, isError = false) {
 
   if (toastTimeout) clearTimeout(toastTimeout);
   toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 2000);
+}
+
+function closeDialog(result) {
+  if (!dialogOverlay) return;
+  dialogOverlay.classList.remove('open');
+  dialogOverlay.setAttribute('aria-hidden', 'true');
+  const resolver = dialogResolver;
+  dialogResolver = null;
+  if (resolver) resolver(result || { confirmed: false });
+}
+
+function showDialog(options = {}) {
+  if (!dialogOverlay) return Promise.resolve({ confirmed: false });
+  const {
+    title = 'Confirm',
+    message = '',
+    confirmText = 'Confirm',
+    cancelText = 'Cancel',
+    showCancel = true,
+    input = false,
+    placeholder = '',
+    defaultValue = '',
+  } = options;
+
+  dialogTitle.textContent = title;
+  dialogMessage.textContent = message;
+  dialogConfirmBtn.textContent = confirmText;
+  dialogCancelBtn.textContent = cancelText;
+  dialogCancelBtn.classList.toggle('hidden', !showCancel);
+  dialogInputWrapper.classList.toggle('hidden', !input);
+  if (input) {
+    dialogInput.value = defaultValue || '';
+    dialogInput.placeholder = placeholder || '';
+  }
+
+  dialogOverlay.classList.add('open');
+  dialogOverlay.setAttribute('aria-hidden', 'false');
+
+  setTimeout(() => {
+    if (input && dialogInput) dialogInput.focus();
+    else dialogConfirmBtn.focus();
+  }, 20);
+
+  return new Promise((resolve) => {
+    dialogResolver = resolve;
+    dialogConfirmBtn.onclick = () =>
+      closeDialog({ confirmed: true, value: input ? dialogInput.value.trim() : null });
+    dialogCancelBtn.onclick = () => closeDialog({ confirmed: false });
+    dialogCloseBtn.onclick = () => closeDialog({ confirmed: false });
+    dialogOverlay.onclick = (event) => {
+      if (event.target === dialogOverlay) closeDialog({ confirmed: false });
+    };
+  });
+}
+
+function showInputDialog(options = {}) {
+  return showDialog({ ...options, input: true });
 }
 
 function showLoading(show, title = null, subtitle = null) {
@@ -323,7 +389,15 @@ async function activateProfile(nameOverride) {
 async function deleteProfile() {
   const name = profileSelect.value;
   if (!name) return setStatus('Choose a profile first', true);
-  const confirmed = window.confirm(`Delete profile "${name}"? This will stop any running services first.`);
+  const isActive = activeProfileEl && activeProfileEl.textContent === name;
+  const { confirmed } = await showDialog({
+    title: 'Delete profile',
+    message: isActive
+      ? `Delete active profile "${name}"? This will stop its services and remove it.`
+      : `Delete profile "${name}"? This only removes it from your list.`,
+    confirmText: 'Delete',
+    cancelText: 'Cancel',
+  });
   if (!confirmed) return;
   const res = await fetch(`/api/profiles/${encodeURIComponent(name)}`, {
     method: 'DELETE',
@@ -360,11 +434,6 @@ async function saveProfile(evt) {
     return;
   }
 
-  if (!isAbsolutePath(payload.server_path)) {
-    setStatus('Server folder must be an absolute path (e.g. C:/Servers/Pack or /srv/mc/pack)', true);
-    return;
-  }
-
   const exists = cachedProfiles.some((p) => p.name === payload.name);
   const url = exists ? `/api/profiles/${encodeURIComponent(payload.name)}` : '/api/profiles';
   const method = exists ? 'PUT' : 'POST';
@@ -389,7 +458,12 @@ async function saveProfile(evt) {
     closeDrawer();
 
     if (isNew) {
-      const shouldActivate = window.confirm(`Start profile "${body.name}" now? This will stop services for the current profile.`);
+      const { confirmed: shouldActivate } = await showDialog({
+        title: 'Start new profile?',
+        message: `Start profile "${body.name}" now? This will stop services for the current profile.`,
+        confirmText: 'Start now',
+        cancelText: 'Not now',
+      });
       if (shouldActivate) {
         await activateProfile(body.name);
       } else {
@@ -508,12 +582,19 @@ async function stopController() {
 }
 
 async function promptForPlayitPath() {
-  const provided = window.prompt('Enter the full path to PlayitGG.exe');
-  if (provided === null) {
+  const { confirmed, value } = await showInputDialog({
+    title: 'Configure PlayitGG',
+    message: 'Enter the full path to PlayitGG.exe so we can start the tunnel automatically.',
+    confirmText: 'Save & Start',
+    cancelText: 'Cancel',
+    placeholder: 'C:/Tools/PlayitGG.exe or /opt/playit/PlayitGG.exe',
+  });
+  if (!confirmed) {
     setStatus('PlayitGG path not updated', true);
     return false;
   }
-  const path = provided.trim();
+
+  const path = (value || '').trim();
   if (!path) {
     setStatus('PlayitGG path is required', true);
     return false;

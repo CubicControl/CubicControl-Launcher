@@ -601,7 +601,8 @@ def profile_detail(name: str):
     if request.method == "GET":
         return jsonify(profile.to_dict())
 
-    _stop_services(profile, stop_server=True)
+    if store.active_profile_name == name:
+        _stop_services(profile, stop_server=True)
     store.delete_profile(name)
     return jsonify({"message": f"Profile '{name}' deleted"})
 

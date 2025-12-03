@@ -201,10 +201,11 @@
       padding: 0.75rem 1rem;
       border-radius: 8px;
       font-size: 0.9rem;
-      font-weight: 500;
-      background: rgba(31, 41, 55, 0.8);
+      font-weight: 600;
+      background: rgba(31, 41, 55, 0.9);
       border: 1px solid var(--border);
       color: var(--text);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
     }
 
     .status-chip::before {
@@ -216,9 +217,9 @@
     }
 
     .status-chip.status-on {
-      background: rgba(16, 185, 129, 0.14);
+      background: linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(16, 185, 129, 0.08));
       border-color: #16a34a;
-      color: #bbf7d0;
+      color: #c7f9cc;
     }
 
     .status-chip.status-on::before {
@@ -227,7 +228,7 @@
     }
 
     .status-chip.status-off {
-      background: rgba(248, 113, 113, 0.14);
+      background: linear-gradient(135deg, rgba(248, 113, 113, 0.23), rgba(248, 113, 113, 0.08));
       border-color: var(--danger);
       color: #fecaca;
     }
@@ -237,7 +238,7 @@
     }
 
     .status-chip.status-starting {
-      background: rgba(251, 191, 36, 0.18);
+      background: linear-gradient(135deg, rgba(251, 191, 36, 0.26), rgba(251, 191, 36, 0.08));
       border-color: var(--warning);
       color: #fef3c7;
     }
@@ -245,6 +246,71 @@
     .status-chip.status-starting::before {
       background: var(--warning);
       animation: pulse 1.6s infinite;
+    }
+
+    .status-panel {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .status-hero {
+      display: flex;
+      justify-content: space-between;
+      gap: 1rem;
+      align-items: center;
+      background: linear-gradient(120deg, rgba(96, 165, 250, 0.14), rgba(16, 185, 129, 0.12));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem 1rem;
+    }
+
+    .status-hero h4 {
+      margin: 0;
+      font-size: 1.05rem;
+      letter-spacing: 0.01em;
+    }
+
+    .status-subtitle {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .status-card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 0.75rem;
+    }
+
+    .status-tile {
+      border: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.8);
+      border-radius: 12px;
+      padding: 0.75rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .status-tile-label {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .status-tile-label span {
+      width: 18px;
+      height: 18px;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(148, 163, 184, 0.2);
+      border: 1px solid var(--border);
+      font-size: 0.8rem;
     }
 
     @keyframes pulse {
@@ -505,6 +571,75 @@
       cursor: pointer;
     }
 
+    .modal {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+      z-index: 20;
+      backdrop-filter: blur(3px);
+    }
+
+    .modal.open {
+      display: flex;
+    }
+
+    .modal-content {
+      background: linear-gradient(175deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      width: min(480px, 100%);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+    }
+
+    .modal-header,
+    .modal-footer {
+      padding: 0.85rem 1rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 0.5rem;
+    }
+
+    .modal-footer {
+      border-top: 1px solid var(--border);
+      border-bottom: none;
+      justify-content: flex-end;
+      gap: 0.5rem;
+    }
+
+    .modal-body {
+      padding: 1rem;
+      color: var(--text);
+      display: grid;
+      gap: 0.75rem;
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+
+    .modal-input label {
+      margin: 0;
+      font-weight: 600;
+    }
+
+    .modal-close {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.25rem 0.5rem;
+      cursor: pointer;
+    }
+
     #logs {
       font-family: monospace;
       font-size: 14px;
@@ -660,47 +795,73 @@
         <h3>System Status</h3>
         <span class="active-profile-pill" aria-live="polite">Active Profile: <span id="active-profile">None</span></span>
       </div>
-      <div class="status-grid">
-        <div id="api-status" class="status-chip status-off">API: Stopped</div>
-        <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
-        <div id="server-status" class="status-chip status-off">Server: Stopped</div>
-        <div id="playit-status" class="status-chip status-off">Playit Tunnel: Not configured</div>
+      <div class="status-panel">
+        <div class="status-hero">
+          <div>
+            <h4>Live services</h4>
+            <p class="status-subtitle">Monitor and control every process from one place.</p>
+          </div>
+          <div style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <span class="soft-badge">Uptime monitor enabled</span>
+            <span class="soft-badge">Playit.gg ready</span>
+          </div>
+        </div>
+
+        <div class="status-card-grid">
+          <div class="status-tile">
+            <div class="status-tile-label"><span>🗄</span><strong>API</strong></div>
+            <div id="api-status" class="status-chip status-off">API: Stopped</div>
+          </div>
+          <div class="status-tile">
+            <div class="status-tile-label"><span>🎮</span><strong>Minecraft Server</strong></div>
+            <div id="server-status" class="status-chip status-off">Server: Stopped</div>
+          </div>
+          <div class="status-tile">
+            <div class="status-tile-label"><span>🕹</span><strong>Controller</strong></div>
+            <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
+          </div>
+          <div class="status-tile">
+            <div class="status-tile-label"><span>🌐</span><strong>Playit Tunnel</strong></div>
+            <div id="playit-status" class="status-chip status-off">Playit Tunnel: Not configured</div>
+          </div>
+        </div>
+
+        <div class="service-controls">
+          <div class="service-row">
+            <span class="service-label">Server</span>
+            <div class="service-buttons">
+              <button id="start-server-btn" class="success">▶ Start</button>
+              <button id="stop-server-btn" class="danger">⏹ Stop</button>
+            </div>
+          </div>
+
+          <div class="service-row">
+            <span class="service-label">API</span>
+            <div class="service-buttons">
+              <button id="start-api-btn" class="success">▶ Start</button>
+              <button id="stop-api-btn" class="danger">⏹ Stop</button>
+            </div>
+          </div>
+
+          <div class="service-row">
+            <span class="service-label">Controller</span>
+            <div class="service-buttons">
+              <button id="start-controller-btn" class="success">▶ Start</button>
+              <button id="stop-controller-btn" class="danger">⏹ Stop</button>
+            </div>
+          </div>
+
+          <div class="service-row">
+            <span class="service-label">Playit.gg Tunnel</span>
+            <div class="service-buttons">
+              <button id="start-playit-btn" class="success">▶ Start</button>
+              <button id="stop-playit-btn" class="danger">⏹ Stop</button>
+              <button id="playit-settings-btn" class="secondary">⚙ Path</button>
+            </div>
+          </div>
+        </div>
+        <p id="status-text" style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);"></p>
       </div>
-      <div class="service-controls">
-        <div class="service-row">
-          <span class="service-label">Server</span>
-          <div class="service-buttons">
-            <button id="start-server-btn" class="success">▶ Start</button>
-            <button id="stop-server-btn" class="danger">⏹ Stop</button>
-          </div>
-        </div>
-
-        <div class="service-row">
-          <span class="service-label">API</span>
-          <div class="service-buttons">
-            <button id="start-api-btn" class="success">▶ Start</button>
-            <button id="stop-api-btn" class="danger">⏹ Stop</button>
-          </div>
-        </div>
-
-        <div class="service-row">
-          <span class="service-label">Controller</span>
-          <div class="service-buttons">
-            <button id="start-controller-btn" class="success">▶ Start</button>
-            <button id="stop-controller-btn" class="danger">⏹ Stop</button>
-          </div>
-        </div>
-
-        <div class="service-row">
-          <span class="service-label">Playit.gg Tunnel</span>
-          <div class="service-buttons">
-            <button id="start-playit-btn" class="success">▶ Start</button>
-            <button id="stop-playit-btn" class="danger">⏹ Stop</button>
-            <button id="playit-settings-btn" class="secondary">⚙ Path</button>
-          </div>
-        </div>
-      </div>
-      <p id="status-text" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);"></p>
     </div>
 
     <div class="card">
@@ -783,6 +944,28 @@
           <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
           <small>Edit server.properties for the selected profile</small>
         </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="dialog-overlay" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h4 id="dialog-title" style="margin: 0;">Confirm</h4>
+      <button class="modal-close" id="dialog-close-btn">✕</button>
+    </div>
+    <div class="modal-body">
+      <p class="status-subtitle" id="dialog-message" style="margin: 0;"></p>
+      <div class="modal-input hidden" id="dialog-input-wrapper">
+        <label for="dialog-input">Value</label>
+        <input id="dialog-input" type="text" placeholder="" />
+      </div>
+    </div>
+    <div class="modal-footer">
+      <div class="modal-actions">
+        <button class="secondary" id="dialog-cancel-btn">Cancel</button>
+        <button class="primary" id="dialog-confirm-btn">Confirm</button>
+      </div>
     </div>
   </div>
 </div>
