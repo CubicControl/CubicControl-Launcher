@@ -4,7 +4,7 @@ import sys
 from pathlib import Path
 from typing import Dict
 
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
 
 from src.config.config_file_handler import ConfigFileHandler
@@ -12,7 +12,13 @@ from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
 
-app = Flask(__name__)
+APP_DIR = Path(__file__).resolve().parent
+
+app = Flask(
+    __name__,
+    template_folder=str(APP_DIR / "templates"),
+    static_folder=str(APP_DIR / "static"),
+)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 store = ServerProfileStore()
@@ -56,11 +62,18 @@ def _apply_profile_environment(profile: ServerProfile) -> None:
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return jsonify({
-        "message": "ServerSide control panel",
-        "active_profile": store.active_profile_name,
-        "profiles": [p.to_dict() for p in store.list_profiles()],
-    })
+    return render_template("control_panel.html")
+
+
+@app.route("/api/status")
+def status():
+    return jsonify(
+        {
+            "message": "ServerSide control panel",
+            "active_profile": store.active_profile_name,
+            "profiles": [p.to_dict() for p in store.list_profiles()],
+        }
+    )
 
 
 @app.route("/api/profiles", methods=["GET", "POST"])

@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ServerSide Control Panel</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
+  <style>
+    body { padding: 1.5rem; }
+    .grid-2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 1rem; }
+    #logs { height: 280px; overflow-y: auto; background: #0b0b0b; color: #e0e0e0; padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.95rem; }
+    #properties { height: 220px; }
+    code { white-space: pre-wrap; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ServerSide Control Panel</h1>
+    <p>Manage Minecraft server profiles, run the API and controller, edit properties, and watch live logs.</p>
+  </header>
+
+  <main>
+    <section class="grid-2">
+      <article>
+        <h3>Profiles</h3>
+        <p><strong>Active profile:</strong> <span id="active-profile">None</span></p>
+        <label for="profile-select">Select profile</label>
+        <select id="profile-select"></select>
+        <div class="grid">
+          <button id="activate-btn">Activate</button>
+          <button id="bootstrap-btn" class="secondary">Create folders</button>
+        </div>
+        <small id="profile-hint">Profiles load from <code>profiles.json</code> in the control panel folder.</small>
+      </article>
+
+      <article>
+        <h3>Create / Update Profile</h3>
+        <form id="profile-form">
+          <label>Name<input type="text" name="name" required /></label>
+          <label>Server folder<input type="text" name="server_path" placeholder="C:/MCServers/Vanilla" required /></label>
+          <label>Description<textarea name="description" rows="2" placeholder="Optional notes"></textarea></label>
+          <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
+          <div class="grid">
+            <label>Run script<input type="text" name="run_script" value="run.bat" /></label>
+            <label>RCON password<input type="text" name="rcon_password" /></label>
+          </div>
+          <div class="grid">
+            <label>RCON port<input type="number" name="rcon_port" value="27001" /></label>
+            <label>Query port<input type="number" name="query_port" value="27002" /></label>
+          </div>
+          <div class="grid">
+            <label>Auth key<input type="text" name="auth_key" /></label>
+            <label>Shutdown key<input type="text" name="shutdown_key" /></label>
+          </div>
+          <div class="grid">
+            <label>Inactivity limit (seconds)<input type="number" name="inactivity_limit" value="1800" /></label>
+            <label>Polling interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
+          </div>
+          <label>
+            <input type="checkbox" name="pc_sleep_after_inactivity" checked />
+            Sleep PC when inactive
+          </label>
+          <button type="submit">Save profile</button>
+        </form>
+      </article>
+    </section>
+
+    <section class="grid-2">
+      <article>
+        <h3>Server Controls</h3>
+        <div class="grid">
+          <button id="start-api-btn">Start API</button>
+          <button id="start-controller-btn">Start Controller</button>
+        </div>
+        <p id="status-text"></p>
+      </article>
+
+      <article>
+        <h3>server.properties</h3>
+        <div class="grid">
+          <button id="load-props-btn" class="secondary">Load from active</button>
+          <button id="save-props-btn">Save changes</button>
+        </div>
+        <textarea id="properties" aria-label="server.properties"></textarea>
+        <small>Each line should be <code>key=value</code>. Unknown keys are kept as-is.</small>
+      </article>
+    </section>
+
+    <section>
+      <h3>Live Logs</h3>
+      <p>Listening to the latest controller log for the active profile.</p>
+      <div id="logs"></div>
+    </section>
+  </main>
+
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-Xf/yKobgrqY+lLd3y+SZV6dLDQOzoJwgkC+XZT3IT1+G37nQVwJsrMdGg4BJd5G0" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
+  <script src="{{ url_for('static', filename='control_panel.js') }}"></script>
+</body>
+</html>
