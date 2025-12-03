@@ -3,6 +3,8 @@ const activeProfileEl = document.getElementById('active-profile');
 const statusText = document.getElementById('status-text');
 const toastEl = document.getElementById('toast');
 const loadingOverlay = document.getElementById('loading-overlay');
+const loadingTitle = document.getElementById('loading-title');
+const loadingSubtitle = document.getElementById('loading-subtitle');
 const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
 const apiChip = document.getElementById('api-status');
@@ -15,8 +17,12 @@ const propertiesProfileLabel = document.getElementById('properties-profile-label
 const closeDrawerBtn = document.getElementById('close-drawer-btn');
 const addProfileBtn = document.getElementById('add-profile-btn');
 const openToolsBtn = document.getElementById('open-tools-btn');
+const commandForm = document.getElementById('command-form');
+const commandInput = document.getElementById('command-input');
 let socket;
 let cachedProfiles = [];
+let currentLogProfile = '';
+let selectedProfile = '';
 
 const defaultProfile = {
   name: '',
@@ -33,6 +39,14 @@ const defaultProfile = {
 
 let toastTimeout;
 
+function authHeaders(extra = {}) {
+  const headers = { ...extra };
+  if (window.AUTH_KEY) {
+    headers.Authorization = `Bearer ${window.AUTH_KEY}`;
+  }
+  return headers;
+}
+
 function setStatus(message, isError = false) {
   if (statusText) {
     statusText.textContent = '';
@@ -47,8 +61,10 @@ function setStatus(message, isError = false) {
   toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 2000);
 }
 
-function showLoading(show) {
+function showLoading(show, title = null, subtitle = null) {
   if (!loadingOverlay) return;
+  if (title && loadingTitle) loadingTitle.textContent = title;
+  if (subtitle && loadingSubtitle) loadingSubtitle.textContent = subtitle;
   loadingOverlay.classList.toggle('show', Boolean(show));
 }
 
@@ -61,13 +77,13 @@ function setChip(chipEl, isOn, label) {
 function updateServerChip(state) {
   if (!serverChip) return;
   const stateText = state || 'stopped';
-  const pretty = stateText.charAt(0).toUpperCase() + stateText.slice(1);
+  const pretty = stateText === 'starting' ? 'Starting...' : stateText.charAt(0).toUpperCase() + stateText.slice(1);
   serverChip.textContent = `Server: ${pretty}`;
-  serverChip.classList.remove('status-on', 'status-off');
+  serverChip.classList.remove('status-on', 'status-off', 'status-starting');
   if (stateText === 'running') {
     serverChip.classList.add('status-on');
   } else if (stateText === 'starting') {
-    serverChip.classList.add('status-off');
+    serverChip.classList.add('status-starting');
   } else {
     serverChip.classList.add('status-off');
   }
@@ -130,15 +146,20 @@ function fillFormFromProfile(profile) {
 }
 
 async function refreshStatus() {
-  const res = await fetch('/api/status');
+  const res = await fetch('/api/status', { headers: authHeaders() });
   const data = await res.json();
   cachedProfiles = data.profiles || [];
+  const previousSelection = selectedProfile || profileSelect.value;
   profileSelect.innerHTML = '';
+  const desiredSelection = cachedProfiles.some((p) => p.name === previousSelection)
+    ? previousSelection
+    : data.active_profile;
+
   cachedProfiles.forEach((p) => {
     const opt = document.createElement('option');
     opt.value = p.name;
     opt.textContent = p.name;
-    if (p.name === data.active_profile) opt.selected = true;
+    if (p.name === desiredSelection) opt.selected = true;
     profileSelect.appendChild(opt);
   });
   activeProfileEl.textContent = data.active_profile || 'None';
@@ -148,7 +169,7 @@ async function refreshStatus() {
 
   let serverState = data.server_running ? 'running' : 'stopped';
   try {
-    const stateRes = await fetch('/api/server/state');
+    const stateRes = await fetch('/api/server/state', { headers: authHeaders() });
     if (stateRes.ok) {
       const stateBody = await stateRes.json();
       serverState = stateBody.state;
@@ -169,6 +190,11 @@ async function refreshStatus() {
     startBtn.disabled = isRunning || isStarting;
     stopBtn.disabled = serverState === 'stopped' || serverState === 'inactive';
   }
+
+  const active = data.active_profile || '';
+  if (active && active !== currentLogProfile) {
+    connectLogs(active);
+  }
 }
 
 
@@ -177,6 +203,7 @@ function connectLogs(profile) {
   if (!profile) {
     logsEl.textContent = '';
     if (socket) socket.disconnect();
+    currentLogProfile = '';
     return;
   }
   if (socket) {
@@ -185,15 +212,17 @@ function connectLogs(profile) {
     socket = null;
   }
   console.log('Creating new socket connection');
-  socket = io({
+  socket = io('/', {
     reconnection: true,
     reconnectionAttempts: 10,
-    reconnectionDelay: 1000
+    reconnectionDelay: 1000,
+    transports: ['polling', 'websocket'],
   });
   logsEl.textContent = '';
   socket.on('connect', () => {
     console.log('Socket connected! Emitting follow_logs for profile:', profile);
     socket.emit('follow_logs', { profile });
+    currentLogProfile = profile;
   });
   socket.on('log_line', (payload) => {
     console.log('Received log_line:', payload);
@@ -228,7 +257,6 @@ function openProfileTools() {
   const found = cachedProfiles.find((p) => p.name === name) || defaultProfile;
   fillFormFromProfile(found);
   setDrawerMode(`Manage ${name}`, true, name);
-  connectLogs(name);
   loadProperties(name);
   toggleDrawer(true);
 }
@@ -244,9 +272,12 @@ async function activateProfile() {
   if (name === activeProfileEl.textContent) {
     return setStatus('Profile already active', true);
   }
-  showLoading(true);
+  showLoading(true, 'Switching profile…', 'Stopping active services and preparing the next profile.');
   try {
-    const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/activate`, { method: 'POST' });
+    const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/activate`, {
+      method: 'POST',
+      headers: authHeaders(),
+    });
     if (res.ok) {
       setStatus(`Activated profile ${name}`);
       activeProfileEl.textContent = name;
@@ -267,13 +298,19 @@ async function activateProfile() {
 async function deleteProfile() {
   const name = profileSelect.value;
   if (!name) return setStatus('Choose a profile first', true);
-  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}`, { method: 'DELETE' });
+  const confirmed = window.confirm(`Delete profile "${name}"? This will stop any running services first.`);
+  if (!confirmed) return;
+  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}`, {
+    method: 'DELETE',
+    headers: authHeaders(),
+  });
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'Profile deleted');
     await refreshStatus();
     closeDrawer();
-    connectLogs(profileSelect.value);
+    const nextProfile = profileSelect.value;
+    connectLogs(nextProfile || '');
   } else {
     setStatus(body.error || 'Unable to delete profile', true);
   }
@@ -309,12 +346,15 @@ async function saveProfile(evt) {
 
   const res = await fetch(url, {
     method,
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   const body = await res.json();
   if (res.ok) {
     setStatus(`${exists ? 'Updated' : 'Saved'} profile ${body.name}`);
+    if (!exists) {
+      showLoading(true, 'Profile saved', 'Initializing the new instance...');
+    }
     await refreshStatus();
     profileSelect.value = body.name;
     fillFormFromProfile(body);
@@ -322,6 +362,9 @@ async function saveProfile(evt) {
     setDrawerMode(`Manage ${body.name}`, true, body.name);
     loadProperties(body.name);
     closeDrawer();
+    if (!exists) {
+      setTimeout(() => showLoading(false), 1200);
+    }
   } else {
     setStatus(body.error || 'Unable to save profile', true);
   }
@@ -331,7 +374,7 @@ async function startServer() {
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
 
-  const res = await fetch('/api/start/server', { method: 'POST' });
+  const res = await fetch('/api/start/server', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'Server starting');
@@ -349,7 +392,7 @@ async function stopServer() {
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
 
-  const res = await fetch('/api/stop/server', { method: 'POST' });
+  const res = await fetch('/api/stop/server', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'Server stopped');
@@ -366,7 +409,7 @@ async function pollServerReadiness(retries = 20) {
   for (let i = 0; i < retries; i += 1) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
     try {
-      const res = await fetch('/api/server/state');
+      const res = await fetch('/api/server/state', { headers: authHeaders() });
       if (!res.ok) continue;
       const body = await res.json();
       updateServerChip(body.state);
@@ -384,7 +427,7 @@ async function pollServerShutdown(retries = 15) {
   for (let i = 0; i < retries; i += 1) {
     await new Promise((resolve) => setTimeout(resolve, 1000));
     try {
-      const res = await fetch('/api/server/state');
+      const res = await fetch('/api/server/state', { headers: authHeaders() });
       if (!res.ok) continue;
       const body = await res.json();
       updateServerChip(body.state);
@@ -400,7 +443,7 @@ async function pollServerShutdown(retries = 15) {
 
 
 async function startApi() {
-  const res = await fetch('/api/start/api', { method: 'POST' });
+  const res = await fetch('/api/start/api', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'API starting');
@@ -409,7 +452,7 @@ async function startApi() {
 }
 
 async function startController() {
-  const res = await fetch('/api/start/controller', { method: 'POST' });
+  const res = await fetch('/api/start/controller', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller started');
   else setStatus(body.error || 'Failed to start controller', true);
@@ -417,7 +460,7 @@ async function startController() {
 }
 
 async function stopApi() {
-  const res = await fetch('/api/stop/api', { method: 'POST' });
+  const res = await fetch('/api/stop/api', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'API stopped');
   else setStatus(body.error || 'Failed to stop API', true);
@@ -425,7 +468,7 @@ async function stopApi() {
 }
 
 async function stopController() {
-  const res = await fetch('/api/stop/controller', { method: 'POST' });
+  const res = await fetch('/api/stop/controller', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller stopped');
   else setStatus(body.error || 'Failed to stop controller', true);
@@ -456,7 +499,7 @@ function textToProps(text) {
 async function loadProperties(profileName) {
   const name = profileName || drawer.dataset.profileName || profileSelect.value;
   if (!name) return setStatus('Choose a profile first', true);
-  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/properties`);
+  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/properties`, { headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
     propsBox.value = propsToText(body);
@@ -473,12 +516,31 @@ async function saveProperties() {
   const payload = textToProps(propsBox.value);
   const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/properties`, {
     method: 'PUT',
-    headers: { 'Content-Type': 'application/json' },
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
     body: JSON.stringify(payload),
   });
   const body = await res.json();
   if (res.ok) setStatus('Properties saved');
   else setStatus(body.error || 'Failed to save properties', true);
+}
+
+async function sendCommand(evt) {
+  evt.preventDefault();
+  const command = commandInput.value.trim();
+  if (!command) return setStatus('Enter a command to send', true);
+
+  const res = await fetch('/api/server/command', {
+    method: 'POST',
+    headers: authHeaders({ 'Content-Type': 'application/json' }),
+    body: JSON.stringify({ command }),
+  });
+  const body = await res.json();
+  if (res.ok) {
+    setStatus(body.message || 'Command sent');
+    commandInput.value = '';
+  } else {
+    setStatus(body.error || 'Failed to send command', true);
+  }
 }
 
 function init() {
@@ -491,19 +553,18 @@ function init() {
   document.getElementById('start-controller-btn').addEventListener('click', startController);
   document.getElementById('stop-api-btn').addEventListener('click', stopApi);
   document.getElementById('stop-controller-btn').addEventListener('click', stopController);
-  document.getElementById('load-props-btn').addEventListener('click', loadProperties);
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
   if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
   if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);
   if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+  if (commandForm) commandForm.addEventListener('submit', sendCommand);
   if (drawer) {
     drawer.addEventListener('click', (event) => {
       if (event.target === drawer) closeDrawer();
     });
   }
   profileSelect.addEventListener('change', () => {
-    const name = profileSelect.value;
-    connectLogs(name);
+    selectedProfile = profileSelect.value;
   });
   refreshStatus().then(() => {
     const current = profileSelect.value;

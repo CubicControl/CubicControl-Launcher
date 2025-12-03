@@ -14,7 +14,6 @@ from mcstatus import JavaServer
 
 from src.config import settings
 from src.config.config_file_handler import ConfigFileHandler
-from src.gui.initial_setup import InitialSetupGUI
 from src.logging_utils.logger import logger
 from src.minecraft import server_properties
 
@@ -60,7 +59,7 @@ def _build_status_payload():
 def _status_message():
     status_result = get_server_status()
     if status_result == "fully_loaded":
-        return "Server Machine is live!\nMinecraft Server is ONLINE", 200
+        return "Server Machine is live!\nMinecraft Server is RUNNING", 200
     if status_result == "starting":
         return "Server Machine is live!\nMinecraft Server is STARTING", 205
     if status_result == "off":
@@ -284,39 +283,7 @@ def perform_restart():
         is_restarting = False
 
 
-def needs_initial_setup() -> bool:
-    """Return True if we should show the Tkinter setup window before starting the server."""
-    required_env = ['RCON_PASSWORD', 'AUTHKEY_SERVER_WEBSITE']
-    for name in required_env:
-        if not os.environ.get(name):
-            return True
-
-    cfg = ConfigFileHandler()
-    try:
-        server_folder = cfg.get_value('Run.bat location', allow_empty=True)
-    except Exception:
-        return True
-
-    if not server_folder or not os.path.isdir(server_folder):
-        return True
-
-    props_path = os.path.join(server_folder, 'server.properties')
-    if not os.path.exists(props_path):
-        return True
-
-    props = server_properties.parse_server_properties(props_path)
-    required_props = ['enable-rcon', 'rcon.password', 'rcon.port', 'enable-query', 'query.port']
-    for key in required_props:
-        if key not in props or not props[key]:
-            return True
-
-    return False
-
-
 if __name__ == '__main__':
     ConfigFileHandler().create_config_file()
-
-    if needs_initial_setup():
-        InitialSetupGUI()
 
     socketio.run(app, host='0.0.0.0', port=37000, debug=False)

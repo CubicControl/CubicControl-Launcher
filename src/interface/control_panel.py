@@ -6,12 +6,13 @@ from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
 
-import eventlet
+import time
 import requests
 from mcstatus import JavaServer
+from mcrcon import MCRcon
 
 from flask import Flask, jsonify, render_template, request
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room
 
 from src.config import settings
 from src.config.config_file_handler import ConfigFileHandler
@@ -26,7 +27,23 @@ app = Flask(
     template_folder=str(APP_DIR / "templates"),
     static_folder=str(APP_DIR / "static"),
 )
-socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
+
+
+@app.before_request
+def _validate_web_auth():
+    # Protect web app JSON APIs with the same bearer key as the backend API
+    if not request.path.startswith("/api/"):
+        return None
+
+    expected = settings.AUTH_KEY
+    if not expected:
+        return None
+
+    provided = request.headers.get("Authorization", "")
+    if provided != f"Bearer {expected}":
+        return jsonify({"error": "Unauthorized"}), 403
+    return None
 
 store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
@@ -271,6 +288,10 @@ def _server_state(profile: Optional[ServerProfile]) -> Dict[str, object]:
 
     return {"state": "stopped", "running": False, "starting": False}
 
+
+def _log_room(profile_name: str) -> str:
+    return f"log-stream::{profile_name}"
+
 def _append_server_log(profile_name: str, line: str) -> None:
     buffer = server_log_buffers.setdefault(profile_name, [])
     buffer.append(line)
@@ -295,8 +316,13 @@ def _stream_server_output(profile_name: str, proc: subprocess.Popen) -> None:
         _append_server_log(profile_name, line)
         # Emit to all connected clients
         try:
-            socketio.emit("log_line", {"message": line, "profile": profile_name, "source": "server"}, namespace='/')
-            eventlet.sleep(0)  # Yield to allow emission to be processed
+            socketio.emit(
+                "log_line",
+                {"message": line, "profile": profile_name, "source": "server"},
+                namespace='/',
+                room=_log_room(profile_name),
+            )
+            socketio.sleep(0)
         except Exception as e:
             logger.error(f"Error emitting log line: {e}")
     proc.wait()
@@ -328,7 +354,7 @@ def _start_server_process(profile: ServerProfile) -> bool:
 
     server_processes[profile.name] = proc
     server_log_buffers.pop(profile.name, None)
-    thread = eventlet.spawn(_stream_server_output, profile.name, proc)
+    thread = socketio.start_background_task(_stream_server_output, profile.name, proc)
     server_log_threads[profile.name] = thread
     logger.info(f"Server started with PID {proc.pid}")
     return True
@@ -369,10 +395,18 @@ def _stop_server_process(profile: ServerProfile) -> bool:
     for _ in range(20):
         if not _query_server_online(profile) and not _is_server_running(profile.name):
             return True
-        eventlet.sleep(1)
+        time.sleep(1)
 
     logger.warning(f"Unable to confirm server stop for profile '{profile.name}'")
     return stop_attempted
+
+
+def _send_profile_command(profile: ServerProfile, command: str) -> str:
+    if not command.strip():
+        raise ValueError("Command cannot be empty")
+
+    with MCRcon(profile.server_ip, profile.rcon_password, port=profile.rcon_port) as mcr:
+        return mcr.command(command)
 
 
 
@@ -380,7 +414,7 @@ def _stop_server_process(profile: ServerProfile) -> bool:
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return render_template("control_panel.html")
+    return render_template("control_panel.html", auth_key=settings.AUTH_KEY)
 
 
 @app.route("/api/status")
@@ -415,8 +449,9 @@ def manage_profiles():
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
+    was_active = store.active_profile_name == profile.name
     store.upsert_profile(profile)
-    if store.active_profile_name == profile.name:
+    if was_active:
         _ensure_services_running(profile)
     return jsonify(profile.to_dict()), 201
 
@@ -571,8 +606,31 @@ def stop_server():
         except Exception as exc:  # pragma: no cover - defensive guard
             logger.error("Failed to stop server for profile '%s': %s", profile.name, exc)
 
-    eventlet.spawn_n(_stop_async)
+    socketio.start_background_task(_stop_async)
     return jsonify({"message": f"Stopping server for profile '{profile.name}'"})
+
+
+@app.route("/api/server/command", methods=["POST"])
+def send_command():
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    payload = request.get_json(force=True) or {}
+    command = str(payload.get("command", "")).strip()
+    if not command:
+        return jsonify({"error": "Command cannot be empty"}), 400
+
+    state = _server_state(profile)
+    if state.get("state") != "running":
+        return jsonify({"error": "Server is not running"}), 400
+
+    try:
+        output = _send_profile_command(profile, command)
+        return jsonify({"message": output or "Command sent"})
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.error("Failed to send command via RCON: %s", exc)
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/api/logs/<name>")
@@ -595,23 +653,26 @@ def read_logs(name: str):
 # ---------- Socket log streaming ----------
 @socketio.on("follow_logs")
 def follow_logs(payload):
-    name = payload.get("profile") if payload else None
-    profile = store.get_profile(name or store.active_profile_name)
+    # Always stream the active profile; ignore client-provided profile names to avoid mismatched log views
+    profile = store.active_profile
     if not profile:
-        emit("log_line", {"message": "No profile available"})
+        emit("log_line", {"message": "No active profile"})
         return
 
     logger.info(f"Client connected to follow logs for profile: {profile.name}")
 
+    room = _log_room(profile.name)
+    join_room(room)
+
     # Send buffered logs line by line
     for line in server_log_buffers.get(profile.name, [])[-200:]:
-        emit("log_line", {"message": line})
+        emit("log_line", {"message": line}, room=room)
 
     # If server is not running, send static log file
     latest_log = profile.root / "logs" / "latest.log"
     if not _is_server_running(profile.name) and latest_log.exists():
         for line in latest_log.read_text(encoding="utf-8", errors="ignore").splitlines()[-200:]:
-            emit("log_line", {"message": line})
+            emit("log_line", {"message": line}, room=room)
 
 
 @app.route("/api/test/socket", methods=["POST"])
