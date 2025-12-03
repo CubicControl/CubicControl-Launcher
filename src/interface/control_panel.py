@@ -219,6 +219,14 @@ def _stop_controller(name: str) -> bool:
     return stopped
 
 
+def _stop_services(profile: Optional[ServerProfile]) -> None:
+    """Stop API and controller services for the given profile."""
+    if not profile:
+        return
+    _stop_controller(profile.name)
+    _stop_api_process(profile)
+
+
 def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
     if not profile:
         return
@@ -251,7 +259,12 @@ def _stream_server_output(profile_name: str, proc: subprocess.Popen) -> None:
     if not stdout:
         return
 
-    for raw_line in stdout:
+    try:
+        stdout.reconfigure(line_buffering=True)
+    except Exception:
+        pass
+
+    for raw_line in iter(stdout.readline, ""):
         if raw_line is None:
             break
         line = raw_line.rstrip("\r\n")
@@ -411,7 +424,9 @@ def profile_detail(name: str):
 
 @app.route("/api/profiles/<name>/activate", methods=["POST"])
 def set_active(name: str):
+    previous_profile = store.active_profile
     profile = store.set_active(name)
+    _stop_services(previous_profile)
     ConfigFileHandler().set_value('Run.bat location', str(profile.root))
     _apply_profile_environment(profile)
     _ensure_services_running(profile)

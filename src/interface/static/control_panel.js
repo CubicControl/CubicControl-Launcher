@@ -1,7 +1,8 @@
 const profileSelect = document.getElementById('profile-select');
 const activeProfileEl = document.getElementById('active-profile');
 const statusText = document.getElementById('status-text');
-const statusBanner = document.getElementById('status-banner');
+const toastEl = document.getElementById('toast');
+const loadingOverlay = document.getElementById('loading-overlay');
 const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
 const apiChip = document.getElementById('api-status');
@@ -10,14 +11,25 @@ const serverChip = document.getElementById('server-status');
 let socket;
 let cachedProfiles = [];
 
+let toastTimeout;
+
 function setStatus(message, isError = false) {
-  statusText.textContent = message;
-  statusText.style.color = isError ? 'var(--del-color, #c62828)' : 'inherit';
-  if (statusBanner) {
-    statusBanner.textContent = message;
-    statusBanner.classList.toggle('error', isError);
-    statusBanner.classList.toggle('show', Boolean(message));
+  if (statusText) {
+    statusText.textContent = '';
   }
+  if (!toastEl) return;
+
+  toastEl.textContent = message;
+  toastEl.classList.remove('error', 'success');
+  toastEl.classList.add(isError ? 'error' : 'success', 'show');
+
+  if (toastTimeout) clearTimeout(toastTimeout);
+  toastTimeout = setTimeout(() => toastEl.classList.remove('show'), 2000);
+}
+
+function showLoading(show) {
+  if (!loadingOverlay) return;
+  loadingOverlay.classList.toggle('show', Boolean(show));
 }
 
 function setChip(chipEl, isOn, label) {
@@ -135,15 +147,22 @@ function connectLogs(profile) {
 async function activateProfile() {
   const name = profileSelect.value;
   if (!name) return;
-  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/activate`, { method: 'POST' });
-  if (res.ok) {
-    setStatus(`Activated profile ${name}`);
-    activeProfileEl.textContent = name;
-    connectLogs(name);
-    await refreshStatus();
-  } else {
-    const err = await res.json();
-    setStatus(err.error || 'Failed to activate profile', true);
+  showLoading(true);
+  try {
+    const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/activate`, { method: 'POST' });
+    if (res.ok) {
+      setStatus(`Activated profile ${name}`);
+      activeProfileEl.textContent = name;
+      connectLogs(name);
+      await refreshStatus();
+    } else {
+      const err = await res.json();
+      setStatus(err.error || 'Failed to activate profile', true);
+    }
+  } catch (error) {
+    setStatus('Unable to activate profile', true);
+  } finally {
+    showLoading(false);
   }
 }
 

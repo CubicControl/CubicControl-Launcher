@@ -82,14 +82,12 @@ def on_request_status():
     _emit_status_update()
 
 
-@app.route('/status', methods=['GET'])
-def status():
+def _status_response():
     message, status_code = _status_message()
     return message, status_code
 
 
-@app.route('/stop', methods=['POST'])
-def stop():
+def _stop_server():
     global is_stopping
     status_result = get_server_status()
     if status_result == "off":
@@ -106,8 +104,7 @@ def stop():
     return "Error stopping server", 500
 
 
-@app.route('/start', methods=['POST'])
-def start():
+def _start_server():
     status_result = get_server_status()
     if status_result in ["fully_loaded", "starting", "restarting"]:
         return f"Server is already {status_result.replace('_', ' ')}", 400
@@ -127,8 +124,7 @@ def start():
     return "Error starting server", 500
 
 
-@app.route('/restart', methods=['POST'])
-def restart():
+def _restart_server():
     global is_restarting
     if is_restarting:
         return "Server is already restarting", 400
@@ -142,6 +138,46 @@ def restart():
         _emit_status_update()
         return "Server is restarting...", 200
     return "Error restarting server", 500
+
+
+@app.route('/status', methods=['GET'])
+def status():
+    return _status_response()
+
+
+@app.route('/api/server/status', methods=['GET'])
+def status_v2():
+    return _status_response()
+
+
+@app.route('/stop', methods=['POST'])
+def stop():
+    return _stop_server()
+
+
+@app.route('/api/server/stop', methods=['POST'])
+def stop_v2():
+    return _stop_server()
+
+
+@app.route('/start', methods=['POST'])
+def start():
+    return _start_server()
+
+
+@app.route('/api/server/start', methods=['POST'])
+def start_v2():
+    return _start_server()
+
+
+@app.route('/restart', methods=['POST'])
+def restart():
+    return _restart_server()
+
+
+@app.route('/api/server/restart', methods=['POST'])
+def restart_v2():
+    return _restart_server()
 
 
 @app.route('/players', methods=['GET'])
