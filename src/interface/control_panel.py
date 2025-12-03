@@ -6,6 +6,7 @@ from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
 
+import eventlet
 import requests
 
 from flask import Flask, jsonify, render_template, request
@@ -24,7 +25,7 @@ app = Flask(
     template_folder=str(APP_DIR / "templates"),
     static_folder=str(APP_DIR / "static"),
 )
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='eventlet')
 
 store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
@@ -253,9 +254,14 @@ def _stream_server_output(profile_name: str, proc: subprocess.Popen) -> None:
     for raw_line in stdout:
         if raw_line is None:
             break
-        line = raw_line.rstrip("\n")
+        line = raw_line.rstrip("\r\n")
         _append_server_log(profile_name, line)
-        socketio.emit("log_line", {"message": line, "profile": profile_name, "source": "server"})
+        # Emit to all connected clients
+        try:
+            socketio.emit("log_line", {"message": line, "profile": profile_name, "source": "server"}, namespace='/')
+            eventlet.sleep(0)  # Yield to allow emission to be processed
+        except Exception as e:
+            logger.error(f"Error emitting log line: {e}")
     proc.wait()
 
 
@@ -298,25 +304,36 @@ def _stop_server_process(profile: ServerProfile) -> bool:
         logger.info(f"Server not running for profile '{profile.name}'")
         return False
 
-    # Try graceful shutdown via controller first
-    controller = controllers.get(profile.name)
-    if controller:
-        controller.stop_minecraft_server()
+    # Try graceful shutdown via RCON first
+    try:
+        from mcrcon import MCRcon
+        with MCRcon(profile.server_ip, profile.rcon_password, port=profile.rcon_port) as mcr:
+            mcr.command("stop")
+            logger.info(f"Sent RCON stop command to profile '{profile.name}'")
+    except Exception as exc:
+        logger.warning(f"Failed to send RCON stop command: {exc}")
 
-    # Terminate the process
+    # Wait for graceful shutdown, then force if necessary
     proc = server_processes.get(profile.name)
     if proc:
-        proc.terminate()
         try:
-            proc.wait(timeout=10)
+            proc.wait(timeout=15)
+            logger.info(f"Server stopped gracefully for profile '{profile.name}'")
         except subprocess.TimeoutExpired:
-            proc.kill()
-        logger.info(f"Server process stopped for profile '{profile.name}'")
+            logger.warning(f"Server did not stop gracefully, terminating process")
+            proc.terminate()
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                proc.kill()
+
         server_processes.pop(profile.name, None)
         server_log_threads.pop(profile.name, None)
         return True
 
     return False
+
+
 
 
 # ---------- Routes ----------
@@ -340,22 +357,23 @@ def status():
     )
 
 
-@app.route("/api/profiles", methods=["GET", "POST"])
-def profiles():
+@app.route('/api/profiles', methods=['GET', 'POST'])
+def manage_profiles():
     if request.method == "GET":
         return jsonify([p.to_dict() for p in store.list_profiles()])
 
+    # POST: Create profile
     payload = request.get_json(force=True)
     try:
         profile = _profile_from_request(payload)
     except ValueError as exc:
         return jsonify({"error": str(exc)}), 400
 
-    profile.ensure_scaffold()
     store.upsert_profile(profile)
     if store.active_profile_name == profile.name:
         _ensure_services_running(profile)
     return jsonify(profile.to_dict()), 201
+
 
 
 @app.route("/api/profiles/<name>", methods=["PUT"])
@@ -411,18 +429,6 @@ def manage_properties(name: str):
     return jsonify(updated)
 
 
-@app.route("/api/profiles/<name>/bootstrap", methods=["POST"])
-def bootstrap_profile(name: str):
-    profile = store.get_profile(name)
-    if not profile:
-        return jsonify({"error": f"Profile '{name}' not found"}), 404
-
-    profile.ensure_scaffold()
-    ConfigFileHandler().set_value('Run.bat location', str(profile.root))
-    _apply_profile_environment(profile)
-    return jsonify({"message": "Scaffold created", "profile": profile.to_dict()})
-
-
 @app.route("/api/active")
 def active_profile():
     profile = store.active_profile
@@ -465,7 +471,7 @@ def start_server():
         return jsonify({"error": "No active profile"}), 400
 
     if _is_server_running(profile.name):
-        return jsonify({"message": "Server already running"})
+        return jsonify({"error": "Server is already running"}), 400
 
     try:
         _start_server_process(profile)
@@ -540,13 +546,27 @@ def follow_logs(payload):
         emit("log_line", {"message": "No profile available"})
         return
 
+    logger.info(f"Client connected to follow logs for profile: {profile.name}")
+
+    # Send buffered logs line by line
     for line in server_log_buffers.get(profile.name, [])[-200:]:
         emit("log_line", {"message": line})
 
+    # If server is not running, send static log file
     latest_log = profile.root / "logs" / "latest.log"
     if not _is_server_running(profile.name) and latest_log.exists():
         for line in latest_log.read_text(encoding="utf-8", errors="ignore").splitlines()[-200:]:
             emit("log_line", {"message": line})
+
+
+@app.route("/api/test/socket", methods=["POST"])
+def test_socket():
+    """Test endpoint to verify socket emissions are working"""
+    try:
+        socketio.emit("log_line", {"message": "TEST MESSAGE FROM SERVER", "profile": "test", "source": "test"}, namespace='/')
+        return jsonify({"message": "Test emission sent"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.before_first_request

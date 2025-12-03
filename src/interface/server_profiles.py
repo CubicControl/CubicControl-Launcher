@@ -46,6 +46,29 @@ class ServerProfile:
     def server_properties_path(self) -> Path:
         return self.root / "server.properties"
 
+    def has_server_properties(self) -> bool:
+        return self.server_properties_path.exists()
+
+    @property
+    def minecraft_logs_dir(self) -> Path:
+        return self.root / "logs"
+
+    def latest_minecraft_log(self) -> Optional[Path]:
+        primary = self.minecraft_logs_dir / "latest.log"
+        if primary.exists():
+            return primary
+        if not self.minecraft_logs_dir.exists():
+            return None
+        try:
+            log_files = sorted(
+                (p for p in self.minecraft_logs_dir.glob("*.log") if p.is_file()),
+                key=lambda path: path.stat().st_mtime,
+                reverse=True,
+            )
+        except OSError:
+            return None
+        return log_files[0] if log_files else None
+
     def sync_server_properties(self) -> None:
         """Ensure core RCON/query settings are written to server.properties."""
 

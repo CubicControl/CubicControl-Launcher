@@ -79,36 +79,56 @@ async function refreshStatus() {
   setChip(apiChip, Boolean(data.api_running), 'API');
   setChip(controllerChip, Boolean(data.controller_running), 'Controller');
   setChip(serverChip, Boolean(data.server_running), 'Server');
+
+  // Update button states
+  const startBtn = document.getElementById('start-server-btn');
+  const stopBtn = document.getElementById('stop-server-btn');
+  if (startBtn && stopBtn) {
+    startBtn.disabled = Boolean(data.server_running);
+    stopBtn.disabled = !Boolean(data.server_running);
+  }
 }
 
 function connectLogs(profile) {
+  console.log('connectLogs called for profile:', profile);
   if (!profile) {
     logsEl.textContent = '';
     if (socket) socket.disconnect();
     return;
   }
   if (socket) {
+    console.log('Disconnecting existing socket');
     socket.disconnect();
+    socket = null;
   }
-  socket = io();
+  console.log('Creating new socket connection');
+  socket = io({
+    reconnection: true,
+    reconnectionAttempts: 10,
+    reconnectionDelay: 1000
+  });
   logsEl.textContent = '';
-  if (profile) {
-    fetch(`/api/logs/${encodeURIComponent(profile)}`)
-      .then((res) => res.json())
-      .then((body) => {
-        (body.lines || []).forEach((line) => {
-          logsEl.textContent += `${line}\n`;
-        });
-        logsEl.scrollTop = logsEl.scrollHeight;
-      });
-  }
   socket.on('connect', () => {
+    console.log('Socket connected! Emitting follow_logs for profile:', profile);
     socket.emit('follow_logs', { profile });
   });
   socket.on('log_line', (payload) => {
+    console.log('Received log_line:', payload);
     if (!payload || !payload.message) return;
-    logsEl.textContent += `${payload.message}\n`;
+    logsEl.textContent += payload.message + '\n';
     logsEl.scrollTop = logsEl.scrollHeight;
+  });
+  socket.on('disconnect', () => {
+    console.log('Socket disconnected, will reconnect in 2 seconds');
+    setTimeout(() => {
+      if (socket && !socket.connected) {
+        console.log('Attempting to reconnect socket');
+        socket.connect();
+      }
+    }, 2000);
+  });
+  socket.on('connect_error', (error) => {
+    console.error('Socket connection error:', error);
   });
 }
 
@@ -120,24 +140,13 @@ async function activateProfile() {
     setStatus(`Activated profile ${name}`);
     activeProfileEl.textContent = name;
     connectLogs(name);
-    refreshStatus();
+    await refreshStatus();
   } else {
     const err = await res.json();
     setStatus(err.error || 'Failed to activate profile', true);
   }
 }
 
-async function bootstrapProfile() {
-  const name = profileSelect.value;
-  if (!name) return;
-  const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/bootstrap`, { method: 'POST' });
-  const body = await res.json();
-  if (res.ok) {
-    setStatus(body.message || 'Folders prepared');
-  } else {
-    setStatus(body.error || 'Failed to create folders', true);
-  }
-}
 
 function loadSelectedProfile() {
   const name = profileSelect.value;
@@ -192,19 +201,35 @@ async function saveProfile(evt) {
 }
 
 async function startServer() {
+  const startBtn = document.getElementById('start-server-btn');
+  const stopBtn = document.getElementById('stop-server-btn');
+
   const res = await fetch('/api/start/server', { method: 'POST' });
   const body = await res.json();
-  if (res.ok) setStatus(body.message || 'Server starting');
-  else setStatus(body.error || 'Failed to start server', true);
-  refreshStatus();
+  if (res.ok) {
+    setStatus(body.message || 'Server starting');
+    startBtn.disabled = true;
+    stopBtn.disabled = false;
+  } else {
+    setStatus(body.error || 'Failed to start server', true);
+  }
+  await refreshStatus();
 }
 
 async function stopServer() {
+  const startBtn = document.getElementById('start-server-btn');
+  const stopBtn = document.getElementById('stop-server-btn');
+
   const res = await fetch('/api/stop/server', { method: 'POST' });
   const body = await res.json();
-  if (res.ok) setStatus(body.message || 'Server stopped');
-  else setStatus(body.error || 'Failed to stop server', true);
-  refreshStatus();
+  if (res.ok) {
+    setStatus(body.message || 'Server stopped');
+    startBtn.disabled = false;
+    stopBtn.disabled = true;
+  } else {
+    setStatus(body.error || 'Failed to stop server', true);
+  }
+  await refreshStatus();
 }
 
 async function startApi() {
@@ -213,7 +238,7 @@ async function startApi() {
   if (res.ok) {
     setStatus(body.message || 'API starting');
   } else setStatus(body.error || 'Failed to start API', true);
-  refreshStatus();
+  await refreshStatus();
 }
 
 async function startController() {
@@ -221,7 +246,7 @@ async function startController() {
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller started');
   else setStatus(body.error || 'Failed to start controller', true);
-  refreshStatus();
+  await refreshStatus();
 }
 
 async function stopApi() {
@@ -229,7 +254,7 @@ async function stopApi() {
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'API stopped');
   else setStatus(body.error || 'Failed to stop API', true);
-  refreshStatus();
+  await refreshStatus();
 }
 
 async function stopController() {
@@ -237,7 +262,7 @@ async function stopController() {
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller stopped');
   else setStatus(body.error || 'Failed to stop controller', true);
-  refreshStatus();
+  await refreshStatus();
 }
 
 function propsToText(map) {
@@ -256,8 +281,7 @@ function textToProps(text) {
       const idx = line.indexOf('=');
       if (idx === -1) return;
       const key = line.slice(0, idx).trim();
-      const val = line.slice(idx + 1).trim();
-      output[key] = val;
+      output[key] = line.slice(idx + 1).trim();
     });
   return output;
 }
@@ -292,7 +316,6 @@ async function saveProperties() {
 function init() {
   document.getElementById('profile-form').addEventListener('submit', saveProfile);
   document.getElementById('activate-btn').addEventListener('click', activateProfile);
-  document.getElementById('bootstrap-btn').addEventListener('click', bootstrapProfile);
   document.getElementById('load-form-btn').addEventListener('click', loadSelectedProfile);
   document.getElementById('delete-profile-btn').addEventListener('click', deleteProfile);
   document.getElementById('start-server-btn').addEventListener('click', startServer);

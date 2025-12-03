@@ -25,3 +25,150 @@
 2025-12-03 15:35:48,618 - ServerLogger - INFO - Starting Minecraft server for profile 'TEST'
 2025-12-03 15:35:48,630 - ServerLogger - INFO - Server started with PID 18680
 2025-12-03 15:36:36,091 - ServerLogger - INFO - Server process stopped for profile 'TEST'
+2025-12-03 16:12:59,961 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:13:14,266 - ServerLogger - INFO - API started for profile 'TEST' with PID 28592
+2025-12-03 16:13:14,267 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 16:18:07,074 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:20:01,222 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:20:49,584 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 29748
+2025-12-03 16:20:49,585 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 16:22:45,728 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 16:22:45,739 - ServerLogger - INFO - Server started with PID 24032
+2025-12-03 16:23:24,880 - ServerLogger - INFO - Server process stopped for profile 'Vanilla'
+2025-12-03 16:24:51,164 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 16:24:51,249 - ServerLogger - INFO - Server started with PID 1320
+2025-12-03 16:25:27,599 - ServerLogger - INFO - Server process stopped for profile 'Vanilla'
+2025-12-03 16:25:41,018 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 16:25:41,031 - ServerLogger - INFO - Server started with PID 30752
+2025-12-03 16:31:48,099 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:31:55,208 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 26832
+2025-12-03 16:31:55,210 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 16:32:18,609 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 16:32:18,623 - ServerLogger - INFO - Server started with PID 31028
+2025-12-03 16:33:09,646 - ServerLogger - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-03 16:33:11,122 - ServerLogger - INFO - Server stopped gracefully for profile 'Vanilla'
+2025-12-03 16:39:49,344 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:39:59,171 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 30020
+2025-12-03 16:39:59,172 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 16:39:59,678 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:45:51,929 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:46:15,535 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:46:24,940 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 3272
+2025-12-03 16:46:24,941 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 16:46:25,201 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:48:33,275 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:48:33,765 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:48:39,686 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 20276
+2025-12-03 16:48:39,688 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 16:48:39,863 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:49:28,903 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:49:34,475 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 16:49:34,486 - ServerLogger - INFO - Server started with PID 27104
+2025-12-03 16:49:40,264 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:49:43,800 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:49:46,818 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:49:52,008 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:50:11,832 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:50:20,431 - ServerLogger - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-03 16:50:21,529 - ServerLogger - INFO - Server stopped gracefully for profile 'Vanilla'
+2025-12-03 16:50:41,165 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:54:17,047 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 16:54:28,522 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 10344
+2025-12-03 16:54:28,524 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 16:54:28,750 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:55:13,793 - ServerLogger - INFO - API process stopped
+2025-12-03 16:55:29,604 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 27828
+2025-12-03 16:55:32,910 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:55:58,463 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 16:55:58,502 - ServerLogger - INFO - Server started with PID 13336
+2025-12-03 16:56:10,943 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:56:57,052 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:57:33,271 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 16:57:38,599 - ServerLogger - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-03 16:57:39,631 - ServerLogger - INFO - Server stopped gracefully for profile 'Vanilla'
+2025-12-03 16:58:20,994 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:02:17,046 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 17:02:25,056 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 31240
+2025-12-03 17:02:25,057 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 17:02:25,234 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:04:02,171 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 17:04:02,472 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:04:08,750 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 23024
+2025-12-03 17:04:08,751 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 17:04:08,934 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:05:26,592 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 17:05:27,990 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 17:05:27,999 - ServerLogger - INFO - Server started with PID 25412
+2025-12-03 17:05:33,319 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:05:44,860 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:01,558 - ServerLogger - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-03 17:06:02,555 - ServerLogger - INFO - Server stopped gracefully for profile 'Vanilla'
+2025-12-03 17:06:08,106 - ServerLogger - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-03 17:06:08,117 - ServerLogger - INFO - Server started with PID 24552
+2025-12-03 17:06:10,274 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:11,220 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:11,985 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:12,667 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:14,516 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:15,193 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:16,512 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:17,414 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:18,537 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:19,854 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:22,783 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:26,115 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:28,000 - ServerLogger - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-03 17:06:28,687 - ServerLogger - INFO - Server stopped gracefully for profile 'Vanilla'
+2025-12-03 17:06:34,389 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 17:06:34,421 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:06:59,273 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:11,411 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:14,265 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:16,092 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:17,053 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:17,899 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:20,077 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:22,205 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:23,014 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:23,957 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:44,872 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:46,371 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 17:07:46,402 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:52,062 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:52,998 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:54,067 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:55,925 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 17:07:55,954 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:56,609 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:57,135 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:07:57,923 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:07:58,317 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:08:00,542 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:08:01,339 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:08:07,145 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:08:43,389 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 17:08:52,212 - ServerLogger - INFO - API started for profile 'TEST' with PID 30644
+2025-12-03 17:08:52,214 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 17:08:52,429 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:09:23,429 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:09:26,748 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:09:31,759 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:09:35,192 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:09:37,225 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:09:48,965 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:09:51,494 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:09:54,332 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:09:57,159 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:10:02,196 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:10:03,826 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 17:10:03,855 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:10:13,483 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:10:17,737 - ServerLogger - INFO - API process stopped
+2025-12-03 17:10:33,882 - ServerLogger - INFO - API started for profile 'Vanilla' with PID 30900
+2025-12-03 17:10:33,884 - ServerLogger - INFO - Controller started for profile 'Vanilla'
+2025-12-03 17:10:33,928 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 17:10:34,036 - ServerLogger - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-03 17:10:45,187 - ServerLogger - INFO - API process stopped
+2025-12-03 17:11:15,459 - ServerLogger - INFO - API started for profile 'TEST' with PID 1636
+2025-12-03 17:11:15,542 - ServerLogger - INFO - Client connected to follow logs for profile: TEST
+2025-12-03 17:11:18,905 - ServerLogger - INFO - API process stopped

@@ -48,36 +48,48 @@
     header h1 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; }
     header p { opacity: 0.95; font-size: 1.05rem; }
 
-    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
-
-    .status-banner {
-      position: sticky;
-      top: 0;
-      z-index: 100;
-      margin: -2rem -2rem 2rem;
-      padding: 1rem 2rem;
-      background: rgba(59, 130, 246, 0.1);
-      border-left: 4px solid var(--primary);
-      color: #dbeafe;
-      display: none;
-      box-shadow: var(--shadow);
-      animation: slideDown 0.3s ease;
-      backdrop-filter: blur(4px);
+    .container {
+      max-width: none;
+      width: 100vw;
+      padding: 2rem;
     }
 
-    .status-banner.show { display: block; }
-    .status-banner.error { background: rgba(248, 113, 113, 0.12); border-color: var(--danger); color: #fecaca; }
-
-    @keyframes slideDown {
-      from { transform: translateY(-100%); opacity: 0; }
-      to { transform: translateY(0); opacity: 1; }
+    .scroll-x {
+      overflow-x: auto;
+      width: 100vw;
+      min-width: 0;
     }
 
-    .grid { display: grid; gap: 1.5rem; }
-    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
-    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+    .main-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 0.7fr 1.8fr;
+      gap: 2rem;
+      width: 100%;
+      min-height: 80vh;
+      align-items: flex-start;
+      min-width: 1200px;
+    }
+
+    .left-panels {
+      display: flex;
+      flex-direction: column;
+      gap: 24px;
+      min-width: 0;
+      width: 100%;
+    }
+
+    .top-row {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(280px, 1fr));
+      gap: 1.5rem;
+      width: 100%;
+      min-width: 0;
+    }
 
     .card {
+      min-width: 0;
+      max-width: 100%;
+      box-sizing: border-box;
       background: linear-gradient(145deg, rgba(17, 24, 39, 0.9), rgba(24, 33, 50, 0.9));
       border-radius: 12px;
       padding: 1.5rem;
@@ -236,67 +248,78 @@
       transform: translateY(-1px);
     }
 
-    #logs {
-      height: 400px;
+    .log-panel {
+      min-width: 350px;
+      width: 100%;
+      max-width: 100%;
+      height: 80vh;
       overflow-y: auto;
-      background: #0b1220;
-      color: #d1d5db;
-      padding: 1rem;
-      border-radius: 8px;
-      font-family: 'Courier New', monospace;
-      font-size: 0.9rem;
-      line-height: 1.6;
-      border: 1px solid var(--border);
-      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.4);
-    }
-
-    #logs::-webkit-scrollbar { width: 8px; }
-    #logs::-webkit-scrollbar-track { background: #2d2d2d; }
-    #logs::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 1rem;
-    }
-
-    .full-width { grid-column: 1 / -1; }
-
-    .checkbox-wrapper {
+      box-sizing: border-box;
       display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin: 1rem 0;
+      flex-direction: column;
     }
 
-    .checkbox-wrapper input[type="checkbox"] {
-      width: 20px;
-      height: 20px;
-      cursor: pointer;
+    .server-properties-panel {
+      display: flex;
+      flex-direction: column;
+      height: 80vh;
+      overflow-y: auto;
     }
 
-    small {
-      display: block;
-      color: var(--text-muted);
-      font-size: 0.85rem;
-      margin-top: 0.5rem;
+    .server-properties-panel #properties {
+      flex: 1 1 auto;
+      min-height: 500px;
+      max-height: 65vh;
     }
 
-    .active-profile-badge {
-      display: inline-block;
-      padding: 0.5rem 1rem;
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 1.1rem;
+    #logs {
+      font-family: monospace;
+      font-size: 15px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.5;
+      flex: 1 1 auto;
+      overflow-y: auto;
+      background: #181818;
+      border-radius: 4px;
+      padding: 8px;
+      margin-top: 8px;
+      min-height: 200px;
+      max-height: 70vh;
     }
 
-    @media (max-width: 768px) {
-      .container { padding: 1rem; }
-      header { padding: 1.5rem; }
-      header h1 { font-size: 1.5rem; }
-      .grid-2, .grid-3 { grid-template-columns: 1fr; }
+    @media (max-width: 1400px) {
+      .main-grid {
+        grid-template-columns: 1fr 1fr;
+        min-width: 0;
+      }
+      .top-row {
+        grid-template-columns: 1fr;
+      }
+      .log-panel {
+        grid-column: 1 / -1;
+      }
+    }
+    @media (max-width: 900px) {
+      .main-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: auto auto auto;
+        min-width: 0;
+      }
+      .log-panel {
+        min-width: 0;
+        width: 100%;
+        margin-top: 24px;
+        height: 50vh;
+        grid-column: 1;
+      }
+      #logs {
+        min-height: 120px;
+        max-height: 40vh;
+      }
+      .top-row {
+        grid-template-columns: 1fr;
+      }
     }
   </style>
 </head>
@@ -306,85 +329,86 @@
     <p>Manage your Minecraft server profiles with ease</p>
   </header>
 
-  <div class="container">
+  <div class="container scroll-x">
     <div id="status-banner" role="status" aria-live="polite"></div>
 
-    <div class="grid grid-3">
-      <div class="card">
-        <h3>System Status</h3>
-        <p><strong>Active Profile:</strong> <span class="active-profile-badge" id="active-profile">None</span></p>
-        <div class="status-grid">
-          <div id="api-status" class="status-chip status-off">API: Stopped</div>
-          <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
-          <div id="server-status" class="status-chip status-off">Server: Stopped</div>
-        </div>
-        <div class="btn-group">
-          <button id="start-server-btn" class="success">▶ Start Server</button>
-          <button id="stop-server-btn" class="danger">⏹ Stop Server</button>
-          <button id="start-api-btn" class="primary">Start API</button>
-          <button id="start-controller-btn" class="primary">Start Controller</button>
-          <button id="stop-api-btn" class="secondary">Stop API</button>
-          <button id="stop-controller-btn" class="secondary">Stop Controller</button>
-        </div>
-        <p id="status-text" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);"></p>
-      </div>
+    <div class="main-grid">
+      <div class="left-panels">
+        <div class="top-row">
+          <div class="card">
+            <h3>System Status</h3>
+            <p><strong>Active Profile:</strong> <span class="active-profile-badge" id="active-profile">None</span></p>
+            <div class="status-grid">
+              <div id="api-status" class="status-chip status-off">API: Stopped</div>
+              <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
+              <div id="server-status" class="status-chip status-off">Server: Stopped</div>
+            </div>
+            <div class="btn-group">
+              <button id="start-server-btn" class="success">▶ Start Server</button>
+              <button id="stop-server-btn" class="danger">⏹ Stop Server</button>
+              <button id="start-api-btn" class="primary">Start API</button>
+              <button id="start-controller-btn" class="primary">Start Controller</button>
+              <button id="stop-api-btn" class="secondary">Stop API</button>
+              <button id="stop-controller-btn" class="secondary">Stop Controller</button>
+            </div>
+            <p id="status-text" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);"></p>
+          </div>
 
-      <div class="card">
-        <h3>Profile Manager</h3>
-        <label for="profile-select">Select Profile</label>
-        <select id="profile-select"></select>
-        <div class="btn-group">
-          <button id="activate-btn" class="success">✓ Activate</button>
-          <button id="bootstrap-btn" class="secondary">📁 Create Folders</button>
-          <button id="load-form-btn" class="secondary">📝 Load to Form</button>
-          <button id="delete-profile-btn" class="danger">🗑 Delete</button>
-        </div>
-        <small>Profiles are stored in <code>server_profiles.json</code></small>
-      </div>
+          <div class="card">
+            <h3>Profile Manager</h3>
+            <label for="profile-select">Select Profile</label>
+            <select id="profile-select"></select>
+            <div class="btn-group">
+              <button id="activate-btn" class="success">✓ Activate</button>
+              <button id="load-form-btn" class="secondary">📝 Load to Form</button>
+              <button id="delete-profile-btn" class="danger">🗑 Delete</button>
+            </div>
+            <small>Profiles are stored in <code>server_profiles.json</code></small>
+          </div>
 
-      <div class="card">
+          <div class="card">
+            <h3>Profile Editor</h3>
+            <form id="profile-form">
+              <div class="form-grid">
+                <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
+                <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
+                <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
+                <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
+                <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
+                <label class="full-width">RCON Settings (auto-managed)
+                  <input type="text" value="RCON + Query locked to controller defaults" disabled />
+                  <small>Ports 27001/27002 and a generated password are applied automatically.</small>
+                </label>
+                <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
+                <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
+                <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
+                <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
+                <div class="checkbox-wrapper full-width">
+                  <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />
+                  <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
+                </div>
+                <div class="full-width">
+                  <button type="submit" class="primary">💾 Save Profile</button>
+                </div>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+      <div class="card server-properties-panel">
         <h3>Server Properties</h3>
         <div class="btn-group">
           <button id="load-props-btn" class="secondary">📥 Load</button>
           <button id="save-props-btn" class="primary">💾 Save</button>
         </div>
-        <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
+        <textarea id="properties" aria-label="server.properties" placeholder="key=value" style="min-height: 500px;"></textarea>
         <small>Edit server.properties for the selected profile</small>
       </div>
-    </div>
-
-    <div class="card" style="margin-top: 1.5rem;">
-      <h3>Profile Editor</h3>
-      <form id="profile-form">
-        <div class="form-grid">
-          <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
-          <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
-          <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
-          <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
-          <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
-          <label class="full-width">RCON Settings (auto-managed)
-            <input type="text" value="RCON + Query locked to controller defaults" disabled />
-            <small>Ports 27001/27002 and a generated password are applied automatically.</small>
-          </label>
-          <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
-          <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
-          <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
-          <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
-          <div class="checkbox-wrapper full-width">
-            <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />
-            <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
-          </div>
-          <div class="full-width">
-            <button type="submit" class="primary">💾 Save Profile</button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <div class="card" style="margin-top: 1.5rem;">
-      <h3>Live Server Logs</h3>
-      <p style="margin-bottom: 1rem; color: var(--text-muted);">Real-time output from the Minecraft server (including nogui)</p>
-      <div id="logs"></div>
+      <div class="log-panel card">
+        <h3>Live Server Logs</h3>
+        <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Real-time output from the Minecraft server</p>
+        <div id="logs"></div>
+      </div>
     </div>
   </div>
 
