@@ -8,8 +8,28 @@ const propsBox = document.getElementById('properties');
 const apiChip = document.getElementById('api-status');
 const controllerChip = document.getElementById('controller-status');
 const serverChip = document.getElementById('server-status');
+const drawer = document.getElementById('profile-drawer');
+const drawerTitle = document.getElementById('drawer-title');
+const propertiesPanel = document.getElementById('properties-panel');
+const propertiesProfileLabel = document.getElementById('properties-profile-label');
+const closeDrawerBtn = document.getElementById('close-drawer-btn');
+const addProfileBtn = document.getElementById('add-profile-btn');
+const openToolsBtn = document.getElementById('open-tools-btn');
 let socket;
 let cachedProfiles = [];
+
+const defaultProfile = {
+  name: '',
+  server_path: '',
+  description: '',
+  server_ip: 'localhost',
+  run_script: 'run.bat',
+  auth_key: '',
+  shutdown_key: '',
+  inactivity_limit: 120,
+  polling_interval: 60,
+  pc_sleep_after_inactivity: true,
+};
 
 let toastTimeout;
 
@@ -38,6 +58,21 @@ function setChip(chipEl, isOn, label) {
   chipEl.classList.toggle('status-off', !isOn);
 }
 
+function toggleDrawer(open) {
+  if (!drawer) return;
+  drawer.classList.toggle('open', Boolean(open));
+  drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+}
+
+function setDrawerMode(title, showProperties, profileName = '') {
+  if (drawerTitle) drawerTitle.textContent = title;
+  if (propertiesPanel) propertiesPanel.classList.toggle('hidden', !showProperties);
+  if (propertiesProfileLabel) {
+    propertiesProfileLabel.textContent = `Profile: ${profileName || 'None'}`;
+  }
+  drawer.dataset.profileName = profileName || '';
+}
+
 function toDict(form) {
   const data = new FormData(form);
   const payload = {};
@@ -61,7 +96,7 @@ function isAbsolutePath(path) {
 }
 
 function fillFormFromProfile(profile) {
-  if (!profile) return;
+  if (!profile) profile = defaultProfile;
   const form = document.getElementById('profile-form');
   form.name.value = profile.name || '';
   form.server_path.value = profile.server_path || '';
@@ -70,8 +105,12 @@ function fillFormFromProfile(profile) {
   form.run_script.value = profile.run_script || '';
   form.auth_key.value = profile.auth_key || '';
   form.shutdown_key.value = profile.shutdown_key || '';
-  form.inactivity_limit.value = profile.inactivity_limit || 1800;
-  form.polling_interval.value = profile.polling_interval || 60;
+  form.inactivity_limit.value = Number.isFinite(profile.inactivity_limit)
+    ? profile.inactivity_limit
+    : defaultProfile.inactivity_limit;
+  form.polling_interval.value = Number.isFinite(profile.polling_interval)
+    ? profile.polling_interval
+    : defaultProfile.polling_interval;
   form.pc_sleep_after_inactivity.checked = Boolean(profile.pc_sleep_after_inactivity);
 }
 
@@ -144,6 +183,28 @@ function connectLogs(profile) {
   });
 }
 
+function openNewProfileDrawer() {
+  fillFormFromProfile(defaultProfile);
+  if (propsBox) propsBox.value = '';
+  setDrawerMode('Create profile', false, '');
+  toggleDrawer(true);
+}
+
+function openProfileTools() {
+  const name = profileSelect.value;
+  if (!name) return setStatus('Choose a profile first', true);
+  const found = cachedProfiles.find((p) => p.name === name) || defaultProfile;
+  fillFormFromProfile(found);
+  setDrawerMode(`Manage ${name}`, true, name);
+  connectLogs(name);
+  loadProperties(name);
+  toggleDrawer(true);
+}
+
+function closeDrawer() {
+  toggleDrawer(false);
+}
+
 async function activateProfile() {
   const name = profileSelect.value;
   if (!name) return;
@@ -166,14 +227,6 @@ async function activateProfile() {
   }
 }
 
-
-function loadSelectedProfile() {
-  const name = profileSelect.value;
-  if (!name) return setStatus('Choose a profile first', true);
-  const found = cachedProfiles.find((p) => p.name === name);
-  fillFormFromProfile(found);
-  setStatus(`Loaded ${name} into the form`);
-}
 
 async function deleteProfile() {
   const name = profileSelect.value;
@@ -214,6 +267,8 @@ async function saveProfile(evt) {
     profileSelect.value = body.name;
     fillFormFromProfile(body);
     connectLogs(body.name);
+    setDrawerMode(`Manage ${body.name}`, true, body.name);
+    loadProperties(body.name);
   } else {
     setStatus(body.error || 'Unable to save profile', true);
   }
@@ -305,13 +360,14 @@ function textToProps(text) {
   return output;
 }
 
-async function loadProperties() {
-  const name = profileSelect.value;
+async function loadProperties(profileName) {
+  const name = profileName || drawer.dataset.profileName || profileSelect.value;
   if (!name) return setStatus('Choose a profile first', true);
   const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/properties`);
   const body = await res.json();
   if (res.ok) {
     propsBox.value = propsToText(body);
+    if (propertiesProfileLabel) propertiesProfileLabel.textContent = `Profile: ${name}`;
     setStatus('Loaded properties');
   } else {
     setStatus(body.error || 'Unable to load properties', true);
@@ -319,7 +375,7 @@ async function loadProperties() {
 }
 
 async function saveProperties() {
-  const name = profileSelect.value;
+  const name = drawer.dataset.profileName || profileSelect.value;
   if (!name) return setStatus('Choose a profile first', true);
   const payload = textToProps(propsBox.value);
   const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/properties`, {
@@ -335,7 +391,6 @@ async function saveProperties() {
 function init() {
   document.getElementById('profile-form').addEventListener('submit', saveProfile);
   document.getElementById('activate-btn').addEventListener('click', activateProfile);
-  document.getElementById('load-form-btn').addEventListener('click', loadSelectedProfile);
   document.getElementById('delete-profile-btn').addEventListener('click', deleteProfile);
   document.getElementById('start-server-btn').addEventListener('click', startServer);
   document.getElementById('stop-server-btn').addEventListener('click', stopServer);
@@ -345,17 +400,21 @@ function init() {
   document.getElementById('stop-controller-btn').addEventListener('click', stopController);
   document.getElementById('load-props-btn').addEventListener('click', loadProperties);
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
+  if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
+  if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);
+  if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
+  if (drawer) {
+    drawer.addEventListener('click', (event) => {
+      if (event.target === drawer) closeDrawer();
+    });
+  }
   profileSelect.addEventListener('change', () => {
     const name = profileSelect.value;
-    const found = cachedProfiles.find((p) => p.name === name);
-    fillFormFromProfile(found);
     connectLogs(name);
   });
   refreshStatus().then(() => {
     const current = profileSelect.value;
     if (current) {
-      const found = cachedProfiles.find((p) => p.name === current);
-      fillFormFromProfile(found);
       connectLogs(current);
     }
   });

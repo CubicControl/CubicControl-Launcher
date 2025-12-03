@@ -527,11 +527,14 @@ def stop_server():
     if not _is_server_running(profile.name):
         return jsonify({"error": "Server is not running"}), 400
 
-    try:
-        _stop_server_process(profile)
-        return jsonify({"message": f"Server stopped for profile '{profile.name}'"})
-    except Exception as exc:
-        return jsonify({"error": str(exc)}), 500
+    def _stop_async():
+        try:
+            _stop_server_process(profile)
+        except Exception as exc:  # pragma: no cover - defensive guard
+            logger.error("Failed to stop server for profile '%s': %s", profile.name, exc)
+
+    eventlet.spawn_n(_stop_async)
+    return jsonify({"message": f"Stopping server for profile '{profile.name}'"})
 
 
 @app.route("/api/logs/<name>")

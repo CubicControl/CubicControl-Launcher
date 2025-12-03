@@ -30,6 +30,10 @@
       box-sizing: border-box;
     }
 
+    .hidden {
+      display: none !important;
+    }
+
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
       background: radial-gradient(circle at 10% 20%, rgba(96, 165, 250, 0.08), transparent 25%),
@@ -66,6 +70,26 @@
     header p {
       opacity: 0.95;
       font-size: 1rem;
+    }
+
+    .header-actions {
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      flex-wrap: wrap;
+    }
+
+    .soft-badge {
+      background: rgba(148, 163, 184, 0.15);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.9rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
     }
 
     .container {
@@ -110,6 +134,15 @@
       height: auto; /* cards only as tall as their content */
       display: flex;
       flex-direction: column;
+    }
+
+    .card-header-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 0.75rem;
     }
 
     .card:hover {
@@ -234,6 +267,14 @@
       margin-top: 0.75rem;
     }
 
+    .btn-row {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      margin-top: 0.75rem;
+    }
+
     button {
       padding: 0.75rem 1.25rem;
       border: none;
@@ -314,6 +355,61 @@
       min-height: 300px;
       max-height: 50vh;
       overflow-y: auto;
+    }
+
+    .drawer {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: none;
+      align-items: flex-start;
+      justify-content: flex-end;
+      padding: 2rem;
+      z-index: 12;
+      backdrop-filter: blur(2px);
+    }
+
+    .drawer.open {
+      display: flex;
+    }
+
+    .drawer-content {
+      background: linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(15, 23, 42, 0.95));
+      width: min(960px, 100%);
+      max-height: 90vh;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      box-shadow: var(--shadow-lg);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .drawer-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 1rem 1.25rem;
+      border-bottom: 1px solid var(--border);
+      background: rgba(17, 24, 39, 0.8);
+      gap: 1rem;
+    }
+
+    .drawer-body {
+      padding: 1rem 1.25rem 1.25rem;
+      overflow-y: auto;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 1rem;
+    }
+
+    .drawer-close {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+      border-radius: 999px;
+      padding: 0.35rem 0.65rem;
+      cursor: pointer;
     }
 
     #logs {
@@ -429,12 +525,28 @@
         margin-top: 1rem;
       }
     }
+
+    @media (max-width: 900px) {
+      .drawer {
+        padding: 1rem;
+      }
+      .drawer-content {
+        max-height: 95vh;
+      }
+      .drawer-body {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
 <header>
   <h1>🎮 ServerSide Control Panel</h1>
   <p>Manage your Minecraft server profiles with ease</p>
+  <div class="header-actions">
+    <span class="soft-badge">🟢 Live log streaming enabled</span>
+    <button id="add-profile-btn" class="primary">＋ Add new profile</button>
+  </div>
 </header>
 
 <div class="loading-overlay" id="loading-overlay" aria-live="polite" aria-busy="true">
@@ -449,8 +561,10 @@
 <div class="container">
   <div class="main-grid">
     <div class="card">
-      <h3>System Status</h3>
-      <p><strong>Active Profile:</strong> <span class="active-profile-badge" id="active-profile">None</span></p>
+      <div class="card-header-row">
+        <h3>System Status</h3>
+        <span class="soft-badge">Active: <span id="active-profile">None</span></span>
+      </div>
       <div class="status-grid">
         <div id="api-status" class="status-chip status-off">API: Stopped</div>
         <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
@@ -468,59 +582,78 @@
     </div>
 
     <div class="card">
-      <h3>Profile Manager</h3>
+      <div class="card-header-row">
+        <h3>Profile Manager</h3>
+        <span class="soft-badge">Profiles stored in <code>server_profiles.json</code></span>
+      </div>
       <label for="profile-select">Select Profile</label>
       <select id="profile-select"></select>
-      <div class="btn-group">
+      <div class="btn-row">
         <button id="activate-btn" class="success">✓ Activate</button>
-        <button id="load-form-btn" class="secondary">📝 Load to Form</button>
+        <button id="open-tools-btn" class="primary">🛠 Manage tools</button>
         <button id="delete-profile-btn" class="danger">🗑 Delete</button>
       </div>
-      <small>Profiles are stored in <code>server_profiles.json</code></small>
-    </div>
-
-    <div class="card">
-      <h3>Profile Editor</h3>
-      <form id="profile-form">
-        <div class="form-grid">
-          <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
-          <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
-          <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
-          <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
-          <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
-          <label class="full-width">RCON Settings (auto-managed)
-            <input type="text" value="RCON + Query locked to controller defaults" disabled />
-            <small>Ports 27001/27002 and a generated password are applied automatically.</small>
-          </label>
-          <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
-          <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
-          <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
-          <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
-          <div class="checkbox-wrapper full-width">
-            <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />
-            <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
-          </div>
-          <div class="full-width">
-            <button type="submit" class="primary">💾 Save Profile</button>
-          </div>
-        </div>
-      </form>
-    </div>
-
-    <div class="card server-properties-panel">
-      <h3>Server Properties</h3>
-      <div class="btn-group">
-        <button id="load-props-btn" class="secondary">📥 Load</button>
-        <button id="save-props-btn" class="primary">💾 Save</button>
-      </div>
-      <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
-      <small>Edit server.properties for the selected profile</small>
+      <p style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.9rem;">Use "Manage tools" to edit the selected profile or tweak its server.properties.</p>
     </div>
 
     <div class="card log-panel">
       <h3>Live Server Logs</h3>
       <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Real-time output from the Minecraft server</p>
       <div id="logs"></div>
+    </div>
+  </div>
+</div>
+
+<div class="drawer" id="profile-drawer" aria-hidden="true">
+  <div class="drawer-content">
+    <div class="drawer-header">
+      <div>
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.25rem;">Profile workspace</p>
+        <h3 id="drawer-title" style="margin: 0;">Create profile</h3>
+      </div>
+      <button id="close-drawer-btn" class="drawer-close">✕ Close</button>
+    </div>
+    <div class="drawer-body">
+      <div class="card" style="height: fit-content;">
+        <h3>Profile Editor</h3>
+        <form id="profile-form">
+          <div class="form-grid">
+            <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
+            <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
+            <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
+            <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
+            <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
+            <label class="full-width">RCON Settings (auto-managed)
+              <input type="text" value="RCON + Query locked to controller defaults" disabled />
+              <small>Ports 27001/27002 and a generated password are applied automatically.</small>
+            </label>
+            <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
+            <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
+            <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
+            <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
+            <div class="checkbox-wrapper full-width">
+              <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />
+              <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
+            </div>
+            <div class="full-width">
+              <button type="submit" class="primary">💾 Save Profile</button>
+            </div>
+          </div>
+        </form>
+      </div>
+
+      <div class="card server-properties-panel" id="properties-panel">
+        <div class="card-header-row">
+          <h3>Server Properties</h3>
+          <span class="soft-badge" id="properties-profile-label">Profile: None</span>
+        </div>
+        <div class="btn-row">
+          <button id="load-props-btn" class="secondary">📥 Load</button>
+          <button id="save-props-btn" class="primary">💾 Save</button>
+        </div>
+        <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
+        <small>Edit server.properties for the selected profile</small>
+      </div>
     </div>
   </div>
 </div>
