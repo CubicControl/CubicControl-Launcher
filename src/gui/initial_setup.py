@@ -1,10 +1,10 @@
 import os
 import subprocess
 import tkinter as tk
-from tkinter import ttk, filedialog, messagebox
+from tkinter import filedialog, messagebox, ttk
 
-from lib.configFileHandler import ConfigFileHandler
-from lib.server_properties import parse_server_properties, write_server_properties
+from src.config.config_file_handler import ConfigFileHandler
+from src.minecraft.server_properties import parse_server_properties, write_server_properties
 
 
 def _force_var_uppercase(var):
@@ -36,7 +36,7 @@ class InitialSetupGUI:
     def _load_initial_values(self):
         # Run.bat location from config
         try:
-            self.initial_server_folder = self.cfg_handler.get_value('Run.bat location')
+            self.initial_server_folder = self.cfg_handler.get_value('Run.bat location', allow_empty=True)
         except Exception:
             self.initial_server_folder = ""
 

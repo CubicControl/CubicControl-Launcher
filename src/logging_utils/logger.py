@@ -1,15 +1,15 @@
+from datetime import datetime
 import logging
-import os
-import time
+from pathlib import Path
 
-date = time.strftime("%Y-%m-%d")
-log_dir = '../ServerLogs'
-if not os.path.exists(log_dir):
-    os.makedirs(log_dir)
-log_file = os.path.join(log_dir, f'{date}_ServerSideLogs.txt')
+
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+LOG_DIR = PROJECT_ROOT / "logs"
+LOG_DIR.mkdir(exist_ok=True)
+LOG_FILE = LOG_DIR / f"{datetime.utcnow():%Y-%m-%d}_ServerSideLogs.txt"
 
 logger = logging.getLogger('ServerLogger')
-file_handler = logging.FileHandler(log_file)
+file_handler = logging.FileHandler(LOG_FILE)
 file_handler.setLevel(logging.INFO)
 formatter = logging.Formatter('%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 file_handler.setFormatter(formatter)

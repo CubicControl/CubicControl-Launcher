@@ -1,8 +1,4 @@
-"""Websocket-enabled variant of the server-side API.
-
-This file mirrors the original server API while emitting status updates over
-Socket.IO so consumers can subscribe instead of polling ``/status``.
-"""
+"""Websocket-enabled variant of the server-side API."""
 
 import os
 import signal
@@ -16,24 +12,24 @@ from flask_socketio import SocketIO
 from mcrcon import MCRcon
 from mcstatus import JavaServer
 
-from lib import config, server_properties
-from lib.Logger import logger
-from lib.configFileHandler import ConfigFileHandler
-from lib.setup_gui import InitialSetupGUI
+from src.config import settings
+from src.config.config_file_handler import ConfigFileHandler
+from src.gui.initial_setup import InitialSetupGUI
+from src.logging_utils.logger import logger
+from src.minecraft import server_properties
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 is_restarting = False
 is_stopping = False
-
-_status_lock = threading.Lock()
+last_player_count = 0
 
 
 @app.before_request
 def validate_auth_header():
     provided_auth_key = request.headers.get('Authorization')
-    expected_auth_key = config.AUTH_KEY
+    expected_auth_key = settings.AUTH_KEY
     if not provided_auth_key or provided_auth_key != f"Bearer {expected_auth_key}":
         return "Unauthorized", 403
 
@@ -45,7 +41,7 @@ def after_request_logger(response):
         "url": request.url,
         "status": response.status_code,
         "remote_addr": request.remote_addr,
-        "user_agent": request.user_agent.string
+        "user_agent": request.user_agent.string,
     }
     logger.info(f"Request: {log_details}")
     return response
@@ -74,7 +70,6 @@ def _status_message():
     if status_result == "stopping":
         return "Server Machine is live!\nMinecraft Server is STOPPING", 208
     return "Server Machine is OFFLINE", 500
-
 
 
 @socketio.on('connect')
@@ -124,12 +119,13 @@ def start():
             subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
             _emit_status_update()
             return "Server is starting...", 200
-        except ValueError as e:
-            return str(e), 400
-        except Exception as e:
-            print(f"Error starting server: {e}")
+        except ValueError as exc:
+            return str(exc), 400
+        except Exception as exc:  # pragma: no cover - defensive logging only
+            logger.error(f"Error starting server: {exc}")
             return "Error starting server", 500
     return "Error starting server", 500
+
 
 @app.route('/restart', methods=['POST'])
 def restart():
@@ -155,13 +151,12 @@ def players():
     if player_count is not None:
         last_player_count = player_count
         return f"Players online: {player_count}", 200
-    else:
-        return "Server is offline", 500
+    return "Server is offline", 500
 
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown_api():
-    if request.remote_addr not in config.ALLOWED_IPS:
+    if request.remote_addr not in settings.ALLOWED_IPS:
         return "Unauthorized IP address", 403
 
     provided_auth_key = request.headers.get('shutdown-header')
@@ -180,12 +175,16 @@ def shutdown_api():
 
 def send_rcon_command(command):
     try:
-        with MCRcon(config.SERVER_IP, config.RCON_PASSWORD, port=config.RCON_PORT) as mcr:
+        with MCRcon(settings.SERVER_IP, settings.RCON_PASSWORD, port=settings.RCON_PORT) as mcr:
             mcr.command(command)
-    except Exception as e:  # pragma: no cover - defensive logging only
-        logger.error(f"Error sending RCON command: {e}. Please ensure RCON queries are enabled and the password and port are correct.")
-        print(f"Error sending RCON command: {e}. Please ensure RCON queries are enabled and the password and port are correct.")
-        return f"Error sending RCON command: {e}"
+    except Exception as exc:  # pragma: no cover - defensive logging only
+        logger.error(
+            f"Error sending RCON command: {exc}. Please ensure RCON queries are enabled and the password and port are correct."
+        )
+        print(
+            f"Error sending RCON command: {exc}. Please ensure RCON queries are enabled and the password and port are correct."
+        )
+        return f"Error sending RCON command: {exc}"
 
 
 def get_server_status():
@@ -202,23 +201,24 @@ def get_server_status():
         windows = gw.getWindowsWithTitle('MinecraftServer')
         if windows:
             try:
-                query = JavaServer(config.SERVER_IP, config.QUERY_PORT).query()
+                query = JavaServer(settings.SERVER_IP, settings.QUERY_PORT).query()
                 return "fully_loaded" if query else "starting"
             except Exception:
                 return "starting"
         return "off"
-    except Exception as e:  # pragma: no cover - defensive logging only
-        print(f"Error checking server status: {e}")
+    except Exception as exc:  # pragma: no cover - defensive logging only
+        print(f"Error checking server status: {exc}")
         return "error"
 
 
 def get_player_info():
     try:
-        query = JavaServer(config.SERVER_IP, config.QUERY_PORT).query()
+        query = JavaServer(settings.SERVER_IP, settings.QUERY_PORT).query()
         return query.players.online
-    except ConnectionError as e:  # pragma: no cover - defensive logging only
-        print(f"Error getting player info: {e}")
+    except ConnectionError as exc:  # pragma: no cover - defensive logging only
+        print(f"Error getting player info: {exc}")
         return None
+
 
 def perform_restart():
     """Perform the restart process in the background."""
@@ -239,17 +239,17 @@ def perform_restart():
             server_location = config_handler.get_value('Run.bat location')
             os.chdir(server_location)
             subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
-        except Exception as e:
-            logger.error(f"Error starting server during restart: {e}")
+        except Exception as exc:  # pragma: no cover - defensive logging only
+            logger.error(f"Error starting server during restart: {exc}")
         finally:
             _emit_status_update()
 
     finally:
         is_restarting = False
 
+
 def needs_initial_setup() -> bool:
     """Return True if we should show the Tkinter setup window before starting the server."""
-    # Check basic env vars
     required_env = ['RCON_PASSWORD', 'AUTHKEY_SERVER_WEBSITE']
     for name in required_env:
         if not os.environ.get(name):
@@ -257,7 +257,7 @@ def needs_initial_setup() -> bool:
 
     cfg = ConfigFileHandler()
     try:
-        server_folder = cfg.get_value('Run.bat location')
+        server_folder = cfg.get_value('Run.bat location', allow_empty=True)
     except Exception:
         return True
 
@@ -277,11 +277,9 @@ def needs_initial_setup() -> bool:
     return False
 
 
-
 if __name__ == '__main__':
     ConfigFileHandler().create_config_file()
 
-    # Run the setup GUI only if something important is missing
     if needs_initial_setup():
         InitialSetupGUI()
 
