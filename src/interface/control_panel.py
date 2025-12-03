@@ -125,6 +125,10 @@ def _profile_from_request(data: Dict) -> ServerProfile:
     if not name:
         raise ValueError("Profile name is required.")
 
+    admin_auth_key = (data.get("admin_auth_key") or "").strip()
+    if not admin_auth_key:
+        raise ValueError("ADMIN_AUTHKEY is required.")
+
     existing_profile = store.get_profile(name)
     server_path = Path(_validated_server_path(data.get("server_path", "")))
     _ensure_server_properties_exists(server_path)
@@ -139,6 +143,7 @@ def _profile_from_request(data: Dict) -> ServerProfile:
         rcon_password=rcon_password,
         rcon_port=settings.RCON_PORT,
         query_port=settings.QUERY_PORT,
+        admin_auth_key=admin_auth_key,
         auth_key=data.get("auth_key", ""),
         shutdown_key=data.get("shutdown_key", ""),
         inactivity_limit=int(data.get("inactivity_limit", 1800)),

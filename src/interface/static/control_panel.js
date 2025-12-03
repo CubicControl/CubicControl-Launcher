@@ -42,6 +42,7 @@ const defaultProfile = {
   description: '',
   server_ip: 'localhost',
   run_script: 'run.bat',
+  admin_auth_key: '',
   auth_key: '',
   shutdown_key: '',
   inactivity_limit: 1800,
@@ -217,6 +218,17 @@ function toDict(form) {
   return payload;
 }
 
+async function fetchServerState() {
+  try {
+    const res = await fetch('/api/server/state', { headers: authHeaders() });
+    if (!res.ok) return null;
+    const body = await res.json();
+    return body.state || null;
+  } catch (err) {
+    return null;
+  }
+}
+
 function isAbsolutePath(path) {
   if (!path) return false;
   const trimmed = path.trim();
@@ -231,6 +243,7 @@ function fillFormFromProfile(profile) {
   form.description.value = profile.description || '';
   form.server_ip.value = profile.server_ip || '';
   form.run_script.value = profile.run_script || '';
+  form.admin_auth_key.value = profile.admin_auth_key || '';
   form.auth_key.value = profile.auth_key || '';
   form.shutdown_key.value = profile.shutdown_key || '';
   form.inactivity_limit.value = Number.isFinite(profile.inactivity_limit)
@@ -286,7 +299,7 @@ async function refreshStatus() {
     const isRunning = serverState === 'running';
     const isStarting = serverState === 'starting';
     startBtn.disabled = isRunning || isStarting;
-    stopBtn.disabled = serverState === 'stopped' || serverState === 'inactive';
+    stopBtn.disabled = isStarting;
   }
 
   const active = data.active_profile || '';
@@ -454,6 +467,11 @@ async function saveProfile(evt) {
     return;
   }
 
+  if (!payload.admin_auth_key || !payload.admin_auth_key.trim()) {
+    setStatus('ADMIN_AUTHKEY is required', true);
+    return;
+  }
+
   const exists = cachedProfiles.some((p) => p.name === payload.name);
   const url = exists ? `/api/profiles/${encodeURIComponent(payload.name)}` : '/api/profiles';
   const method = exists ? 'PUT' : 'POST';
@@ -513,12 +531,29 @@ async function startServer() {
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
 
+  const state = (await fetchServerState()) || (lastStatus?.server_running ? 'running' : 'stopped');
+  if (state === 'running') {
+    setStatus('Server is already running');
+    updateServerChip('running');
+    if (startBtn) startBtn.disabled = true;
+    if (stopBtn) stopBtn.disabled = false;
+    return;
+  }
+
+  if (state === 'starting') {
+    setStatus('Server is already starting');
+    updateServerChip('starting');
+    if (startBtn) startBtn.disabled = true;
+    if (stopBtn) stopBtn.disabled = true;
+    return;
+  }
+
   const res = await fetch('/api/start/server', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'Server starting');
-    startBtn.disabled = true;
-    stopBtn.disabled = false;
+    if (startBtn) startBtn.disabled = true;
+    if (stopBtn) stopBtn.disabled = false;
     updateServerChip('starting');
     pollServerReadiness();
   } else {
@@ -531,28 +566,21 @@ async function stopServer() {
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
 
-  let currentState = null;
-  try {
-    const stateRes = await fetch('/api/server/state', { headers: authHeaders() });
-    if (stateRes.ok) {
-      const stateBody = await stateRes.json();
-      currentState = stateBody.state;
-    }
-  } catch (err) {
-    // ignore; fall back to lastStatus
-  }
-
-  if (!currentState && lastStatus) {
-    currentState = lastStatus.server_running ? 'running' : 'stopped';
-  }
+  const currentState = (await fetchServerState()) || (lastStatus?.server_running ? 'running' : 'stopped');
 
   if (currentState === 'stopped' || currentState === 'inactive') {
     setStatus('Server is not running', true);
     updateServerChip('stopped');
-    if (startBtn && stopBtn) {
-      startBtn.disabled = false;
-      stopBtn.disabled = true;
-    }
+    if (startBtn) startBtn.disabled = false;
+    if (stopBtn) stopBtn.disabled = false;
+    return;
+  }
+
+  if (currentState === 'starting') {
+    setStatus('Server is starting up. Please wait before stopping.', true);
+    updateServerChip('starting');
+    if (startBtn) startBtn.disabled = true;
+    if (stopBtn) stopBtn.disabled = true;
     return;
   }
 
@@ -560,8 +588,8 @@ async function stopServer() {
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'Server stopping');
-    startBtn.disabled = false;
-    stopBtn.disabled = true;
+    if (startBtn) startBtn.disabled = false;
+    if (stopBtn) stopBtn.disabled = false;
     updateServerChip('stopping');
     pollServerShutdown();
   } else {
@@ -611,6 +639,12 @@ async function pollServerShutdown(retries = 15) {
 
 
 async function startApi() {
+  const status = await refreshStatus();
+  if (status?.api_running) {
+    setStatus('API already running');
+    return;
+  }
+
   const res = await fetch('/api/start/api', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
@@ -620,6 +654,12 @@ async function startApi() {
 }
 
 async function startController() {
+  const status = await refreshStatus();
+  if (status?.controller_running) {
+    setStatus('Controller already running');
+    return;
+  }
+
   const res = await fetch('/api/start/controller', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller started');
@@ -628,6 +668,12 @@ async function startController() {
 }
 
 async function stopApi() {
+  const status = await refreshStatus();
+  if (status && !status.api_running) {
+    setStatus('API is not running', true);
+    return;
+  }
+
   const res = await fetch('/api/stop/api', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'API stopped');
@@ -636,6 +682,12 @@ async function stopApi() {
 }
 
 async function stopController() {
+  const status = await refreshStatus();
+  if (status && !status.controller_running) {
+    setStatus('Controller is not running', true);
+    return;
+  }
+
   const res = await fetch('/api/stop/controller', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) setStatus(body.message || 'Controller stopped');
@@ -679,7 +731,7 @@ async function promptForPlayitPath() {
 }
 
 async function startPlayit() {
-  const status = lastStatus || (await refreshStatus());
+  const status = await refreshStatus();
   if (!status.playit_configured) {
     setStatus('No path is defined for Playit.exe', true);
     await promptForPlayitPath();
@@ -713,7 +765,7 @@ async function startPlayit() {
 }
 
 async function stopPlayit() {
-  const status = lastStatus || (await refreshStatus());
+  const status = await refreshStatus();
   if (!status.playit_configured) {
     setStatus('No path is defined for Playit.exe', true);
     await promptForPlayitPath();
