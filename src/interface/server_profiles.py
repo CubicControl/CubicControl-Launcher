@@ -46,6 +46,24 @@ class ServerProfile:
     def server_properties_path(self) -> Path:
         return self.root / "server.properties"
 
+    def sync_server_properties(self) -> None:
+        """Ensure core RCON/query settings are written to server.properties."""
+
+        base_settings = {
+            "enable-rcon": "true",
+            "rcon.port": str(self.rcon_port),
+            "rcon.password": self.rcon_password,
+            "enable-query": "true",
+            "query.port": str(self.query_port),
+            "server-ip": self.server_ip,
+        }
+
+        self.server_properties_path.parent.mkdir(parents=True, exist_ok=True)
+        if not self.server_properties_path.exists():
+            self.server_properties_path.write_text("# Minecraft server properties\n", encoding="utf-8")
+
+        server_properties.write_server_properties(str(self.server_properties_path), base_settings)
+
     def to_dict(self) -> Dict:
         data = asdict(self)
         data["server_path"] = str(self.root)
@@ -66,17 +84,7 @@ class ServerProfile:
                 "java -jar server.jar nogui\n",
                 encoding="utf-8",
             )
-        if not self.server_properties_path.exists():
-            self.server_properties_path.write_text("# Minecraft server properties\n", encoding="utf-8")
-            server_properties.write_server_properties(
-                str(self.server_properties_path),
-                {
-                    "enable-rcon": "true",
-                    "rcon.port": str(self.rcon_port),
-                    "enable-query": "true",
-                    "query.port": str(self.query_port),
-                },
-            )
+        self.sync_server_properties()
 
 
 class ServerProfileStore:
@@ -115,6 +123,8 @@ class ServerProfileStore:
         return self._profiles.get(name)
 
     def upsert_profile(self, profile: ServerProfile) -> ServerProfile:
+        profile.ensure_scaffold()
+        profile.sync_server_properties()
         self._profiles[profile.name] = profile
         if not self.active_profile_name:
             self.active_profile_name = profile.name
@@ -125,8 +135,11 @@ class ServerProfileStore:
         if name not in self._profiles:
             raise KeyError(f"Profile '{name}' does not exist")
         self.active_profile_name = name
+        profile = self._profiles[name]
+        profile.ensure_scaffold()
+        profile.sync_server_properties()
         self._save()
-        return self._profiles[name]
+        return profile
 
     @property
     def active_profile(self) -> Optional[ServerProfile]:

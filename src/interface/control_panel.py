@@ -180,6 +180,7 @@ def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
     if not profile:
         return
     profile.ensure_scaffold()
+    profile.sync_server_properties()
     ConfigFileHandler().set_value('Run.bat location', str(profile.root))
     _apply_profile_environment(profile)
     if not _is_api_running(profile):
@@ -223,6 +224,25 @@ def profiles():
     if store.active_profile_name == profile.name:
         _ensure_services_running(profile)
     return jsonify(profile.to_dict()), 201
+
+
+@app.route("/api/profiles/<name>", methods=["PUT"])
+def update_profile(name: str):
+    if not store.get_profile(name):
+        return jsonify({"error": "Profile not found"}), 404
+
+    payload = request.get_json(force=True)
+    payload = payload or {}
+    payload["name"] = name
+    try:
+        profile = _profile_from_request(payload)
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+
+    store.upsert_profile(profile)
+    if store.active_profile_name == profile.name:
+        _ensure_services_running(profile)
+    return jsonify(profile.to_dict())
 
 
 @app.route("/api/profiles/<name>", methods=["GET", "DELETE"])

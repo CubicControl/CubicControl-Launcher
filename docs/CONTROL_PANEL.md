@@ -27,3 +27,6 @@ python -m src.interface.control_panel
 ```
 
 By default it listens on port `38000`. You can adjust the host/port directly inside `src/interface/control_panel.py` if you need a different binding.
+
+### Legacy first-run GUI
+`src/gui/initial_setup.py` is still present for the older Tkinter onboarding flow, but all configuration can now be handled directly in the control panel. You can skip the Tkinter helper unless you specifically want a desktop-native initial experience.

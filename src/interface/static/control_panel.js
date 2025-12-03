@@ -1,6 +1,7 @@
 const profileSelect = document.getElementById('profile-select');
 const activeProfileEl = document.getElementById('active-profile');
 const statusText = document.getElementById('status-text');
+const statusBanner = document.getElementById('status-banner');
 const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
 const apiChip = document.getElementById('api-status');
@@ -11,6 +12,11 @@ let cachedProfiles = [];
 function setStatus(message, isError = false) {
   statusText.textContent = message;
   statusText.style.color = isError ? 'var(--del-color, #c62828)' : 'inherit';
+  if (statusBanner) {
+    statusBanner.textContent = message;
+    statusBanner.classList.toggle('error', isError);
+    statusBanner.classList.toggle('show', Boolean(message));
+  }
 }
 
 function setChip(chipEl, isOn, label) {
@@ -33,6 +39,12 @@ function toDict(form) {
   });
   if (!payload.pc_sleep_after_inactivity) payload.pc_sleep_after_inactivity = false;
   return payload;
+}
+
+function isAbsolutePath(path) {
+  if (!path) return false;
+  const trimmed = path.trim();
+  return /^([a-zA-Z]:[\\/]|\/)/.test(trimmed);
 }
 
 function fillFormFromProfile(profile) {
@@ -150,19 +162,30 @@ async function deleteProfile() {
   }
 }
 
-async function createProfile(evt) {
+async function saveProfile(evt) {
   evt.preventDefault();
   const payload = toDict(evt.target);
-  const res = await fetch('/api/profiles', {
-    method: 'POST',
+
+  if (!isAbsolutePath(payload.server_path)) {
+    setStatus('Server folder must be an absolute path (e.g. C:/Servers/Pack or /srv/mc/pack)', true);
+    return;
+  }
+
+  const exists = cachedProfiles.some((p) => p.name === payload.name);
+  const url = exists ? `/api/profiles/${encodeURIComponent(payload.name)}` : '/api/profiles';
+  const method = exists ? 'PUT' : 'POST';
+
+  const res = await fetch(url, {
+    method,
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(payload),
   });
   const body = await res.json();
-  if (res.status === 201) {
-    setStatus(`Saved profile ${body.name}`);
+  if (res.ok) {
+    setStatus(`${exists ? 'Updated' : 'Saved'} profile ${body.name}`);
     await refreshStatus();
     profileSelect.value = body.name;
+    fillFormFromProfile(body);
     connectLogs(body.name);
   } else {
     setStatus(body.error || 'Unable to save profile', true);
@@ -252,7 +275,7 @@ async function saveProperties() {
 }
 
 function init() {
-  document.getElementById('profile-form').addEventListener('submit', createProfile);
+  document.getElementById('profile-form').addEventListener('submit', saveProfile);
   document.getElementById('activate-btn').addEventListener('click', activateProfile);
   document.getElementById('bootstrap-btn').addEventListener('click', bootstrapProfile);
   document.getElementById('load-form-btn').addEventListener('click', loadSelectedProfile);
