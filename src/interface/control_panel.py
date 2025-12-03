@@ -8,6 +8,7 @@ from typing import Dict, List, Optional
 
 import eventlet
 import requests
+from mcstatus import JavaServer
 
 from flask import Flask, jsonify, render_template, request
 from flask_socketio import SocketIO, emit
@@ -219,12 +220,14 @@ def _stop_controller(name: str) -> bool:
     return stopped
 
 
-def _stop_services(profile: Optional[ServerProfile]) -> None:
-    """Stop API and controller services for the given profile."""
+def _stop_services(profile: Optional[ServerProfile], *, stop_server: bool = False) -> None:
+    """Stop API, controller, and optionally the server for the given profile."""
     if not profile:
         return
     _stop_controller(profile.name)
     _stop_api_process(profile)
+    if stop_server:
+        _stop_server_process(profile)
 
 
 def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
@@ -246,6 +249,27 @@ def _is_server_running(profile_name: str) -> bool:
     proc = server_processes.get(profile_name)
     return proc is not None and proc.poll() is None
 
+
+def _query_server_online(profile: ServerProfile) -> bool:
+    """Return True if the server responds to a query ping."""
+    try:
+        JavaServer(profile.server_ip, profile.query_port).query()
+        return True
+    except Exception:
+        return False
+
+
+def _server_state(profile: Optional[ServerProfile]) -> Dict[str, object]:
+    if not profile:
+        return {"state": "inactive", "running": False, "starting": False}
+
+    if _query_server_online(profile):
+        return {"state": "running", "running": True, "starting": False}
+
+    if _is_server_running(profile.name):
+        return {"state": "starting", "running": False, "starting": True}
+
+    return {"state": "stopped", "running": False, "starting": False}
 
 def _append_server_log(profile_name: str, line: str) -> None:
     buffer = server_log_buffers.setdefault(profile_name, [])
@@ -312,27 +336,26 @@ def _start_server_process(profile: ServerProfile) -> bool:
 
 def _stop_server_process(profile: ServerProfile) -> bool:
     """Stop the Minecraft server process."""
-    if not _is_server_running(profile.name):
-        logger.info(f"Server not running for profile '{profile.name}'")
-        return False
+    stop_attempted = False
 
-    # Try graceful shutdown via RCON first
+    # Try graceful shutdown via RCON regardless of local handle availability
     try:
         from mcrcon import MCRcon
         with MCRcon(profile.server_ip, profile.rcon_password, port=profile.rcon_port) as mcr:
             mcr.command("stop")
+            stop_attempted = True
             logger.info(f"Sent RCON stop command to profile '{profile.name}'")
     except Exception as exc:
         logger.warning(f"Failed to send RCON stop command: {exc}")
 
-    # Wait for graceful shutdown, then force if necessary
+    # Wait for graceful shutdown, then force if necessary when we own the process
     proc = server_processes.get(profile.name)
     if proc:
         try:
             proc.wait(timeout=15)
             logger.info(f"Server stopped gracefully for profile '{profile.name}'")
         except subprocess.TimeoutExpired:
-            logger.warning(f"Server did not stop gracefully, terminating process")
+            logger.warning("Server did not stop gracefully, terminating process")
             proc.terminate()
             try:
                 proc.wait(timeout=5)
@@ -341,9 +364,15 @@ def _stop_server_process(profile: ServerProfile) -> bool:
 
         server_processes.pop(profile.name, None)
         server_log_threads.pop(profile.name, None)
-        return True
 
-    return False
+    # If we don't have a local handle or RCON failed, poll the query port to confirm shutdown
+    for _ in range(20):
+        if not _query_server_online(profile) and not _is_server_running(profile.name):
+            return True
+        eventlet.sleep(1)
+
+    logger.warning(f"Unable to confirm server stop for profile '{profile.name}'")
+    return stop_attempted
 
 
 
@@ -367,6 +396,11 @@ def status():
             "server_running": _is_server_running(store.active_profile_name or "") if store.active_profile_name else False,
         }
     )
+
+@app.route("/api/server/state", methods=["GET"])
+def server_state():
+    profile = store.active_profile
+    return jsonify(_server_state(profile))
 
 
 @app.route('/api/profiles', methods=['GET', 'POST'])
@@ -416,7 +450,7 @@ def profile_detail(name: str):
     if request.method == "GET":
         return jsonify(profile.to_dict())
 
-    _stop_controller(name)
+    _stop_services(profile, stop_server=True)
     store.delete_profile(name)
     return jsonify({"message": f"Profile '{name}' deleted"})
 
@@ -424,6 +458,8 @@ def profile_detail(name: str):
 @app.route("/api/profiles/<name>/activate", methods=["POST"])
 def set_active(name: str):
     previous_profile = store.active_profile
+    if previous_profile and previous_profile.name == name:
+        return jsonify({"error": "Profile is already active"}), 400
     profile = store.set_active(name)
     _stop_services(previous_profile)
     ConfigFileHandler().set_value('Run.bat location', str(profile.root))
@@ -484,7 +520,8 @@ def start_server():
     if not profile:
         return jsonify({"error": "No active profile"}), 400
 
-    if _is_server_running(profile.name):
+    state = _server_state(profile)
+    if state.get("state") in {"starting", "running"}:
         return jsonify({"error": "Server is already running"}), 400
 
     try:
@@ -524,7 +561,8 @@ def stop_server():
     if not profile:
         return jsonify({"error": "No active profile"}), 400
 
-    if not _is_server_running(profile.name):
+    state = _server_state(profile)
+    if state.get("state") in {"stopped", "inactive"}:
         return jsonify({"error": "Server is not running"}), 400
 
     def _stop_async():

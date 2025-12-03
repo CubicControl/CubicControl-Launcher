@@ -58,6 +58,21 @@ function setChip(chipEl, isOn, label) {
   chipEl.classList.toggle('status-off', !isOn);
 }
 
+function updateServerChip(state) {
+  if (!serverChip) return;
+  const stateText = state || 'stopped';
+  const pretty = stateText.charAt(0).toUpperCase() + stateText.slice(1);
+  serverChip.textContent = `Server: ${pretty}`;
+  serverChip.classList.remove('status-on', 'status-off');
+  if (stateText === 'running') {
+    serverChip.classList.add('status-on');
+  } else if (stateText === 'starting') {
+    serverChip.classList.add('status-off');
+  } else {
+    serverChip.classList.add('status-off');
+  }
+}
+
 function toggleDrawer(open) {
   if (!drawer) return;
   drawer.classList.toggle('open', Boolean(open));
@@ -131,14 +146,31 @@ async function refreshStatus() {
   setChip(controllerChip, Boolean(data.controller_running), 'Controller');
   setChip(serverChip, Boolean(data.server_running), 'Server');
 
+  let serverState = data.server_running ? 'running' : 'stopped';
+  try {
+    const stateRes = await fetch('/api/server/state');
+    if (stateRes.ok) {
+      const stateBody = await stateRes.json();
+      serverState = stateBody.state;
+      updateServerChip(serverState);
+    } else {
+      updateServerChip(serverState);
+    }
+  } catch (error) {
+    updateServerChip(serverState);
+  }
+
   // Update button states
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
   if (startBtn && stopBtn) {
-    startBtn.disabled = Boolean(data.server_running);
-    stopBtn.disabled = !Boolean(data.server_running);
+    const isRunning = serverState === 'running';
+    const isStarting = serverState === 'starting';
+    startBtn.disabled = isRunning || isStarting;
+    stopBtn.disabled = serverState === 'stopped' || serverState === 'inactive';
   }
 }
+
 
 function connectLogs(profile) {
   console.log('connectLogs called for profile:', profile);
@@ -205,9 +237,13 @@ function closeDrawer() {
   toggleDrawer(false);
 }
 
+
 async function activateProfile() {
   const name = profileSelect.value;
   if (!name) return;
+  if (name === activeProfileEl.textContent) {
+    return setStatus('Profile already active', true);
+  }
   showLoading(true);
   try {
     const res = await fetch(`/api/profiles/${encodeURIComponent(name)}/activate`, { method: 'POST' });
@@ -236,6 +272,7 @@ async function deleteProfile() {
   if (res.ok) {
     setStatus(body.message || 'Profile deleted');
     await refreshStatus();
+    closeDrawer();
     connectLogs(profileSelect.value);
   } else {
     setStatus(body.error || 'Unable to delete profile', true);
@@ -245,6 +282,21 @@ async function deleteProfile() {
 async function saveProfile(evt) {
   evt.preventDefault();
   const payload = toDict(evt.target);
+
+  // Check for duplicate profile names
+  const profileName = payload.name.trim();
+  const existingProfile = cachedProfiles.find(p => p.name.toLowerCase() === profileName.toLowerCase());
+  const isEditing = cachedProfiles.some(p => p.name === drawer.dataset.profileName);
+
+  if (existingProfile && (!isEditing || drawer.dataset.profileName.toLowerCase() !== profileName.toLowerCase())) {
+    setStatus('A profile with this name already exists. Please choose a different name.', true);
+    return;
+  }
+
+  if (!isAbsolutePath(payload.server_path)) {
+    setStatus('Server folder must be an absolute path (e.g. C:/Servers/Pack or /srv/mc/pack)', true);
+    return;
+  }
 
   if (!isAbsolutePath(payload.server_path)) {
     setStatus('Server folder must be an absolute path (e.g. C:/Servers/Pack or /srv/mc/pack)', true);
@@ -269,6 +321,7 @@ async function saveProfile(evt) {
     connectLogs(body.name);
     setDrawerMode(`Manage ${body.name}`, true, body.name);
     loadProperties(body.name);
+    closeDrawer();
   } else {
     setStatus(body.error || 'Unable to save profile', true);
   }
@@ -284,6 +337,8 @@ async function startServer() {
     setStatus(body.message || 'Server starting');
     startBtn.disabled = true;
     stopBtn.disabled = false;
+    updateServerChip('starting');
+    pollServerReadiness();
   } else {
     setStatus(body.error || 'Failed to start server', true);
   }
@@ -300,11 +355,49 @@ async function stopServer() {
     setStatus(body.message || 'Server stopped');
     startBtn.disabled = false;
     stopBtn.disabled = true;
+    pollServerShutdown();
   } else {
     setStatus(body.error || 'Failed to stop server', true);
   }
   await refreshStatus();
 }
+
+async function pollServerReadiness(retries = 20) {
+  for (let i = 0; i < retries; i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    try {
+      const res = await fetch('/api/server/state');
+      if (!res.ok) continue;
+      const body = await res.json();
+      updateServerChip(body.state);
+      if (body.state === 'running') {
+        setStatus('Server is running');
+        return;
+      }
+    } catch (err) {
+      // ignore and retry
+    }
+  }
+}
+
+async function pollServerShutdown(retries = 15) {
+  for (let i = 0; i < retries; i += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+    try {
+      const res = await fetch('/api/server/state');
+      if (!res.ok) continue;
+      const body = await res.json();
+      updateServerChip(body.state);
+      if (body.state === 'stopped' || body.state === 'inactive') {
+        setStatus('Server stopped');
+        return;
+      }
+    } catch (err) {
+      // ignore and retry
+    }
+  }
+}
+
 
 async function startApi() {
   const res = await fetch('/api/start/api', { method: 'POST' });

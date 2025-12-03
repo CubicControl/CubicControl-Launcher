@@ -405,9 +405,8 @@
       inset: 0;
       background: rgba(0, 0, 0, 0.45);
       display: none;
-      /* CHANGED: center the drawer instead of right-aligning */
-      align-items: center;
-      justify-content: center;
+      align-items: center; /* Center vertically */
+      justify-content: center; /* Center horizontally */
       padding: 2rem;
       z-index: 12;
       backdrop-filter: blur(2px);
@@ -442,9 +441,16 @@
     .drawer-body {
       padding: 1rem 1.25rem 1.25rem;
       overflow-y: auto;
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      display: flex;
+      flex-direction: column;
+      align-items: center;
       gap: 1rem;
+      width: 100%;
+    }
+
+    .drawer-body > .card {
+      width: 100%;
+      max-width: 800px;
     }
 
     .drawer-close {
@@ -606,7 +612,7 @@
 
 <div class="container">
   <div class="main-grid">
-    <div class="card system-card">
+    <div class="card">
       <div class="card-header-row">
         <h3>System Status</h3>
         <span class="soft-badge">Active: <span id="active-profile">None</span></span>
@@ -644,7 +650,7 @@
       <p id="status-text" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);"></p>
     </div>
 
-    <div class="card profile-card">
+    <div class="card">
       <div class="card-header-row">
         <h3>Profile Manager</h3>
         <span class="soft-badge">Profiles stored in <code>server_profiles.json</code></span>
