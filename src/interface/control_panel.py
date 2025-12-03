@@ -12,7 +12,7 @@ import requests
 from mcstatus import JavaServer
 
 from flask import Flask, jsonify, render_template, request
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room
 
 from src.config import settings
 from src.config.config_file_handler import ConfigFileHandler
@@ -272,6 +272,10 @@ def _server_state(profile: Optional[ServerProfile]) -> Dict[str, object]:
 
     return {"state": "stopped", "running": False, "starting": False}
 
+
+def _log_room(profile_name: str) -> str:
+    return f"log-stream::{profile_name}"
+
 def _append_server_log(profile_name: str, line: str) -> None:
     buffer = server_log_buffers.setdefault(profile_name, [])
     buffer.append(line)
@@ -296,8 +300,13 @@ def _stream_server_output(profile_name: str, proc: subprocess.Popen) -> None:
         _append_server_log(profile_name, line)
         # Emit to all connected clients
         try:
-            socketio.emit("log_line", {"message": line, "profile": profile_name, "source": "server"}, namespace='/')
-            time.sleep(0.01)
+            socketio.emit(
+                "log_line",
+                {"message": line, "profile": profile_name, "source": "server"},
+                namespace='/',
+                room=_log_room(profile_name),
+            )
+            socketio.sleep(0)
         except Exception as e:
             logger.error(f"Error emitting log line: {e}")
     proc.wait()
@@ -329,8 +338,7 @@ def _start_server_process(profile: ServerProfile) -> bool:
 
     server_processes[profile.name] = proc
     server_log_buffers.pop(profile.name, None)
-    thread = Thread(target=_stream_server_output, args=(profile.name, proc), daemon=True)
-    thread.start()
+    thread = socketio.start_background_task(_stream_server_output, profile.name, proc)
     server_log_threads[profile.name] = thread
     logger.info(f"Server started with PID {proc.pid}")
     return True
@@ -605,15 +613,18 @@ def follow_logs(payload):
 
     logger.info(f"Client connected to follow logs for profile: {profile.name}")
 
+    room = _log_room(profile.name)
+    join_room(room)
+
     # Send buffered logs line by line
     for line in server_log_buffers.get(profile.name, [])[-200:]:
-        emit("log_line", {"message": line})
+        emit("log_line", {"message": line}, room=room)
 
     # If server is not running, send static log file
     latest_log = profile.root / "logs" / "latest.log"
     if not _is_server_running(profile.name) and latest_log.exists():
         for line in latest_log.read_text(encoding="utf-8", errors="ignore").splitlines()[-200:]:
-            emit("log_line", {"message": line})
+            emit("log_line", {"message": line}, room=room)
 
 
 @app.route("/api/test/socket", methods=["POST"])

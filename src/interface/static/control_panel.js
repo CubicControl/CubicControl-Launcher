@@ -17,6 +17,7 @@ const addProfileBtn = document.getElementById('add-profile-btn');
 const openToolsBtn = document.getElementById('open-tools-btn');
 let socket;
 let cachedProfiles = [];
+let currentLogProfile = '';
 
 const defaultProfile = {
   name: '',
@@ -63,11 +64,11 @@ function updateServerChip(state) {
   const stateText = state || 'stopped';
   const pretty = stateText.charAt(0).toUpperCase() + stateText.slice(1);
   serverChip.textContent = `Server: ${pretty}`;
-  serverChip.classList.remove('status-on', 'status-off');
+  serverChip.classList.remove('status-on', 'status-off', 'status-starting');
   if (stateText === 'running') {
     serverChip.classList.add('status-on');
   } else if (stateText === 'starting') {
-    serverChip.classList.add('status-off');
+    serverChip.classList.add('status-starting');
   } else {
     serverChip.classList.add('status-off');
   }
@@ -169,6 +170,11 @@ async function refreshStatus() {
     startBtn.disabled = isRunning || isStarting;
     stopBtn.disabled = serverState === 'stopped' || serverState === 'inactive';
   }
+
+  const active = data.active_profile || '';
+  if (active && active !== currentLogProfile) {
+    connectLogs(active);
+  }
 }
 
 
@@ -177,6 +183,7 @@ function connectLogs(profile) {
   if (!profile) {
     logsEl.textContent = '';
     if (socket) socket.disconnect();
+    currentLogProfile = '';
     return;
   }
   if (socket) {
@@ -185,15 +192,17 @@ function connectLogs(profile) {
     socket = null;
   }
   console.log('Creating new socket connection');
-  socket = io({
+  socket = io('/', {
     reconnection: true,
     reconnectionAttempts: 10,
-    reconnectionDelay: 1000
+    reconnectionDelay: 1000,
+    transports: ['websocket'],
   });
   logsEl.textContent = '';
   socket.on('connect', () => {
     console.log('Socket connected! Emitting follow_logs for profile:', profile);
     socket.emit('follow_logs', { profile });
+    currentLogProfile = profile;
   });
   socket.on('log_line', (payload) => {
     console.log('Received log_line:', payload);
@@ -267,13 +276,16 @@ async function activateProfile() {
 async function deleteProfile() {
   const name = profileSelect.value;
   if (!name) return setStatus('Choose a profile first', true);
+  const confirmed = window.confirm(`Delete profile "${name}"? This will stop any running services first.`);
+  if (!confirmed) return;
   const res = await fetch(`/api/profiles/${encodeURIComponent(name)}`, { method: 'DELETE' });
   const body = await res.json();
   if (res.ok) {
     setStatus(body.message || 'Profile deleted');
     await refreshStatus();
     closeDrawer();
-    connectLogs(profileSelect.value);
+    const nextProfile = profileSelect.value;
+    connectLogs(nextProfile || '');
   } else {
     setStatus(body.error || 'Unable to delete profile', true);
   }
