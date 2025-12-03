@@ -28,6 +28,7 @@ store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
 controller_threads: Dict[str, Thread] = {}
 api_process: Optional[subprocess.Popen] = None
+server_processes: Dict[str, subprocess.Popen] = {}
 
 
 # ---------- Helpers ----------
@@ -189,6 +190,65 @@ def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
         _start_controller(profile)
 
 
+def _is_server_running(profile_name: str) -> bool:
+    """Check if the Minecraft server process is running."""
+    proc = server_processes.get(profile_name)
+    return proc is not None and proc.poll() is None
+
+
+def _start_server_process(profile: ServerProfile) -> bool:
+    """Start the Minecraft server using the run script."""
+    if _is_server_running(profile.name):
+        logger.info(f"Server already running for profile '{profile.name}'")
+        return False
+
+    run_script_path = profile.root / profile.run_script
+    if not run_script_path.exists():
+        logger.error(f"Run script not found: {run_script_path}")
+        raise FileNotFoundError(f"Run script not found: {run_script_path}")
+
+    logger.info(f"Starting Minecraft server for profile '{profile.name}'")
+
+    # Start the server process
+    proc = subprocess.Popen(
+        [str(run_script_path)],
+        cwd=str(profile.root),
+        shell=True,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    server_processes[profile.name] = proc
+    logger.info(f"Server started with PID {proc.pid}")
+    return True
+
+
+def _stop_server_process(profile: ServerProfile) -> bool:
+    """Stop the Minecraft server process."""
+    if not _is_server_running(profile.name):
+        logger.info(f"Server not running for profile '{profile.name}'")
+        return False
+
+    # Try graceful shutdown via controller first
+    controller = controllers.get(profile.name)
+    if controller:
+        controller.stop_minecraft_server()
+
+    # Terminate the process
+    proc = server_processes.get(profile.name)
+    if proc:
+        proc.terminate()
+        try:
+            proc.wait(timeout=10)
+        except subprocess.TimeoutExpired:
+            proc.kill()
+        logger.info(f"Server process stopped for profile '{profile.name}'")
+        server_processes.pop(profile.name, None)
+        return True
+
+    return False
+
+
 # ---------- Routes ----------
 @app.route("/")
 def index():
@@ -197,13 +257,15 @@ def index():
 
 @app.route("/api/status")
 def status():
+    active_profile = store.active_profile
     return jsonify(
         {
             "message": "ServerSide control panel",
             "active_profile": store.active_profile_name,
             "profiles": [p.to_dict() for p in store.list_profiles()],
-            "api_running": _is_api_running(store.active_profile),
+            "api_running": _is_api_running(active_profile),
             "controller_running": _controller_running(store.active_profile_name or ""),
+            "server_running": _is_server_running(store.active_profile_name or "") if store.active_profile_name else False,
         }
     )
 
@@ -325,6 +387,23 @@ def start_controller():
     return jsonify({"message": "Controller started", "profile": profile.name})
 
 
+@app.route("/api/start/server", methods=["POST"])
+def start_server():
+    """Start the Minecraft server for the active profile."""
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    if _is_server_running(profile.name):
+        return jsonify({"message": "Server already running"})
+
+    try:
+        _start_server_process(profile)
+        return jsonify({"message": f"Server starting for profile '{profile.name}'"})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+
 @app.route("/api/stop/api", methods=["POST"])
 def stop_api():
     profile = store.active_profile
@@ -346,6 +425,23 @@ def stop_controller():
     if _stop_controller(profile.name):
         return jsonify({"message": "Controller stopped"})
     return jsonify({"error": "Controller was not running"}), 400
+
+
+@app.route("/api/stop/server", methods=["POST"])
+def stop_server():
+    """Stop the Minecraft server for the active profile."""
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    if not _is_server_running(profile.name):
+        return jsonify({"error": "Server is not running"}), 400
+
+    try:
+        _stop_server_process(profile)
+        return jsonify({"message": f"Server stopped for profile '{profile.name}'"})
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
 
 
 @app.route("/api/logs/<name>")

@@ -6,6 +6,7 @@ const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
 const apiChip = document.getElementById('api-status');
 const controllerChip = document.getElementById('controller-status');
+const serverChip = document.getElementById('server-status');
 let socket;
 let cachedProfiles = [];
 
@@ -80,6 +81,7 @@ async function refreshStatus() {
   activeProfileEl.textContent = data.active_profile || 'None';
   setChip(apiChip, Boolean(data.api_running), 'API');
   setChip(controllerChip, Boolean(data.controller_running), 'Controller');
+  setChip(serverChip, Boolean(data.server_running), 'Server');
 }
 
 function connectLogs(profile) {
@@ -192,6 +194,22 @@ async function saveProfile(evt) {
   }
 }
 
+async function startServer() {
+  const res = await fetch('/api/start/server', { method: 'POST' });
+  const body = await res.json();
+  if (res.ok) setStatus(body.message || 'Server starting');
+  else setStatus(body.error || 'Failed to start server', true);
+  refreshStatus();
+}
+
+async function stopServer() {
+  const res = await fetch('/api/stop/server', { method: 'POST' });
+  const body = await res.json();
+  if (res.ok) setStatus(body.message || 'Server stopped');
+  else setStatus(body.error || 'Failed to stop server', true);
+  refreshStatus();
+}
+
 async function startApi() {
   const res = await fetch('/api/start/api', { method: 'POST' });
   const body = await res.json();
@@ -280,6 +298,8 @@ function init() {
   document.getElementById('bootstrap-btn').addEventListener('click', bootstrapProfile);
   document.getElementById('load-form-btn').addEventListener('click', loadSelectedProfile);
   document.getElementById('delete-profile-btn').addEventListener('click', deleteProfile);
+  document.getElementById('start-server-btn').addEventListener('click', startServer);
+  document.getElementById('stop-server-btn').addEventListener('click', stopServer);
   document.getElementById('start-api-btn').addEventListener('click', startApi);
   document.getElementById('start-controller-btn').addEventListener('click', startController);
   document.getElementById('stop-api-btn').addEventListener('click', stopApi);

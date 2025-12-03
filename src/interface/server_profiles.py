@@ -16,8 +16,8 @@ class ServerProfile:
     """Represents a single Minecraft server or modpack installation."""
 
     name: str
+    server_path: str                  # required, comes before any defaults
     server_ip: str = "localhost"
-    server_path: str
     run_script: str = "run.bat"
     rcon_password: str = ""
     rcon_port: int = 27001

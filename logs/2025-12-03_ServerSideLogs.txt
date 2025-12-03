@@ -1,0 +1,27 @@
+2025-12-03 14:44:42,497 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 14:45:22,768 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 14:45:30,881 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 14:45:41,058 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 14:47:45,802 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 14:53:52,578 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 14:58:45,406 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 15:08:47,063 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 15:08:56,312 - ServerLogger - INFO - API started for profile 'test' with PID 24540
+2025-12-03 15:08:56,324 - ServerLogger - INFO - Controller started for profile 'test'
+2025-12-03 15:10:20,955 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 15:10:27,662 - ServerLogger - INFO - API process stopped
+2025-12-03 15:11:31,902 - ServerLogger - INFO - API started for profile 'TEST' with PID 27076
+2025-12-03 15:11:31,904 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 15:12:03,635 - ServerLogger - INFO - API process stopped
+2025-12-03 15:12:35,568 - ServerLogger - INFO - API started for profile 'TEST' with PID 25900
+2025-12-03 15:18:35,605 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 15:22:11,561 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 15:22:20,735 - ServerLogger - INFO - API started for profile 'TEST' with PID 8016
+2025-12-03 15:22:20,737 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 15:34:28,436 - ServerLogger - INFO - Starting control panel UI
+2025-12-03 15:34:36,195 - ServerLogger - INFO - API started for profile 'TEST' with PID 22436
+2025-12-03 15:34:36,195 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 15:35:24,658 - ServerLogger - INFO - Controller started for profile 'TEST'
+2025-12-03 15:35:48,618 - ServerLogger - INFO - Starting Minecraft server for profile 'TEST'
+2025-12-03 15:35:48,630 - ServerLogger - INFO - Server started with PID 18680
+2025-12-03 15:36:36,091 - ServerLogger - INFO - Server process stopped for profile 'TEST'

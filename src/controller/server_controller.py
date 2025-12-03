@@ -1,6 +1,7 @@
 import datetime
 import logging
 import os
+import subprocess
 import time
 from pathlib import Path
 from threading import Event, Thread
@@ -15,7 +16,7 @@ from src.interface.server_profiles import ServerProfile
 
 
 class ServerController:
-    """Background watcher that mirrors the original controller logic per server profile."""
+    """Background watcher that monitors server activity and manages shutdown."""
 
     def __init__(self, profile: ServerProfile, *, log_dir: Optional[Path] = None):
         self.profile = profile
@@ -39,11 +40,9 @@ class ServerController:
         self.last_active_time = time.time()
         self.server_offline_logged = False
         self.server_empty_logged = False
-        self.server_back_online_status = None
         self.last_player_count = 0
-        self.ready_to_sleep = False
+        self.inactivity_shutdown_triggered = False
 
-    # ---- Core monitoring operations ----
     def get_player_info(self):
         """Get the number of players currently online using the query port."""
         try:
@@ -54,99 +53,121 @@ class ServerController:
                 self.logger.info("Server is back online. Polling will continue...")
                 self.server_offline_logged = False
 
-            if query.players.online > 0:
+            player_count = query.players.online
+            if player_count > 0:
                 self.server_empty_logged = False
-                return query.players.online, query.players.names
+                return player_count, query.players.names
             else:
                 if not self.server_empty_logged:
-                    self.logger.info("No players online. Polling will continue...")
+                    self.logger.info("Server is online but empty. Monitoring for inactivity...")
                     self.server_empty_logged = True
                 return 0, []
 
-        except ConnectionError:
+        except Exception as exc:
             if not self.server_offline_logged:
-                self.logger.info("Server may be offline. Polling will continue...")
+                self.logger.warning(f"Cannot reach server (may be offline): {exc}")
                 self.server_offline_logged = True
             return None, []
 
     def send_rcon_command(self, command):
+        """Send RCON command to server."""
         try:
             with MCRcon(self.profile.server_ip, self.profile.rcon_password, port=self.profile.rcon_port) as mcr:
                 response = mcr.command(command)
-                self.logger.info(f"RCON response: {response}")
-        except Exception as exc:  # pragma: no cover - defensive logging only
-            self.logger.error(f"Error sending RCON command: {exc}")
+                self.logger.info(f"RCON command '{command}' sent. Response: {response}")
+                return True
+        except Exception as exc:
+            self.logger.error(f"Error sending RCON command '{command}': {exc}")
+            return False
 
-    def stop_server(self):
-        try:
-            server = JavaServer(self.profile.server_ip, self.profile.query_port)
-            query = server.query()
-            if query.players.online is not None:
-                self.send_rcon_command("stop")
-        except ConnectionError as exc:  # pragma: no cover - defensive logging only
-            self.logger.error(f"Error checking server status or sending RCON command: {exc}")
+    def stop_minecraft_server(self):
+        """Attempt to stop the Minecraft server gracefully via RCON."""
+        self.logger.info("Attempting to stop Minecraft server...")
+        success = self.send_rcon_command("stop")
+        if success:
+            self.logger.info("Stop command sent successfully.")
+            # Wait for server to shut down
+            sleep(10)
+        return success
 
-    def handle_server_online(self, player_count, players_list):
-        if player_count is None:
-            self.server_offline_logged = True
-            self.last_player_count = 0
+    def check_inactivity_and_shutdown(self, player_count):
+        """Check if server has been inactive and trigger shutdown sequence."""
+        current_time = time.time()
 
-        if player_count == 0:
-            self.server_offline_logged = False
-            if not self.server_empty_logged:
-                self.server_empty_logged = True
-            self.last_player_count = 0
-
+        # Reset inactivity timer if players are online
         if player_count is not None and player_count > 0:
-            self.last_active_time = time.time()
+            self.last_active_time = current_time
+            self.inactivity_shutdown_triggered = False
             if player_count != self.last_player_count:
-                self.logger.info(f"Player count changed: {player_count} - Players: {players_list}")
+                self.logger.info(f"Players online: {player_count}")
                 self.last_player_count = player_count
-            self.ready_to_sleep = False
-            self.server_empty_logged = False
-            self.server_offline_logged = False
+            return False
 
-        if int(time.time()) - self.last_active_time >= self.profile.inactivity_limit:
+        # Check for inactivity timeout
+        inactive_duration = current_time - self.last_active_time
+
+        if not self.inactivity_shutdown_triggered and inactive_duration >= self.profile.inactivity_limit:
             self.logger.info(
-                "No players online for the specified time limit: %s seconds. Stopping server...",
-                self.profile.inactivity_limit,
+                f"Inactivity limit reached ({self.profile.inactivity_limit}s). "
+                f"Server has been empty/offline for {int(inactive_duration)}s."
             )
-            self.stop_server()
-            self.logger.info("Server stopped.")
-            self.ready_to_sleep = True
+            self.inactivity_shutdown_triggered = True
+
+            # Stop the server if it's still running
+            if player_count == 0:  # Server online but empty
+                self.stop_minecraft_server()
+
+            # Shut down API
+            self.send_command_shut_api()
+            sleep(3)
+
+            # Sleep PC if configured
+            if self.profile.pc_sleep_after_inactivity:
+                self.logger.info("Initiating system sleep...")
+                sleep(2)
+                try:
+                    os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+                except Exception as exc:
+                    self.logger.error(f"Failed to sleep system: {exc}")
+
+            return True
+
+        return False
 
     def monitor_server(self):
-        self.logger.info("Starting Minecraft server monitoring for profile '%s'", self.profile.name)
+        """Main monitoring loop."""
+        self.logger.info(
+            f"Starting server monitoring for '{self.profile.name}' "
+            f"(inactivity_limit={self.profile.inactivity_limit}s, "
+            f"polling_interval={self.profile.polling_interval}s)"
+        )
+
         while not self.stop_event.is_set():
-            if self.ready_to_sleep:
-                self.send_command_shut_api()
-                sleep(2)
-                if self.profile.pc_sleep_after_inactivity:
-                    self.logger.info("Shutting down the system...")
-                    os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
+            player_count, players_list = self.get_player_info()
+
+            if self.check_inactivity_and_shutdown(player_count):
+                self.logger.info("Shutdown sequence completed. Stopping controller.")
                 break
 
-            player_count, players_list = self.get_player_info()
-            self.handle_server_online(player_count, players_list)
             time.sleep(self.profile.polling_interval)
 
+        self.logger.info("Controller stopped.")
+
     def send_command_shut_api(self):
+        """Send shutdown command to the API."""
         shutdown_key = self.profile.shutdown_key
         auth_key = self.profile.auth_key
         if not auth_key or not shutdown_key:
-            self.logger.error("Missing shutdown/auth keys in profile '%s'", self.profile.name)
+            self.logger.warning("Missing shutdown/auth keys, skipping API shutdown")
             return
 
         headers = {"Authorization": f"Bearer {auth_key}", "shutdown-header": shutdown_key}
 
         try:
-            response = requests.post("http://localhost:37000/shutdown", headers=headers)
-            self.logger.info(
-                "Shutdown ServerSide API. Response: %s - Status code: %s", response.text, response.status_code
-            )
-            time.sleep(5)
-        except Exception as exc:  # pragma: no cover - defensive logging only
-            self.logger.error(f"Error sending shutdown request: {exc}")
+            response = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=5)
+            self.logger.info(f"API shutdown request sent. Status: {response.status_code}")
+        except Exception as exc:
+            self.logger.error(f"Error sending shutdown request to API: {exc}")
 
     def start_in_thread(self) -> Thread:
         """Start monitoring in a separate daemon thread."""
@@ -155,4 +176,6 @@ class ServerController:
         return thread
 
     def stop(self):
+        """Signal the controller to stop."""
+        self.logger.info("Stop signal received")
         self.stop_event.set()

@@ -4,118 +4,378 @@
   <meta charset="utf-8" />
   <title>ServerSide Control Panel</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.min.css">
   <style>
-    body { padding: 1.5rem; }
-    main.layout { display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr)); gap: 1rem; align-items: start; }
-    .card { padding: 1rem; border: 1px solid #e5e7eb; border-radius: 10px; background: #fff; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04); }
-    .card h3 { margin-top: 0; }
-    #logs { height: 280px; overflow-y: auto; background: #0b0b0b; color: #e0e0e0; padding: 0.75rem; border-radius: 8px; font-family: monospace; font-size: 0.95rem; }
-    #properties { height: 220px; }
-    code { white-space: pre-wrap; }
-    small { display: block; margin-top: 0.3rem; }
-    .status-chip { display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.2rem 0.6rem; border-radius: 999px; background: #f3f4f6; }
-    .status-on { background: #e0f5e9; color: #0c6b34; }
-    .status-off { background: #fff3e0; color: #9c4300; }
-    .quick-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 0.5rem; }
-    .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 0.5rem 1rem; }
-    .full-width { grid-column: 1 / -1; }
-    .status-banner { position: sticky; top: 0; z-index: 10; margin-bottom: 1rem; padding: 0.8rem 1rem; border-radius: 8px; background: #f3f4f6; color: #111827; display: none; box-shadow: 0 6px 12px rgba(0,0,0,0.08); }
+    :root {
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --success-hover: #059669;
+      --danger: #ef4444;
+      --danger-hover: #dc2626;
+      --warning: #f59e0b;
+      --secondary: #6b7280;
+      --secondary-hover: #4b5563;
+      --bg: #f9fafb;
+      --card-bg: #ffffff;
+      --border: #e5e7eb;
+      --text: #111827;
+      --text-muted: #6b7280;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.1), 0 1px 2px rgba(0, 0, 0, 0.06);
+      --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    }
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      padding: 2rem;
+      box-shadow: var(--shadow-lg);
+    }
+
+    header h1 { font-size: 2rem; margin-bottom: 0.5rem; font-weight: 700; }
+    header p { opacity: 0.95; font-size: 1.05rem; }
+
+    .container { max-width: 1400px; margin: 0 auto; padding: 2rem; }
+
+    .status-banner {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      margin: -2rem -2rem 2rem;
+      padding: 1rem 2rem;
+      background: #dbeafe;
+      border-left: 4px solid var(--primary);
+      color: #1e40af;
+      display: none;
+      box-shadow: var(--shadow);
+      animation: slideDown 0.3s ease;
+    }
+
     .status-banner.show { display: block; }
-    .status-banner.error { background: #fdecea; color: #8a1c1c; }
-    .delete-gap { margin-top: 0.75rem; }
-    #status-text { margin: 0.25rem 0 0; }
-    @media (max-width: 600px) {
-      body { padding: 1rem; }
+    .status-banner.error { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+
+    @keyframes slideDown {
+      from { transform: translateY(-100%); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+
+    .grid { display: grid; gap: 1.5rem; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); }
+    .grid-3 { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .card:hover { transform: translateY(-2px); box-shadow: var(--shadow-lg); }
+
+    .card h3 {
+      font-size: 1.25rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .card h3::before {
+      content: '';
+      width: 4px;
+      height: 20px;
+      background: var(--primary);
+      border-radius: 2px;
+    }
+
+    .status-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin: 1rem 0;
+    }
+
+    .status-chip {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      background: var(--bg);
+      border: 1px solid var(--border);
+    }
+
+    .status-chip::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--secondary);
+    }
+
+    .status-chip.status-on { background: #d1fae5; border-color: var(--success); color: #065f46; }
+    .status-chip.status-on::before { background: var(--success); animation: pulse 2s infinite; }
+    .status-chip.status-off { background: #fee2e2; border-color: var(--danger); color: #991b1b; }
+    .status-chip.status-off::before { background: var(--danger); }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.5; }
+    }
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+      font-size: 0.9rem;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    select,
+    textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+      font-family: inherit;
+    }
+
+    input:focus, select:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    textarea { resize: vertical; min-height: 120px; font-family: 'Courier New', monospace; }
+
+    .btn-group {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 0.75rem;
+      margin-top: 1rem;
+    }
+
+    button {
+      padding: 0.75rem 1.25rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s;
+      font-family: inherit;
+    }
+
+    button.primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    button.primary:hover {
+      background: var(--primary-hover);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow);
+    }
+
+    button.success {
+      background: var(--success);
+      color: white;
+    }
+
+    button.success:hover {
+      background: var(--success-hover);
+      transform: translateY(-1px);
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: white;
+    }
+
+    button.danger:hover {
+      background: var(--danger-hover);
+      transform: translateY(-1px);
+    }
+
+    button.secondary {
+      background: var(--secondary);
+      color: white;
+    }
+
+    button.secondary:hover {
+      background: var(--secondary-hover);
+      transform: translateY(-1px);
+    }
+
+    #logs {
+      height: 400px;
+      overflow-y: auto;
+      background: #1e1e1e;
+      color: #d4d4d4;
+      padding: 1rem;
+      border-radius: 8px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85rem;
+      line-height: 1.5;
+      border: 1px solid #333;
+    }
+
+    #logs::-webkit-scrollbar { width: 8px; }
+    #logs::-webkit-scrollbar-track { background: #2d2d2d; }
+    #logs::-webkit-scrollbar-thumb { background: #555; border-radius: 4px; }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 1rem;
+    }
+
+    .full-width { grid-column: 1 / -1; }
+
+    .checkbox-wrapper {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin: 1rem 0;
+    }
+
+    .checkbox-wrapper input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      cursor: pointer;
+    }
+
+    small {
+      display: block;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+
+    .active-profile-badge {
+      display: inline-block;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+
+    @media (max-width: 768px) {
+      .container { padding: 1rem; }
+      header { padding: 1.5rem; }
+      header h1 { font-size: 1.5rem; }
+      .grid-2, .grid-3 { grid-template-columns: 1fr; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>ServerSide Control Panel</h1>
-    <p>Manage Minecraft server profiles, run the API and controller, edit properties, and watch live logs.</p>
+    <h1>🎮 ServerSide Control Panel</h1>
+    <p>Manage your Minecraft server profiles with ease</p>
   </header>
 
-  <div id="status-banner" role="status" aria-live="polite"></div>
+  <div class="container">
+    <div id="status-banner" role="status" aria-live="polite"></div>
 
-  <main class="layout">
-      <article class="card">
-        <h3>Active & Controls</h3>
-        <p><strong>Active profile:</strong> <span id="active-profile">None</span></p>
-        <p>
-          <span id="api-status" class="status-chip status-off">API: Stopped</span>
-          <span id="controller-status" class="status-chip status-off">Controller: Stopped</span>
-        </p>
-        <div class="quick-grid">
-          <button id="start-api-btn">Start API</button>
-          <button id="start-controller-btn">Start Controller</button>
+    <div class="grid grid-3">
+      <div class="card">
+        <h3>System Status</h3>
+        <p><strong>Active Profile:</strong> <span class="active-profile-badge" id="active-profile">None</span></p>
+        <div class="status-grid">
+          <div id="api-status" class="status-chip status-off">API: Stopped</div>
+          <div id="controller-status" class="status-chip status-off">Controller: Stopped</div>
+          <div id="server-status" class="status-chip status-off">Server: Stopped</div>
+        </div>
+        <div class="btn-group">
+          <button id="start-server-btn" class="success">▶ Start Server</button>
+          <button id="stop-server-btn" class="danger">⏹ Stop Server</button>
+          <button id="start-api-btn" class="primary">Start API</button>
+          <button id="start-controller-btn" class="primary">Start Controller</button>
           <button id="stop-api-btn" class="secondary">Stop API</button>
           <button id="stop-controller-btn" class="secondary">Stop Controller</button>
         </div>
-        <p id="status-text"></p>
-      </article>
+        <p id="status-text" style="margin-top: 1rem; font-size: 0.9rem; color: var(--text-muted);"></p>
+      </div>
 
-      <article class="card">
-        <h3>Profiles</h3>
-        <label for="profile-select">Select profile</label>
+      <div class="card">
+        <h3>Profile Manager</h3>
+        <label for="profile-select">Select Profile</label>
         <select id="profile-select"></select>
-        <div class="quick-grid">
-          <button id="activate-btn">Activate</button>
-          <button id="bootstrap-btn" class="secondary">Create folders</button>
-          <button id="load-form-btn" class="secondary">Load into form</button>
+        <div class="btn-group">
+          <button id="activate-btn" class="success">✓ Activate</button>
+          <button id="bootstrap-btn" class="secondary">📁 Create Folders</button>
+          <button id="load-form-btn" class="secondary">📝 Load to Form</button>
+          <button id="delete-profile-btn" class="danger">🗑 Delete</button>
         </div>
-        <div class="quick-grid delete-gap">
-          <button id="delete-profile-btn" class="contrast">Delete profile</button>
-        </div>
-        <small id="profile-hint">Profiles load from <code>server_profiles.json</code> in the control panel folder.</small>
-      </article>
+        <small>Profiles are stored in <code>server_profiles.json</code></small>
+      </div>
 
-      <article class="card">
-        <h3>server.properties</h3>
-        <div class="quick-grid">
-          <button id="load-props-btn" class="secondary">Load from active</button>
-          <button id="save-props-btn">Save changes</button>
+      <div class="card">
+        <h3>Server Properties</h3>
+        <div class="btn-group">
+          <button id="load-props-btn" class="secondary">📥 Load</button>
+          <button id="save-props-btn" class="primary">💾 Save</button>
         </div>
-        <textarea id="properties" aria-label="server.properties"></textarea>
-        <small>Each line should be <code>key=value</code>. Unknown keys are kept as-is.</small>
-      </article>
+        <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
+        <small>Edit server.properties for the selected profile</small>
+      </div>
+    </div>
 
-      <article class="card">
-        <h3>Create / Update Profile</h3>
-        <form id="profile-form">
-          <div class="form-grid">
-            <label>Name<input type="text" name="name" required /></label>
-            <label>Server folder<input type="text" name="server_path" placeholder="C:/MCServers/Vanilla" required /></label>
-            <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional notes"></textarea></label>
-            <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
-            <label>Run script<input type="text" name="run_script" value="run.bat" /></label>
-            <label>RCON password<input type="text" name="rcon_password" /></label>
-            <label>RCON port<input type="number" name="rcon_port" value="27001" /></label>
-            <label>Query port<input type="number" name="query_port" value="27002" /></label>
-            <label>Auth key<input type="text" name="auth_key" /></label>
-            <label>Shutdown key<input type="text" name="shutdown_key" /></label>
-            <label>Inactivity limit (seconds)<input type="number" name="inactivity_limit" value="1800" /></label>
-            <label>Polling interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
-            <label class="full-width">
-              <input type="checkbox" name="pc_sleep_after_inactivity" checked />
-              Sleep PC when inactive
-            </label>
-            <div class="full-width">
-              <button type="submit">Save / Update profile</button>
-            </div>
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Profile Editor</h3>
+      <form id="profile-form">
+        <div class="form-grid">
+          <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
+          <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
+          <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
+          <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
+          <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
+          <label>RCON Password<input type="text" name="rcon_password" placeholder="Required for server control" /></label>
+          <label>RCON Port<input type="number" name="rcon_port" value="27001" /></label>
+          <label>Query Port<input type="number" name="query_port" value="27002" /></label>
+          <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
+          <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
+          <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="120" /></label>
+          <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
+          <div class="checkbox-wrapper full-width">
+            <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />
+            <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
           </div>
-        </form>
-      </article>
+          <div class="full-width">
+            <button type="submit" class="primary">💾 Save Profile</button>
+          </div>
+        </div>
+      </form>
+    </div>
 
-      <article class="card full-width">
-        <h3>Live Logs</h3>
-        <p>Listening to the latest controller log for the active profile.</p>
-        <div id="logs"></div>
-      </article>
-  </main>
+    <div class="card" style="margin-top: 1.5rem;">
+      <h3>Live Controller Logs</h3>
+      <p style="margin-bottom: 1rem; color: var(--text-muted);">Real-time logs from the active controller</p>
+      <div id="logs"></div>
+    </div>
+  </div>
 
-  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js" integrity="sha384-Xf/yKobgrqY+lLd3y+SZV6dLDQOzoJwgkC+XZT3IT1+G37nQVwJsrMdGg4BJd5G0" crossorigin="anonymous"></script>
-  <script src="https://cdn.jsdelivr.net/npm/axios@1.6.8/dist/axios.min.js"></script>
+  <script src="https://cdn.socket.io/4.7.5/socket.io.min.js"></script>
   <script src="{{ url_for('static', filename='control_panel.js') }}"></script>
 </body>
 </html>

@@ -1,3 +1,13 @@
+"""
+LEGACY INITIAL SETUP GUI
+
+This GUI is now OPTIONAL. The control panel (control_panel.py) provides a modern
+web interface for managing all server profiles, settings, and configurations.
+
+You can still use this GUI for initial setup if preferred, but it's no longer required.
+The RCON password IS still required for graceful server shutdown via RCON commands.
+"""
+
 import os
 import subprocess
 import tkinter as tk

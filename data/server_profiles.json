@@ -1,0 +1,21 @@
+{
+  "active": "TEST",
+  "profiles": {
+    "TEST": {
+      "name": "TEST",
+      "server_path": "D:\\MINECRAFT_SERVER_TEST",
+      "server_ip": "localhost",
+      "run_script": "run.bat",
+      "rcon_password": "",
+      "rcon_port": 27001,
+      "query_port": 27002,
+      "auth_key": "SECRETKEYSPIRIT",
+      "shutdown_key": "",
+      "inactivity_limit": 120,
+      "polling_interval": 60,
+      "pc_sleep_after_inactivity": true,
+      "description": "",
+      "env_scope": "per_server"
+    }
+  }
+}
