@@ -34,6 +34,7 @@ let currentLogProfile = '';
 let selectedProfile = '';
 let playitPrompted = false;
 let dialogResolver = null;
+let lastStatus = null;
 
 const defaultProfile = {
   name: '',
@@ -127,6 +128,17 @@ function showDialog(options = {}) {
 
 function showInputDialog(options = {}) {
   return showDialog({ ...options, input: true });
+}
+
+async function ensurePlayitConfigured() {
+  if (!lastStatus) {
+    lastStatus = await refreshStatus();
+  }
+  if (lastStatus && lastStatus.playit_configured) return true;
+
+  setStatus('Set the PlayitGG.exe path before controlling the tunnel.', true);
+  await promptForPlayitPath();
+  return Boolean(lastStatus && lastStatus.playit_configured);
 }
 
 function showLoading(show, title = null, subtitle = null) {
@@ -225,6 +237,7 @@ function fillFormFromProfile(profile) {
 async function refreshStatus() {
   const res = await fetch('/api/status', { headers: authHeaders() });
   const data = await res.json();
+  lastStatus = data;
   cachedProfiles = data.profiles || [];
   const previousSelection = selectedProfile || profileSelect.value;
   profileSelect.innerHTML = '';
@@ -358,7 +371,7 @@ function closeDrawer() {
 
 
 async function activateProfile(nameOverride) {
-  const name = nameOverride || profileSelect.value;
+  const name = typeof nameOverride === 'string' ? nameOverride : profileSelect.value;
   if (!name) return;
   if (name === activeProfileEl.textContent) {
     return setStatus('Profile already active', true);
@@ -630,6 +643,9 @@ async function promptForPlayitPath() {
 }
 
 async function startPlayit() {
+  const configured = await ensurePlayitConfigured();
+  if (!configured) return;
+
   const res = await fetch('/api/start/playit', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
@@ -650,6 +666,9 @@ async function startPlayit() {
 }
 
 async function stopPlayit() {
+  const configured = await ensurePlayitConfigured();
+  if (!configured) return;
+
   const res = await fetch('/api/stop/playit', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
   if (res.ok) {
