@@ -304,9 +304,8 @@ def _start_server_process(profile: ServerProfile) -> bool:
 
     server_processes[profile.name] = proc
     server_log_buffers.pop(profile.name, None)
-    thread = Thread(target=_stream_server_output, args=(profile.name, proc), daemon=True)
+    thread = eventlet.spawn(_stream_server_output, profile.name, proc)
     server_log_threads[profile.name] = thread
-    thread.start()
     logger.info(f"Server started with PID {proc.pid}")
     return True
 
