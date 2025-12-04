@@ -7,7 +7,6 @@ const loadingTitle = document.getElementById('loading-title');
 const loadingSubtitle = document.getElementById('loading-subtitle');
 const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
-const apiChip = document.getElementById('api-status');
 const controllerChip = document.getElementById('controller-status');
 const serverChip = document.getElementById('server-status');
 const playitChip = document.getElementById('playit-status');
@@ -75,7 +74,7 @@ function setStatus(message, isError = false) {
   toastEl.classList.remove('show');
 
   // Force reflow to restart animation
-  void toastEl.offsetWidth;
+  toastEl.offsetHeight; // eslint-disable-line no-unused-expressions
 
   toastEl.textContent = message;
   toastEl.classList.remove('error', 'success');
@@ -159,8 +158,11 @@ function showLoading(show, title = null, subtitle = null) {
   loadingOverlay.classList.toggle('show', Boolean(show));
 }
 
-function setChip(chipEl, isOn, label) {
-  chipEl.textContent = `${label}: ${isOn ? 'Running' : 'Stopped'}`;
+function setChip(chipEl, isOn) {
+  const valueSpan = chipEl.querySelector('.status-value');
+  if (valueSpan) {
+    valueSpan.textContent = isOn ? 'Running' : 'Stopped';
+  }
   chipEl.classList.toggle('status-on', isOn);
   chipEl.classList.toggle('status-off', !isOn);
 }
@@ -174,7 +176,12 @@ function updateServerChip(state) {
       : stateText === 'stopping'
         ? 'Stopping...'
         : stateText.charAt(0).toUpperCase() + stateText.slice(1);
-  serverChip.textContent = `Server: ${pretty}`;
+
+  const valueSpan = serverChip.querySelector('.status-value');
+  if (valueSpan) {
+    valueSpan.textContent = pretty;
+  }
+
   serverChip.classList.remove('status-on', 'status-off', 'status-starting', 'status-stopping');
   if (stateText === 'running') {
     serverChip.classList.add('status-on');
@@ -189,8 +196,13 @@ function updateServerChip(state) {
 
 function updatePlayitChip(configured, running) {
   if (!playitChip) return;
-  const label = configured ? (running ? 'Playit Tunnel: Running' : 'Playit Tunnel: Stopped') : 'Playit Tunnel: Not configured';
-  playitChip.textContent = label;
+  const value = configured ? (running ? 'Running' : 'Stopped') : 'Not configured';
+
+  const valueSpan = playitChip.querySelector('.status-value');
+  if (valueSpan) {
+    valueSpan.textContent = value;
+  }
+
   playitChip.classList.toggle('status-on', Boolean(configured && running));
   playitChip.classList.toggle('status-off', !configured || !running);
   playitChip.classList.toggle('status-starting', false);
@@ -287,8 +299,7 @@ async function refreshStatus() {
     profileSelect.appendChild(opt);
   });
   activeProfileEl.textContent = data.active_profile || 'None';
-  setChip(apiChip, true, 'API (built-in)');
-  setChip(controllerChip, Boolean(data.controller_running), 'Controller');
+  setChip(controllerChip, Boolean(data.controller_running));
   updatePlayitChip(Boolean(data.playit_configured), Boolean(data.playit_running));
 
   let serverState = data.server_running ? 'running' : 'stopped';
@@ -723,10 +734,6 @@ async function pollServerShutdown(retries = 15) {
 }
 
 
-async function startApi() {
-  setStatus('API is built into the control panel and always running');
-}
-
 async function startController() {
   const status = await refreshStatus();
   if (status?.controller_running) {
@@ -741,9 +748,6 @@ async function startController() {
   await refreshStatus();
 }
 
-async function stopApi() {
-  setStatus('API is built into the control panel and cannot be stopped separately');
-}
 
 async function stopController() {
   if (lastStatus && !lastStatus.controller_running) {
@@ -969,9 +973,7 @@ function init() {
   document.getElementById('start-server-btn').addEventListener('click', startServer);
   document.getElementById('stop-server-btn').addEventListener('click', stopServer);
   document.getElementById('force-stop-server-btn').addEventListener('click', forceStopServer);
-  document.getElementById('start-api-btn').addEventListener('click', startApi);
   document.getElementById('start-controller-btn').addEventListener('click', startController);
-  document.getElementById('stop-api-btn').addEventListener('click', stopApi);
   document.getElementById('stop-controller-btn').addEventListener('click', stopController);
   const startPlayitBtn = document.getElementById('start-playit-btn');
   const stopPlayitBtn = document.getElementById('stop-playit-btn');

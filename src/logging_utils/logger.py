@@ -2,12 +2,28 @@ import logging
 from pathlib import Path
 from datetime import datetime
 import sys
+import colorama
+
+colorama.init()
+
+class ColorFormatter(logging.Formatter):
+    COLORS = {
+        logging.DEBUG: colorama.Fore.CYAN,
+        logging.INFO: colorama.Fore.GREEN,
+        logging.WARNING: colorama.Fore.YELLOW,
+        logging.ERROR: colorama.Fore.RED,
+        logging.CRITICAL: colorama.Fore.MAGENTA,
+    }
+    RESET = colorama.Style.RESET_ALL
+
+    def format(self, record):
+        color = self.COLORS.get(record.levelno, self.RESET)
+        message = super().format(record)
+        return f"{color}{message}{self.RESET}"
 
 if getattr(sys, 'frozen', False):
-    # If running as a PyInstaller executable, put logs next to the .exe
     log_dir = Path(sys.executable).parent / "logs"
 else:
-    # Otherwise, use project root
     log_dir = Path(__file__).resolve().parents[2] / "logs"
 log_dir.mkdir(exist_ok=True)
 
@@ -18,10 +34,9 @@ file_handler.setFormatter(logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 ))
 
-# Console handler with a concise, uniform format for readability
 console_handler = logging.StreamHandler()
 console_handler.setLevel(logging.INFO)
-console_handler.setFormatter(logging.Formatter(
+console_handler.setFormatter(ColorFormatter(
     '[%(asctime)s] %(levelname)-8s | %(message)s',
     '%H:%M:%S',
 ))

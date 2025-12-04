@@ -881,3 +881,21 @@ jinja2.exceptions.TemplateNotFound: control_panel.html
 2025-12-04 19:02:20,414 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
 2025-12-04 19:02:33,372 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
 2025-12-04 19:02:35,414 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 19:13:12,702 - control_panel - INFO - Playit.exe STARTED with PID 33536
+2025-12-04 19:13:12,705 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 27004
+2025-12-04 19:13:12,705 - control_panel - INFO - Starting control panel UI
+2025-12-04 19:13:23,963 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 19:13:23,963 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 19:13:25,964 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 27004
+2025-12-04 19:13:28,004 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 19:13:28,014 - control_panel - INFO - Playit process STOPPED with PID 33536
+2025-12-04 19:34:37,812 - control_panel - INFO - Playit.exe STARTED with PID 30512
+2025-12-04 19:34:37,814 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 7968
+2025-12-04 19:34:37,815 - control_panel - INFO - Starting control panel UI
+2025-12-04 19:34:46,508 - control_panel - INFO - User logged in successfully
+2025-12-04 19:34:48,679 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 19:35:07,689 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 19:35:07,689 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 19:35:07,821 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 7968
+2025-12-04 19:35:09,868 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 19:35:09,873 - control_panel - INFO - Playit process STOPPED with PID 30512

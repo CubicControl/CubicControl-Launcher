@@ -1,7 +1,7 @@
-# Build script for control_panel.exe
+# Build script for CubicControl.exe
 # This script uses PyInstaller with the spec file to build the executable
 
-Write-Host "Building control_panel.exe..." -ForegroundColor Green
+Write-Host "Building CubicControl.exe..." -ForegroundColor Green
 
 # Check if PyInstaller is installed
 try {
@@ -17,9 +17,9 @@ if (Test-Path "build") {
     Write-Host "Cleaning build directory..." -ForegroundColor Yellow
     Remove-Item -Recurse -Force "build"
 }
-if (Test-Path "dist\control_panel.exe") {
+if (Test-Path "dist\CubicControl.exe") {
     Write-Host "Cleaning old executable..." -ForegroundColor Yellow
-    Remove-Item -Force "dist\control_panel.exe"
+    Remove-Item -Force "dist\CubicControl.exe"
 }
 
 # Build with spec file
@@ -28,11 +28,11 @@ pyinstaller control_panel.spec --clean
 
 if ($LASTEXITCODE -eq 0) {
     Write-Host "`nBuild completed successfully!" -ForegroundColor Green
-    Write-Host "Executable location: dist\control_panel.exe" -ForegroundColor Cyan
+    Write-Host "Executable location: dist\CubicControl.exe" -ForegroundColor Cyan
 
     # Check if executable exists
-    if (Test-Path "dist\control_panel.exe") {
-        $fileSize = (Get-Item "dist\control_panel.exe").Length / 1MB
+    if (Test-Path "dist\CubicControl.exe") {
+        $fileSize = (Get-Item "dist\CubicControl.exe").Length / 1MB
         Write-Host "File size: $([math]::Round($fileSize, 2)) MB" -ForegroundColor Cyan
     }
 } else {

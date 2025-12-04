@@ -1159,15 +1159,6 @@ def active_profile():
     return jsonify(profile.to_dict())
 
 
-@app.route("/api/start/api", methods=["POST"])
-def start_api():
-    profile = store.active_profile
-    if not profile:
-        return jsonify({"error": "No active profile"}), 400
-
-    return jsonify({"message": "API is built into the control panel and always running"})
-
-
 @app.route("/api/start/controller", methods=["POST"])
 def start_controller():
     profile = store.active_profile
@@ -1217,15 +1208,6 @@ def start_playit():
 
     message = "Playit started" if started else "Playit already running"
     return jsonify({"message": message, "running": _is_playit_running()})
-
-
-@app.route("/api/stop/api", methods=["POST"])
-def stop_api():
-    profile = store.active_profile
-    if not profile:
-        return jsonify({"error": "No active profile"}), 400
-
-    return jsonify({"message": "API is integrated into the control panel and always running"})
 
 
 @app.route("/api/stop/controller", methods=["POST"])

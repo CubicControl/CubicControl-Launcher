@@ -40,7 +40,7 @@ if os.path.exists('APIServerConfig.ini'):
     datas.append(('APIServerConfig.ini', '.'))
 
 a = Analysis(
-    ['src/interface/control_panel.py'],
+    ['src/app.py'],
     pathex=[],
     binaries=[],
     datas=datas,
@@ -64,7 +64,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='control_panel',
+    name='CubicControl',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,

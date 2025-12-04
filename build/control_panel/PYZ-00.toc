@@ -2921,6 +2921,9 @@
   ('src.interface',
    'B:\\Prog Projects\\MINREFACT\\ServerSide\\src\\interface\\__init__.py',
    'PYMODULE'),
+  ('src.interface.control_panel',
+   'B:\\Prog Projects\\MINREFACT\\ServerSide\\src\\interface\\control_panel.py',
+   'PYMODULE'),
   ('src.interface.server_profiles',
    'B:\\Prog '
    'Projects\\MINREFACT\\ServerSide\\src\\interface\\server_profiles.py',
