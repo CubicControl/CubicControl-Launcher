@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <title>ServerSide Control Panel</title>
+  <title>CubicControl Server Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
     window.ADMIN_AUTH_KEY = "{{ auth_key }}";
@@ -821,7 +821,7 @@
 </head>
 <body>
 <header>
-  <h1>🎮 ServerSide Control Panel</h1>
+  <h1>🎮 CubicControl Panel</h1>
   <p>Manage your Minecraft server profiles with ease</p>
   <div class="header-actions">
     <button id="add-profile-btn" class="primary">＋ Add new profile</button>
@@ -950,6 +950,11 @@
             <div class="checkbox-wrapper full-width">
               <input type="checkbox" id="sleep-checkbox" name="pc_sleep_after_inactivity" checked />
               <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
+            </div>
+            <div class="checkbox-wrapper full-width">
+              <input type="checkbox" id="shutdown-app-checkbox" name="shutdown_app_after_inactivity" />
+              <label for="shutdown-app-checkbox" style="margin: 0;">Close the control panel after inactivity timeout</label>
+              <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Stops the Minecraft server, then closes this console/app entirely. Useful for unattended hosts.</small>
             </div>
             <div class="full-width">
               <button type="submit" class="primary">💾 Save Profile</button>

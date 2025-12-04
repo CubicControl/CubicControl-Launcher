@@ -8,9 +8,9 @@ from threading import Event, Thread
 from time import sleep
 from typing import Optional
 
+import psutil
 from mcstatus import JavaServer
 from mcrcon import MCRcon
-import requests
 
 from src.interface.server_profiles import ServerProfile
 
@@ -42,6 +42,8 @@ class ServerController:
         self.server_empty_logged = False
         self.last_player_count = 0
         self.inactivity_shutdown_triggered = False
+        self.has_ever_seen_online = False
+        self._app_shutdown_scheduled = False
 
     def get_player_info(self):
         """Get the number of players currently online using the query port."""
@@ -52,6 +54,7 @@ class ServerController:
             if self.server_offline_logged:
                 self.logger.info("Server is back online. Polling will continue...")
                 self.server_offline_logged = False
+            self.has_ever_seen_online = True
 
             player_count = query.players.online
             if player_count > 0:
@@ -65,7 +68,12 @@ class ServerController:
 
         except Exception as exc:
             if not self.server_offline_logged:
-                self.logger.warning(f"Cannot reach server (may be offline): {exc}")
+                level = self.logger.info if not self.has_ever_seen_online else self.logger.warning
+                friendly = (
+                    "Server not reachable (likely offline or starting). "
+                    f"Will keep polling; inactivity shutdown only after {self.profile.inactivity_limit}s idle."
+                )
+                level(f"{friendly} Details: {exc}")
                 self.server_offline_logged = True
             return None, []
 
@@ -117,10 +125,6 @@ class ServerController:
             if player_count == 0:  # Server online but empty
                 self.stop_minecraft_server()
 
-            # Shut down API
-            self.send_command_shut_api()
-            sleep(3)
-
             # Sleep PC if configured
             if self.profile.pc_sleep_after_inactivity:
                 self.logger.info("Initiating system sleep...")
@@ -129,6 +133,11 @@ class ServerController:
                     os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
                 except Exception as exc:
                     self.logger.error(f"Failed to sleep system: {exc}")
+
+            # Terminate the hosting process if configured
+            if getattr(self.profile, "shutdown_app_after_inactivity", False):
+                self.logger.info("Inactivity limit reached – shutting down control panel process.")
+                self._schedule_app_termination()
 
             return True
 
@@ -147,27 +156,12 @@ class ServerController:
 
             if self.check_inactivity_and_shutdown(player_count):
                 self.logger.info("Shutdown sequence completed. Stopping controller.")
-                break
+                self.stop_controller()
 
             time.sleep(self.profile.polling_interval)
 
         self.logger.info("Controller stopped.")
 
-    def send_command_shut_api(self):
-        """Send shutdown command to the API."""
-        shutdown_key = self.profile.shutdown_key
-        auth_key = self.profile.auth_key
-        if not auth_key or not shutdown_key:
-            self.logger.warning("Missing shutdown/auth keys, skipping API shutdown")
-            return
-
-        headers = {"Authorization": f"Bearer {auth_key}", "shutdown-header": shutdown_key}
-
-        try:
-            response = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=5)
-            self.logger.info(f"API shutdown request sent. Status: {response.status_code}")
-        except Exception as exc:
-            self.logger.error(f"Error sending shutdown request to API: {exc}")
 
     def start_in_thread(self) -> Thread:
         """Start monitoring in a separate daemon thread."""
@@ -175,7 +169,45 @@ class ServerController:
         thread.start()
         return thread
 
-    def stop(self):
+    def stop_controller(self):
         """Signal the controller to stop."""
         self.logger.info("Stop signal received")
         self.stop_event.set()
+
+    # ----- Application termination helpers -----
+    def _schedule_app_termination(self, delay: float = 2.0) -> None:
+        """Terminate the hosting process after an optional delay to flush logs."""
+        if self._app_shutdown_scheduled:
+            return
+        self._app_shutdown_scheduled = True
+        Thread(target=self._terminate_host_application, args=(delay,), daemon=True).start()
+
+    def _terminate_host_application(self, delay: float) -> None:
+        """Kill the current process tree to close the control panel and its console."""
+        if delay:
+            sleep(delay)
+
+        try:
+            current = psutil.Process(os.getpid())
+            self.logger.info("Closing control panel (PID %s) due to inactivity.", current.pid)
+
+            # Attempt graceful termination first
+            current.terminate()
+            try:
+                current.wait(timeout=5)
+                return
+            except psutil.TimeoutExpired:
+                self.logger.warning("Graceful shutdown timed out; forcing process termination.")
+
+            # Fall back to killing the full process tree
+            for child in current.children(recursive=True):
+                try:
+                    child.kill()
+                except Exception as exc:
+                    self.logger.warning("Failed to kill child PID %s: %s", child.pid, exc)
+            current.kill()
+        except Exception as exc:
+            self.logger.error(f"Failed to terminate control panel process: {exc}")
+        finally:
+            # os._exit ensures the process exits even if threads are still running
+            os._exit(0)

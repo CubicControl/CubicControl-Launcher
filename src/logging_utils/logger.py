@@ -13,12 +13,21 @@ log_dir.mkdir(exist_ok=True)
 
 log_file = log_dir / f"control_panel_{datetime.now().strftime('%Y%m%d')}.log"
 
-handler = logging.FileHandler(log_file, encoding='utf-8')
-handler.setFormatter(logging.Formatter(
+file_handler = logging.FileHandler(log_file, encoding='utf-8')
+file_handler.setFormatter(logging.Formatter(
     '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+))
+
+# Console handler with a concise, uniform format for readability
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(
+    '[%(asctime)s] %(levelname)-8s | %(message)s',
+    '%H:%M:%S',
 ))
 
 logger = logging.getLogger('control_panel')
 logger.setLevel(logging.INFO)
-logger.addHandler(handler)
-logger.addHandler(logging.StreamHandler())  # Also log to console
+logger.propagate = False
+logger.addHandler(file_handler)
+logger.addHandler(console_handler)

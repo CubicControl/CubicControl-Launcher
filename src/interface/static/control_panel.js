@@ -48,13 +48,14 @@ const defaultProfile = {
   inactivity_limit: 1800,
   polling_interval: 60,
   pc_sleep_after_inactivity: true,
+  shutdown_app_after_inactivity: false,
 };
 
 let toastTimeout;
 
 function authHeaders(extra = {}) {
   const headers = { ...extra };
-  const key = window.ADMIN_AUTH_KEY || window.AUTH_KEY;
+  const key = globalThis.ADMIN_AUTH_KEY || globalThis.AUTH_KEY;
   if (key) {
     headers.Authorization = `Bearer ${key}`;
   }
@@ -213,8 +214,10 @@ function setDrawerMode(title, showProperties, profileName = '') {
 function toDict(form) {
   const data = new FormData(form);
   const payload = {};
+  // Track checkbox fields that should be sent as booleans
+  const checkboxKeys = new Set(['pc_sleep_after_inactivity', 'shutdown_app_after_inactivity']);
   data.forEach((value, key) => {
-    if (key === 'pc_sleep_after_inactivity') {
+    if (checkboxKeys.has(key)) {
       payload[key] = true;
     } else if (['inactivity_limit', 'polling_interval'].includes(key)) {
       payload[key] = Number(value || 0);
@@ -222,7 +225,9 @@ function toDict(form) {
       payload[key] = value;
     }
   });
-  if (!payload.pc_sleep_after_inactivity) payload.pc_sleep_after_inactivity = false;
+  checkboxKeys.forEach((key) => {
+    if (!payload[key]) payload[key] = false;
+  });
   return payload;
 }
 
@@ -260,6 +265,7 @@ function fillFormFromProfile(profile) {
     ? profile.polling_interval
     : defaultProfile.polling_interval;
   form.pc_sleep_after_inactivity.checked = Boolean(profile.pc_sleep_after_inactivity);
+  form.shutdown_app_after_inactivity.checked = Boolean(profile.shutdown_app_after_inactivity);
 }
 
 async function refreshStatus() {
@@ -281,7 +287,7 @@ async function refreshStatus() {
     profileSelect.appendChild(opt);
   });
   activeProfileEl.textContent = data.active_profile || 'None';
-  setChip(apiChip, Boolean(data.api_running), 'API');
+  setChip(apiChip, true, 'API (built-in)');
   setChip(controllerChip, Boolean(data.controller_running), 'Controller');
   updatePlayitChip(Boolean(data.playit_configured), Boolean(data.playit_running));
 
@@ -361,8 +367,14 @@ function connectLogs(profile) {
   });
   socket.on('log_line', (payload) => {
     console.log('Received log_line:', payload);
-    if (!payload || !payload.message) return;
-    logsEl.textContent += payload.message + '\n';
+    if (!payload?.message) return;
+    // Append without rewriting the entire textContent to keep things snappy
+    logsEl.insertAdjacentText('beforeend', `${payload.message}\n`);
+    // Trim extremely long logs in the DOM to avoid sluggishness
+    const maxChars = 20000;
+    if (logsEl.textContent.length > maxChars) {
+      logsEl.textContent = logsEl.textContent.slice(logsEl.textContent.length - maxChars);
+    }
     logsEl.scrollTop = logsEl.scrollHeight;
   });
   socket.on('disconnect', () => {
@@ -712,21 +724,7 @@ async function pollServerShutdown(retries = 15) {
 
 
 async function startApi() {
-  showLoading(true, 'Starting API…', 'Please wait while the API service is starting.');
-  const status = await refreshStatus();
-  if (status?.api_running) {
-    showLoading(false);
-    setStatus('API already running');
-    return;
-  }
-
-  const res = await fetch('/api/start/api', { method: 'POST', headers: authHeaders() });
-  const body = await res.json();
-  showLoading(false);
-  if (res.ok) {
-    setStatus(body.message || 'API starting');
-  } else setStatus(body.error || 'Failed to start API', true);
-  await refreshStatus();
+  setStatus('API is built into the control panel and always running');
 }
 
 async function startController() {
@@ -744,16 +742,7 @@ async function startController() {
 }
 
 async function stopApi() {
-  if (lastStatus && !lastStatus.api_running) {
-    setStatus('API is not running', true);
-    return;
-  }
-
-  const res = await fetch('/api/stop/api', { method: 'POST', headers: authHeaders() });
-  const body = await res.json();
-  if (res.ok) setStatus(body.message || 'API stopped');
-  else setStatus(body.error || 'Failed to stop API', true);
-  await refreshStatus();
+  setStatus('API is built into the control panel and cannot be stopped separately');
 }
 
 async function stopController() {
@@ -1004,17 +993,24 @@ function init() {
   profileSelect.addEventListener('change', () => {
     selectedProfile = profileSelect.value;
   });
-  refreshStatus().then((data) => {
-    const current = profileSelect.value;
-    if (current) {
-      connectLogs(current);
+  (async () => {
+    try {
+      const data = await refreshStatus();
+      const current = profileSelect.value;
+      if (current) {
+        connectLogs(current);
+      }
+      if (data && !data.playit_configured && !playitPrompted) {
+        playitPrompted = true;
+        await promptForPlayitPath();
+      }
+    } catch (err) {
+      console.error('Initial status refresh failed', err);
     }
-    if (data && !data.playit_configured && !playitPrompted) {
-      playitPrompted = true;
-      promptForPlayitPath();
-    }
-  });
-  setInterval(refreshStatus, 5000);
+  })();
+  setInterval(() => {
+    refreshStatus().catch((err) => console.error('Periodic status refresh failed', err));
+  }, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -626,3 +626,100 @@ jinja2.exceptions.TemplateNotFound: control_panel.html
 2025-12-04 12:57:38,140 - control_panel - INFO - Request: {'method': 'GET', 'url': 'http://localhost:37000/status', 'status': 206, 'remote_addr': '127.0.0.1', 'user_agent': 'python-requests/2.32.3'}
 2025-12-04 12:57:43,143 - control_panel - INFO - Request: {'method': 'GET', 'url': 'http://localhost:37000/status', 'status': 206, 'remote_addr': '127.0.0.1', 'user_agent': 'python-requests/2.32.3'}
 2025-12-04 12:57:46,454 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 14:04:30,775 - control_panel - INFO - Playit.exe started with PID 28256
+2025-12-04 14:04:30,777 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 14:04:30,777 - control_panel - INFO - Starting control panel UI
+2025-12-04 14:04:39,610 - control_panel - INFO - User logged in successfully
+2025-12-04 14:04:42,222 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 14:14:23,155 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 14:51:42,013 - control_panel - INFO - Playit.exe started with PID 25488
+2025-12-04 14:51:42,015 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 14:51:42,015 - control_panel - INFO - Starting control panel UI
+2025-12-04 14:52:58,076 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 14:52:58,735 - control_panel - INFO - Playit.exe started with PID 27776
+2025-12-04 14:52:58,741 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 14:52:58,742 - control_panel - INFO - Starting control panel UI
+2025-12-04 14:55:13,124 - control_panel - INFO - User logged in successfully
+2025-12-04 14:55:15,608 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 15:11:26,614 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 15:11:52,409 - control_panel - INFO - Playit.exe started with PID 25492
+2025-12-04 15:11:52,413 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 15:11:52,413 - control_panel - INFO - Starting control panel UI
+2025-12-04 15:12:07,246 - control_panel - INFO - User logged in successfully
+2025-12-04 15:12:09,717 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 15:13:02,492 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 15:20:54,881 - control_panel - INFO - Playit.exe started with PID 24936
+2025-12-04 15:20:54,883 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 15:20:54,884 - control_panel - INFO - Starting control panel UI
+2025-12-04 15:21:04,703 - control_panel - INFO - User logged in successfully
+2025-12-04 15:21:07,189 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 15:21:07,419 - control_panel - INFO - Playit process stopped
+2025-12-04 15:21:08,314 - control_panel - INFO - Playit.exe started with PID 9172
+2025-12-04 15:21:16,856 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 15:24:35,454 - control_panel - INFO - Playit.exe started with PID 12932
+2025-12-04 15:24:35,456 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 15:24:35,457 - control_panel - INFO - Starting control panel UI
+2025-12-04 15:24:44,107 - control_panel - INFO - User logged in successfully
+2025-12-04 15:24:46,637 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 15:24:50,753 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 15:28:58,228 - control_panel - INFO - Playit.exe started with PID 13816
+2025-12-04 15:28:58,230 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 15:28:58,231 - control_panel - INFO - Starting control panel UI
+2025-12-04 15:29:07,204 - control_panel - INFO - User logged in successfully
+2025-12-04 15:29:09,665 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 15:30:39,900 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 16:14:24,185 - control_panel - INFO - Playit.exe started with PID 23416
+2025-12-04 16:14:24,187 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 16:14:24,188 - control_panel - INFO - Starting control panel UI
+2025-12-04 16:14:33,211 - control_panel - INFO - User logged in successfully
+2025-12-04 16:14:35,894 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 16:14:41,972 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 16:14:41,986 - control_panel - INFO - Server started with PID 31600
+2025-12-04 16:15:02,854 - control_panel - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-04 16:15:03,713 - control_panel - INFO - Server stopped gracefully for profile 'Vanilla'
+2025-12-04 16:24:09,989 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:09:53,080 - control_panel - INFO - Playit.exe started with PID 17088
+2025-12-04 17:09:53,082 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:09:53,082 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:10:49,713 - control_panel - INFO - User logged in successfully
+2025-12-04 17:10:52,241 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 17:11:52,620 - control_panel - INFO - Controller stopped for profile 'Vanilla'
+2025-12-04 17:11:53,797 - control_panel - INFO - Playit process stopped
+2025-12-04 17:23:03,330 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:23:25,996 - control_panel - INFO - Playit.exe started with PID 10304
+2025-12-04 17:23:25,998 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:23:25,999 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:23:27,255 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 17:23:36,386 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:27:01,210 - control_panel - INFO - Playit.exe started with PID 14416
+2025-12-04 17:27:01,212 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:27:01,213 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:27:11,608 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:28:10,316 - control_panel - INFO - Playit.exe started with PID 26908
+2025-12-04 17:28:10,317 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:28:10,318 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:33:13,290 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:33:14,088 - control_panel - INFO - Playit.exe started with PID 27840
+2025-12-04 17:33:14,090 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:33:14,091 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:33:21,942 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:34:20,009 - control_panel - INFO - Playit.exe started with PID 27028
+2025-12-04 17:34:20,010 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:34:20,011 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:34:24,118 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 17:35:25,621 - control_panel - INFO - Playit.exe started with PID 29380
+2025-12-04 17:35:25,623 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 17:35:25,623 - control_panel - INFO - Starting control panel UI
+2025-12-04 17:35:52,389 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:03:27,463 - control_panel - INFO - Playit.exe started with PID 11660
+2025-12-04 18:03:27,465 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:03:27,466 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:03:37,626 - control_panel - INFO - User logged in successfully
+2025-12-04 18:03:40,010 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:04:03,467 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:04:04,099 - control_panel - INFO - Playit.exe started with PID 11880
+2025-12-04 18:04:04,100 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:04:04,101 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:04:05,985 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:04:17,053 - control_panel - INFO - User logged in successfully
+2025-12-04 18:04:19,417 - control_panel - INFO - Client connected to follow logs for profile: Vanilla

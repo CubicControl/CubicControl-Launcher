@@ -36,6 +36,7 @@ class ServerProfile:
     inactivity_limit: int = 1800
     polling_interval: int = 60
     pc_sleep_after_inactivity: bool = True
+    shutdown_app_after_inactivity: bool = False
     description: str = ""
     env_scope: str = "per_server"  # or "global"
 
@@ -117,6 +118,7 @@ class ServerProfile:
             inactivity_limit=data.get("inactivity_limit", 1800),
             polling_interval=data.get("polling_interval", 60),
             pc_sleep_after_inactivity=data.get("pc_sleep_after_inactivity", True),
+            shutdown_app_after_inactivity=data.get("shutdown_app_after_inactivity", False),
             description=data.get("description", ""),
             env_scope=data.get("env_scope", "per_server"),
         )
@@ -152,13 +154,12 @@ class ServerProfileStore:
         try:
             with open(self.path, "r", encoding="utf-8") as f:
                 data = json.load(f)
-            print(f"Loaded profile data: {data}")
-            self.active_profile_name = data.get("active")
             profiles_data = data.get("profiles", {})
-            print(f"Found {len(profiles_data)} profiles to load")
+            print(f"Loaded profiles: {list(profiles_data.keys())}")
+            self.active_profile_name = data.get("active")
             for name, profile_data in profiles_data.items():
                 self._profiles[name] = ServerProfile.from_dict(profile_data)
-                print(f"Loaded profile: {name}")
+                print(f"Loaded active profile: {name}")
         except Exception as e:
             print(f"Error loading profiles: {e}")
             import traceback

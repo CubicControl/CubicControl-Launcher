@@ -8,7 +8,7 @@ This guide will help you build the control_panel.exe properly with all required 
 The application now properly saves all data (profiles, configurations, etc.) in a `data` folder next to the executable, not in the source code location.
 
 ### API Server
-The Flask API server on port 37000 now runs in-process when built as an executable, fixing timeout issues.
+The token-gated public API now runs inside the control panel on port 38000; there is no separate 37000 process to launch.
 
 ## Problem
 When using auto-py-to-exe, Flask templates and static files need to be included in a specific way or they won't be found at runtime.

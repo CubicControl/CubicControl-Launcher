@@ -1,6 +1,6 @@
 # Control panel overview
 
-This control panel is a local Flask + Socket.IO interface that wraps the existing API (`src/api/server_app.py`) and the background controller logic. It is designed to run on machine wake so you can manage multiple server or modpack installs from one dashboard.
+This control panel is a local Flask + Socket.IO interface that now directly exposes the token-gated public API alongside the background controller logic. It is designed to run on machine wake so you can manage multiple server or modpack installs from one dashboard.
 
 ## Concepts
 - **Server profiles** – Each Minecraft install is stored as a profile with its own folder, shutdown/auth keys, and generated RCON credentials. The folder must contain `server.properties` (meaning the server has been run at least once) before you can create a profile.

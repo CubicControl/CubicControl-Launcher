@@ -23,12 +23,6 @@ print("   DATA_DIR: C:\\MyApp\\data")
 print("   CONFIG: C:\\MyApp\\ServerConfig.ini")
 
 print("\n=== Testing API Server Mode ===\n")
+print("API now runs inside the control panel process; no separate server process is launched.")
 
-if getattr(sys, 'frozen', False):
-    print("FROZEN MODE: Would run API server in THREAD")
-else:
-    print("DEV MODE: Would run API server in SUBPROCESS")
-    print(f"Command: {sys.executable} -m src.api.server_app")
-
-print("\n✅ All path detection logic is working correctly!")
-
+print("\nƒo. All path detection logic is working correctly!")

@@ -1,4 +1,3 @@
-import atexit
 import os
 import secrets
 import subprocess
@@ -38,6 +37,29 @@ show_server_banner = lambda *args, **kwargs: None  # hide Flask banner
 
 for noisy in ("werkzeug", "engineio", "socketio", "flask_socketio"):
     logging.getLogger(noisy).setLevel(logging.ERROR)
+
+
+def _print_startup_banner():
+    """Emit a short banner before any other startup logs are printed."""
+    border = "=" * 64
+    cubic_banner = r"""
+▄█████ ▄▄ ▄▄ ▄▄▄▄  ▄▄  ▄▄▄▄ ▄█████  ▄▄▄  ▄▄  ▄▄ ▄▄▄▄▄▄ ▄▄▄▄   ▄▄▄  ▄▄    
+██     ██ ██ ██▄██ ██ ██▀▀▀ ██     ██▀██ ███▄██   ██   ██▄█▄ ██▀██ ██    
+▀█████ ▀███▀ ██▄█▀ ██ ▀████ ▀█████ ▀███▀ ██ ▀██   ██   ██ ██ ▀███▀ ██▄▄▄                                                                           
+    """
+    process_label = Path(sys.executable).name if getattr(sys, "frozen", False) else "python"
+    print(
+        f"\n{border}\n"
+        f"{cubic_banner}\n"
+        f"   Welcome to CubicControl - Minecraft Server Manager\n"
+        f"{border}\n"
+        f"  Control panel is starting (PID {os.getpid()}, runner: {process_label})\n"
+        f"  Waiting for services to initialise...\n"
+        f"{border}\n"
+    )
+
+
+_print_startup_banner()
 
 if getattr(sys, 'frozen', False):
     # Running as a PyInstaller bundle
@@ -104,6 +126,36 @@ socketio = SocketIO(
     engineio_logger=False,
 )
 
+PUBLIC_REMOTE_PATHS = {
+    "/status",
+    "/api/server/status",
+    "/start",
+    "/api/server/start",
+    "/stop",
+    "/api/server/stop",
+    "/restart",
+    "/api/server/restart",
+}
+
+STATUS_RESPONSES = {
+    "fully_loaded": ("Server Machine is live!\nMinecraft Server is RUNNING", 200),
+    "starting": ("Server Machine is live!\nMinecraft Server is STARTING", 205),
+    "off": ("Server Machine is live!\nMinecraft Server is OFFLINE", 206),
+    "restarting": ("Server Machine is live!\nMinecraft Server is RESTARTING", 207),
+    "stopping": ("Server Machine is live!\nMinecraft Server is STOPPING", 208),
+    "error": ("Server Machine is OFFLINE", 500),
+}
+
+
+def _authorized_for_public_api() -> bool:
+    """Allow bearer token access for lightweight remote control endpoints."""
+    provided = request.headers.get("Authorization", "")
+    tokens = [
+        settings.AUTH_KEY,
+        settings.ADMIN_AUTH_KEY,
+    ]
+    return any(provided == f"Bearer {token}" for token in tokens if token)
+
 
 @app.before_request
 def _check_authentication():
@@ -115,6 +167,12 @@ def _check_authentication():
     # Allow access to static files
     if request.path.startswith('/static/'):
         return None
+
+    # Allow token-only access to the lightweight remote API
+    if request.path in PUBLIC_REMOTE_PATHS:
+        if _authorized_for_public_api():
+            return None
+        return jsonify({'error': 'Unauthorized'}), 403
 
     # Check if user is logged in
     if not session.get('authenticated'):
@@ -137,11 +195,13 @@ def _check_authentication():
 store = ServerProfileStore()
 controllers: Dict[str, ServerController] = {}
 controller_threads: Dict[str, Thread] = {}
-api_process: Optional[subprocess.Popen] = None
 server_processes: Dict[str, subprocess.Popen] = {}
 server_log_threads: Dict[str, Thread] = {}
 server_log_buffers: Dict[str, List[str]] = {}
 playit_process: Optional[subprocess.Popen] = None
+public_is_restarting = False
+public_is_stopping = False
+public_is_stopping_since: Optional[float] = None
 
 
 # ---------- Helpers ----------
@@ -198,6 +258,10 @@ def _profile_from_request(data: Dict) -> ServerProfile:
     if not isinstance(sleep_flag, bool):
         sleep_flag = str(sleep_flag).strip().lower() in {"1", "true", "yes", "on"}
 
+    shutdown_app_flag = data.get("shutdown_app_after_inactivity", False)
+    if not isinstance(shutdown_app_flag, bool):
+        shutdown_app_flag = str(shutdown_app_flag).strip().lower() in {"1", "true", "yes", "on"}
+
     name = (data.get("name") or "").strip()
     if not name:
         raise ValueError("Profile name is required.")
@@ -226,6 +290,7 @@ def _profile_from_request(data: Dict) -> ServerProfile:
         inactivity_limit=int(data.get("inactivity_limit", 1800)),
         polling_interval=int(data.get("polling_interval", 60)),
         pc_sleep_after_inactivity=sleep_flag,
+        shutdown_app_after_inactivity=shutdown_app_flag,
         description=data.get("description", ""),
         env_scope=data.get("env_scope", "per_server"),
     )
@@ -267,25 +332,8 @@ def _apply_profile_environment(profile: ServerProfile) -> None:
 
 
 def _is_api_running(profile: Optional[ServerProfile]) -> bool:
-    global api_process
-
-    # Check if it's a thread (frozen exe)
-    if isinstance(api_process, threading.Thread):
-        if api_process.is_alive():
-            return True
-    # Check if it's a process (dev mode)
-    elif api_process and hasattr(api_process, 'poll') and api_process.poll() is None:
-        return True
-
-    if not profile:
-        return False
-
-    headers = {"Authorization": f"Bearer {profile.auth_key}"} if profile.auth_key else {}
-    try:
-        resp = requests.get("http://localhost:37000/status", headers=headers, timeout=1.5)
-        return resp.status_code < 500
-    except requests.RequestException:
-        return False
+    """The remote API now lives inside this control panel process and is always on."""
+    return True
 
 
 def _playit_path() -> str:
@@ -351,130 +399,6 @@ def _stop_playit_process() -> bool:
     return True
 
 
-def _start_api_process(profile: ServerProfile) -> bool:
-    global api_process
-    if _is_api_running(profile):
-        return False
-
-    _apply_profile_environment(profile)
-    env = os.environ.copy()
-    env.update(
-        {
-            "RCON_PASSWORD": profile.rcon_password,
-            "AUTHKEY_SERVER_WEBSITE": profile.auth_key,
-            "SHUTDOWN_AUTH_KEY": _shutdown_key(profile),
-            "QUERY_PORT": str(profile.query_port),
-            "RCON_PORT": str(profile.rcon_port),
-        }
-    )
-
-    if getattr(sys, 'frozen', False):
-        # When running as frozen executable, start API in a thread with shutdown capability
-        def run_api_server():
-            # Import here to avoid circular imports
-            from src.api import server_app
-            # Use Flask's development server in threaded mode (can be stopped)
-            try:
-                server_app.app.run(host='0.0.0.0', port=37000, debug=False, use_reloader=False, threaded=True)
-            except Exception as e:
-                logger.error(f"API server error: {e}")
-
-        api_thread = threading.Thread(target=run_api_server, daemon=False)  # Not daemon so it can be stopped
-        api_thread.start()
-        logger.info("API started in thread for profile '%s'", profile.name)
-        # Store thread reference
-        api_process = api_thread
-
-        # Give it time to start
-        time.sleep(2)
-        return True
-    else:
-        # Running in development - use subprocess
-        env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
-        cmd = [sys.executable, "-m", "src.api.server_app"]
-        api_process = subprocess.Popen(cmd, env=env)
-        logger.info("API started for profile '%s' with PID %s", profile.name, api_process.pid)
-        return True
-
-
-def _stop_api_process(profile: Optional[ServerProfile]) -> bool:
-    global api_process
-
-    # If it's a thread (frozen exe), try remote shutdown
-    if isinstance(api_process, threading.Thread):
-        api_process = None  # Clear reference immediately
-
-        # Try remote shutdown
-        if profile:
-            shutdown_key = _shutdown_key(profile)
-            headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": shutdown_key}
-            try:
-                resp = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=3)
-                if resp.status_code == 200:
-                    logger.info("Sent remote shutdown to API (thread mode)")
-
-                    # Wait for API to actually stop (check multiple times)
-                    for i in range(10):  # Check for up to 5 seconds
-                        time.sleep(0.5)
-                        try:
-                            requests.get("http://localhost:37000/status",
-                                       headers={"Authorization": f"Bearer {profile.auth_key}"},
-                                       timeout=0.5)
-                            if i >= 9:  # Last attempt failed
-                                logger.warning("API still responding after 5 seconds")
-                                return False
-                        except requests.RequestException:
-                            # API is not responding - it's stopped!
-                            logger.info("API successfully stopped (thread mode)")
-                            return True
-                else:
-                    logger.warning(f"API shutdown returned status {resp.status_code}")
-                    return False
-            except requests.RequestException as e:
-                logger.warning(f"Remote API shutdown failed: {e}")
-                # If we can't connect, it might already be stopped
-                return True
-        return False
-
-    # If it's a process (dev mode), terminate it
-    elif api_process and hasattr(api_process, 'poll') and api_process.poll() is None:
-        api_process.terminate()
-        try:
-            api_process.wait(timeout=5)
-        except subprocess.TimeoutExpired:
-            api_process.kill()
-        finally:
-            logger.info("API process stopped")
-            api_process = None
-        return True
-
-    # Try remote shutdown as fallback
-    if profile:
-        shutdown_key = _shutdown_key(profile)
-        headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": shutdown_key}
-        try:
-            resp = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=2)
-            logger.info("Sent remote shutdown to API (fallback)")
-
-            # Wait and verify shutdown
-            time.sleep(2)
-            try:
-                requests.get("http://localhost:37000/status",
-                           headers={"Authorization": f"Bearer {profile.auth_key}"},
-                           timeout=1)
-                logger.warning("API still responding after fallback shutdown")
-                return False
-            except requests.RequestException:
-                logger.info("API stopped (fallback)")
-                return True
-        except requests.RequestException:
-            # Can't connect - might be stopped already
-            logger.info("API not responding, assuming stopped")
-            return True
-
-    return False
-
-
 def _controller_running(name: str) -> bool:
     thread = controller_threads.get(name)
     return bool(thread and thread.is_alive())
@@ -494,7 +418,7 @@ def _start_controller(profile: ServerProfile) -> bool:
 def _stop_controller(name: str) -> bool:
     controller = controllers.get(name)
     if controller:
-        controller.stop()
+        controller.stop_controller()
     thread = controller_threads.get(name)
     if thread and thread.is_alive():
         thread.join(timeout=2)
@@ -507,11 +431,10 @@ def _stop_controller(name: str) -> bool:
 
 
 def _stop_services(profile: Optional[ServerProfile], *, stop_server: bool = False) -> None:
-    """Stop API, controller, and optionally the server for the given profile."""
+    """Stop controller and optionally the server for the given profile."""
     if not profile:
         return
     _stop_controller(profile.name)
-    _stop_api_process(profile)
     if stop_server:
         _stop_server_process(profile)
 
@@ -534,8 +457,6 @@ def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
     profile.ensure_scaffold()
     profile.sync_server_properties()
     _apply_profile_environment(profile)
-    if not _is_api_running(profile):
-        _start_api_process(profile)
     if not _controller_running(profile.name):
         _start_controller(profile)
 
@@ -566,6 +487,55 @@ def _server_state(profile: Optional[ServerProfile]) -> Dict[str, object]:
         return {"state": "starting", "running": False, "starting": True}
 
     return {"state": "stopped", "running": False, "starting": False}
+
+
+def _public_status_key(profile: Optional[ServerProfile]) -> str:
+    """Return a status key compatible with the legacy lightweight API."""
+    global public_is_restarting, public_is_stopping, public_is_stopping_since
+
+    state = _server_state(profile)
+
+    if public_is_restarting:
+        if state.get("state") == "running":
+            public_is_restarting = False
+            return "fully_loaded"
+        return "restarting"
+
+    if public_is_stopping:
+        if state.get("state") in {"stopped", "inactive"}:
+            public_is_stopping = False
+            public_is_stopping_since = None
+            return "off"
+        if public_is_stopping_since and (time.time() - public_is_stopping_since) > 45:
+            public_is_stopping = False
+        else:
+            return "stopping"
+
+    if state.get("state") == "running":
+        return "fully_loaded"
+    if state.get("state") == "starting":
+        return "starting"
+    if state.get("state") in {"stopped", "inactive"}:
+        return "off"
+    return "error"
+
+
+def _public_status_message(profile: Optional[ServerProfile]) -> tuple[str, int]:
+    key = _public_status_key(profile)
+    return STATUS_RESPONSES.get(key, STATUS_RESPONSES["error"])
+
+
+def _public_status_payload(profile: Optional[ServerProfile]) -> Dict[str, object]:
+    message, status_code = _public_status_message(profile)
+    return {"status": message, "status_code": status_code}
+
+
+def _emit_public_status(profile: Optional[ServerProfile]) -> None:
+    """Emit status updates to any connected socket.io listeners."""
+    try:
+        socketio.emit("status_update", _public_status_payload(profile))
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.warning("Unable to emit status update: %s", exc)
 
 
 def _log_room(profile_name: str) -> str:
@@ -747,6 +717,115 @@ def _send_profile_command(profile: ServerProfile, command: str) -> str:
 
 
 
+# ---------- Public Remote API (token-only) ----------
+def _active_profile_or_error():
+    profile = store.active_profile
+    if not profile:
+        return None, ("No active server profile is configured", 500)
+    return profile, None
+
+
+@app.route("/status", methods=["GET"])
+@app.route("/api/server/status", methods=["GET"])
+def public_status():
+    profile = store.active_profile
+    message, status_code = _public_status_message(profile)
+    return message, status_code
+
+
+@app.route("/start", methods=["POST"])
+@app.route("/api/server/start", methods=["POST"])
+def public_start():
+    global public_is_restarting, public_is_stopping, public_is_stopping_since
+    profile, error = _active_profile_or_error()
+    if error:
+        return error
+
+    status_key = _public_status_key(profile)
+    if status_key in {"fully_loaded", "starting", "restarting", "stopping"}:
+        return f"Server is already {status_key.replace('_', ' ')}", 400 if status_key != "stopping" else 302
+
+    try:
+        _apply_profile_environment(profile)
+        _start_server_process(profile)
+        public_is_restarting = False
+        public_is_stopping = False
+        public_is_stopping_since = None
+        _emit_public_status(profile)
+        return "Server is starting...", 200
+    except Exception as exc:  # pragma: no cover - defensive
+        logger.error("Error starting server: %s", exc)
+        return "Error starting server", 500
+
+
+@app.route("/stop", methods=["POST"])
+@app.route("/api/server/stop", methods=["POST"])
+def public_stop():
+    global public_is_stopping, public_is_stopping_since
+    profile, error = _active_profile_or_error()
+    if error:
+        return error
+
+    status_key = _public_status_key(profile)
+    if status_key == "off":
+        return "Server is already offline", 400
+    if status_key == "starting":
+        return "Processing, please wait...", 302
+    if status_key == "restarting":
+        return "Server is restarting, please wait...", 305
+    if status_key == "stopping":
+        return "Server is stopping...", 200
+
+    def _stop_async():
+        try:
+            _stop_server_process(profile)
+        finally:
+            _emit_public_status(profile)
+
+    public_is_stopping = True
+    public_is_stopping_since = time.time()
+    socketio.start_background_task(_stop_async)
+    _emit_public_status(profile)
+    return "Server is stopping...", 200
+
+
+@app.route("/restart", methods=["POST"])
+@app.route("/api/server/restart", methods=["POST"])
+def public_restart():
+    global public_is_restarting, public_is_stopping, public_is_stopping_since
+    profile, error = _active_profile_or_error()
+    if error:
+        return error
+
+    status_key = _public_status_key(profile)
+    if status_key == "off":
+        return "Server is already off", 400
+    if status_key == "starting":
+        return "Processing, please wait...", 302
+    if status_key == "stopping":
+        return "Server is stopping, please wait...", 305
+    if public_is_restarting:
+        return "Server is already restarting", 400
+
+    def _restart_async():
+        global public_is_restarting, public_is_stopping, public_is_stopping_since
+        try:
+            public_is_restarting = True
+            _stop_server_process(profile)
+            public_is_stopping = False
+            public_is_stopping_since = None
+            time.sleep(20)
+            _start_server_process(profile)
+        finally:
+            public_is_restarting = False
+            _emit_public_status(profile)
+
+    public_is_restarting = True
+    socketio.start_background_task(_restart_async)
+    _emit_public_status(profile)
+    return "Server is restarting...", 200
+
+
 # ---------- Authentication Routes ----------
 @app.route("/login")
 def login():
@@ -817,7 +896,7 @@ def index():
 
 
 @app.route("/api/status")
-def status():
+def api_status():
     active_profile = store.active_profile
     return jsonify(
         {
@@ -957,11 +1036,7 @@ def start_api():
     if not profile:
         return jsonify({"error": "No active profile"}), 400
 
-    if _is_api_running(profile):
-        return jsonify({"message": "API already running"})
-
-    _start_api_process(profile)
-    return jsonify({"message": "API starting"})
+    return jsonify({"message": "API is built into the control panel and always running"})
 
 
 @app.route("/api/start/controller", methods=["POST"])
@@ -1021,10 +1096,7 @@ def stop_api():
     if not profile:
         return jsonify({"error": "No active profile"}), 400
 
-    stopped = _stop_api_process(profile)
-    if stopped:
-        return jsonify({"message": "API stopped"})
-    return jsonify({"error": "API was not running"}), 400
+    return jsonify({"message": "API is integrated into the control panel and always running"})
 
 
 @app.route("/api/stop/controller", methods=["POST"])
