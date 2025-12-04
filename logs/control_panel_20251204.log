@@ -974,3 +974,306 @@ jinja2.exceptions.TemplateNotFound: control_panel.html
 2025-12-04 20:01:22,813 - control_panel - INFO - Force stopping server process for profile 'Vanilla' (PID: 2968)
 2025-12-04 20:01:22,825 - control_panel - INFO - Killing child process PID: 4236
 2025-12-04 20:01:22,827 - control_panel - INFO - Killed process tree for PID: 2968
+2025-12-04 20:15:40,591 - control_panel - INFO - Playit.exe STARTED with PID 1684
+2025-12-04 20:15:40,593 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 30612
+2025-12-04 20:15:40,593 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:15:48,940 - control_panel - INFO - User logged in successfully
+2025-12-04 20:15:51,494 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:16:15,901 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:16:15,901 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:16:17,916 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 30612
+2025-12-04 20:16:19,959 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:16:19,964 - control_panel - INFO - Playit process STOPPED with PID 1684
+2025-12-04 20:16:34,144 - control_panel - INFO - Playit.exe STARTED with PID 30360
+2025-12-04 20:16:34,146 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 22900
+2025-12-04 20:16:34,146 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:16:42,402 - control_panel - INFO - User logged in successfully
+2025-12-04 20:16:44,841 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:16:59,184 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:16:59,184 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:17:01,185 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 22900
+2025-12-04 20:17:03,226 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:17:03,245 - control_panel - INFO - Playit process STOPPED with PID 30360
+2025-12-04 20:17:57,318 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 25836
+2025-12-04 20:17:57,319 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:18:05,885 - control_panel - INFO - User logged in successfully
+2025-12-04 20:18:08,444 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:18:31,243 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:18:31,244 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:18:33,253 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 25836
+2025-12-04 20:18:35,298 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:20:06,259 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 15332
+2025-12-04 20:20:06,259 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:20:14,395 - control_panel - INFO - User logged in successfully
+2025-12-04 20:20:16,881 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:20:56,033 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:20:56,033 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:21:29,198 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 26116
+2025-12-04 20:21:29,199 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:21:37,443 - control_panel - INFO - User logged in successfully
+2025-12-04 20:21:39,950 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:23:06,797 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 16576
+2025-12-04 20:23:06,798 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:23:15,453 - control_panel - INFO - User logged in successfully
+2025-12-04 20:23:17,970 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:27:15,749 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:27:15,749 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:27:17,756 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 16576
+2025-12-04 20:27:19,795 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:35:17,384 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 32668
+2025-12-04 20:35:17,384 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:35:27,708 - control_panel - WARNING - Failed login attempt
+2025-12-04 20:35:31,677 - control_panel - INFO - User logged in successfully
+2025-12-04 20:35:34,122 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:37:06,047 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:37:06,047 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:37:09,213 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 4588
+2025-12-04 20:37:09,213 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:37:19,133 - control_panel - INFO - User logged in successfully
+2025-12-04 20:37:21,609 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:38:26,845 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:38:26,845 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:41:35,417 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 10472
+2025-12-04 20:41:35,417 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:41:43,731 - control_panel - INFO - User logged in successfully
+2025-12-04 20:41:46,323 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:41:56,758 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:41:56,758 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:51:35,729 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 30688
+2025-12-04 20:51:35,737 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:51:45,586 - control_panel - INFO - User logged in successfully
+2025-12-04 20:51:48,031 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:52:36,646 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:52:36,646 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:52:44,406 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 27312
+2025-12-04 20:52:44,407 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:52:52,892 - control_panel - INFO - User logged in successfully
+2025-12-04 20:52:55,346 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:53:09,818 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 27312
+2025-12-04 20:53:31,342 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:53:31,342 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:53:33,389 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:53:51,008 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 26652
+2025-12-04 20:53:51,008 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:53:59,032 - control_panel - INFO - User logged in successfully
+2025-12-04 20:54:01,516 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:56:52,013 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:56:56,251 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:58:57,286 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:58:57,286 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:58:59,289 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 26652
+2025-12-04 20:59:01,335 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:59:20,665 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 24672
+2025-12-04 20:59:20,665 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:59:29,477 - control_panel - INFO - User logged in successfully
+2025-12-04 20:59:32,069 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:00:16,756 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:00:16,756 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:00:18,760 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 24672
+2025-12-04 21:00:20,805 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:00:38,700 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 14556
+2025-12-04 21:00:38,700 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:00:48,266 - control_panel - INFO - User logged in successfully
+2025-12-04 21:00:50,843 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:01:14,147 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:01:14,147 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:01:22,930 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 30172
+2025-12-04 21:01:22,930 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:01:31,252 - control_panel - INFO - User logged in successfully
+2025-12-04 21:01:33,680 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:02:16,412 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:02:16,412 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:02:18,048 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 29840
+2025-12-04 21:02:18,048 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:02:26,190 - control_panel - INFO - User logged in successfully
+2025-12-04 21:02:28,713 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:02:45,335 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:02:45,336 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:02:47,013 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 21584
+2025-12-04 21:02:47,014 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:02:48,006 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:02:55,104 - control_panel - INFO - User logged in successfully
+2025-12-04 21:02:57,509 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:03:24,154 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 21:03:24,179 - control_panel - INFO - Server STARTED with PID 27196
+2025-12-04 21:03:27,911 - control_panel - INFO - Force stopping server process for profile 'Vanilla' (PID: 27196)
+2025-12-04 21:03:27,921 - control_panel - INFO - Killing child process PID: 20868
+2025-12-04 21:03:27,922 - control_panel - INFO - Killed process tree for PID: 27196
+2025-12-04 21:03:49,704 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 21584
+2025-12-04 21:03:51,743 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:03:51,750 - control_panel - INFO - Controller STARTED for profile 'test' with PID 21584
+2025-12-04 21:03:52,775 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:04:26,959 - control_panel - INFO - Controller STOPPED for profile 'test' with PID 21584
+2025-12-04 21:04:28,470 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:04:28,997 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:04:29,032 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 21584
+2025-12-04 21:04:29,720 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:04:36,275 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 21584
+2025-12-04 21:04:42,701 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:04:42,701 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:04:44,739 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:06:51,528 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 11532
+2025-12-04 21:06:51,528 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:07:00,205 - control_panel - INFO - User logged in successfully
+2025-12-04 21:07:02,709 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:07:35,634 - control_panel - INFO - Activating profile 'test' (previous: Vanilla)
+2025-12-04 21:07:37,535 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:07:37,638 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 11532
+2025-12-04 21:07:39,675 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:07:39,692 - control_panel - INFO - Controller STARTED for profile 'test' with PID 11532
+2025-12-04 21:07:39,693 - control_panel - INFO - Profile 'test' activated successfully
+2025-12-04 21:07:40,700 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:08:04,432 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:08:04,433 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:12:18,064 - control_panel - INFO - Controller STARTED for profile 'test' with PID 27308
+2025-12-04 21:12:18,065 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:12:30,972 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:12:30,972 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:12:33,372 - control_panel - INFO - Controller STARTED for profile 'test' with PID 2036
+2025-12-04 21:12:33,372 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:12:41,660 - control_panel - INFO - User logged in successfully
+2025-12-04 21:12:44,222 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:13:23,283 - control_panel - INFO - Controller STOPPED for profile 'test' with PID 2036
+2025-12-04 21:16:37,588 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:16:37,588 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:19:48,502 - control_panel - INFO - Controller STARTED for profile 'test' with PID 20148
+2025-12-04 21:19:48,503 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:19:56,985 - control_panel - INFO - User logged in successfully
+2025-12-04 21:19:59,435 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:21:21,391 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:21:21,392 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:21:22,972 - control_panel - INFO - Controller STARTED for profile 'test' with PID 31188
+2025-12-04 21:21:22,973 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:21:23,777 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:21:31,052 - control_panel - INFO - User logged in successfully
+2025-12-04 21:21:33,474 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:21:41,488 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:21:41,488 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:22:18,723 - control_panel - INFO - Controller STARTED for profile 'test' with PID 30776
+2025-12-04 21:22:18,723 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:22:26,978 - control_panel - INFO - User logged in successfully
+2025-12-04 21:22:29,136 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 21:22:56,353 - control_panel - INFO - Starting Minecraft server for profile 'test'
+2025-12-04 21:22:56,378 - control_panel - INFO - Server STARTED with PID 1332
+2025-12-04 21:23:02,028 - control_panel - INFO - Activating profile 'Vanilla' (previous: test)
+2025-12-04 21:23:04,040 - control_panel - INFO - Controller STOPPED for profile 'test' with PID 30776
+2025-12-04 21:23:04,232 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:23:06,084 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:23:06,084 - control_panel - INFO - Server STOPPED gracefully for profile 'test'
+2025-12-04 21:23:06,092 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 30776
+2025-12-04 21:23:06,092 - control_panel - INFO - Profile 'Vanilla' activated successfully
+2025-12-04 21:23:06,755 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:23:12,647 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 30776
+2025-12-04 21:23:15,334 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 21:23:15,349 - control_panel - INFO - Server STARTED with PID 16056
+2025-12-04 21:23:35,394 - control_panel - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-04 21:23:36,249 - control_panel - INFO - Server STOPPED gracefully for profile 'Vanilla'
+2025-12-04 21:23:50,701 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:23:50,701 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:23:52,740 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 21:25:23,353 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 9900
+2025-12-04 21:25:23,354 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:25:31,841 - control_panel - INFO - User logged in successfully
+2025-12-04 21:25:34,233 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:27:21,197 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:27:21,197 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:27:22,784 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 7908
+2025-12-04 21:27:22,784 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:27:23,532 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:27:31,503 - control_panel - INFO - User logged in successfully
+2025-12-04 21:27:33,997 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:28:43,907 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:28:43,907 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:28:47,410 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 24620
+2025-12-04 21:28:47,412 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:28:48,305 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:28:48,306 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:28:55,533 - control_panel - INFO - User logged in successfully
+2025-12-04 21:28:57,989 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:29:11,081 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:29:11,082 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:29:12,605 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 33184
+2025-12-04 21:29:12,606 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:29:20,875 - control_panel - INFO - User logged in successfully
+2025-12-04 21:29:23,324 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:30:01,789 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:30:01,789 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:30:03,701 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 4800
+2025-12-04 21:30:03,701 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:30:11,848 - control_panel - INFO - User logged in successfully
+2025-12-04 21:30:14,379 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:30:25,419 - control_panel - INFO - Playit.exe STARTED with PID 6280
+2025-12-04 21:30:43,731 - control_panel - INFO - Playit process STOPPED with PID 6280
+2025-12-04 21:30:51,544 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:30:51,544 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:37:19,451 - control_panel - INFO - Playit.exe STARTED with PID 29736
+2025-12-04 21:37:19,454 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 32932
+2025-12-04 21:37:19,454 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:37:28,108 - control_panel - INFO - User logged in successfully
+2025-12-04 21:37:30,679 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:37:47,038 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 21:37:47,077 - control_panel - INFO - Server STARTED with PID 31316
+2025-12-04 21:37:57,091 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:37:57,091 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:39:13,045 - control_panel - INFO - Playit.exe STARTED with PID 30740
+2025-12-04 21:39:13,048 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 25240
+2025-12-04 21:39:13,048 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:39:21,957 - control_panel - INFO - User logged in successfully
+2025-12-04 21:39:24,482 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:39:48,910 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:39:48,910 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:39:50,523 - control_panel - INFO - Playit.exe STARTED with PID 15320
+2025-12-04 21:39:50,526 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 32440
+2025-12-04 21:39:50,526 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:39:59,043 - control_panel - INFO - User logged in successfully
+2025-12-04 21:40:01,549 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:40:38,592 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 21:40:38,614 - control_panel - INFO - Server STARTED with PID 23768
+2025-12-04 21:40:46,202 - control_panel - INFO - Force stopping server process for profile 'Vanilla' (PID: 23768)
+2025-12-04 21:40:46,211 - control_panel - INFO - Killing child process PID: 21592
+2025-12-04 21:40:46,212 - control_panel - INFO - Killed process tree for PID: 23768
+2025-12-04 21:40:51,309 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 21:40:51,309 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 21:53:06,874 - control_panel - INFO - Playit.exe STARTED with PID 26572
+2025-12-04 21:53:06,876 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 3480
+2025-12-04 21:53:06,877 - control_panel - INFO - Starting control panel UI
+2025-12-04 21:53:17,513 - control_panel - INFO - User logged in successfully
+2025-12-04 21:53:20,057 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 21:53:26,899 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 21:53:26,914 - control_panel - INFO - Server STARTED with PID 8968
+2025-12-04 21:53:30,722 - control_panel - INFO - Force stopping server process for profile 'Vanilla' (PID: 8968)
+2025-12-04 21:53:30,733 - control_panel - INFO - Killing child process PID: 3160
+2025-12-04 21:53:30,734 - control_panel - INFO - Killed process tree for PID: 8968
+2025-12-04 23:01:41,378 - control_panel - INFO - Playit.exe STARTED with PID 24948
+2025-12-04 23:01:41,394 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 18052
+2025-12-04 23:01:41,395 - control_panel - INFO - Starting control panel UI
+2025-12-04 23:01:50,158 - control_panel - INFO - User logged in successfully
+2025-12-04 23:01:52,624 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 23:02:41,691 - control_panel - INFO - Playit process STOPPED with PID 24948
+2025-12-04 23:03:00,424 - control_panel - INFO - Playit.exe STARTED with PID 32144
+2025-12-04 23:03:04,056 - control_panel - INFO - Playit process STOPPED with PID 32144
+2025-12-04 23:03:08,007 - control_panel - INFO - Playit.exe STARTED with PID 15040
+2025-12-04 23:03:17,553 - control_panel - INFO - Playit process STOPPED with PID 15040
+2025-12-04 23:03:22,836 - control_panel - INFO - Playit.exe STARTED with PID 1796
+2025-12-04 23:03:29,502 - control_panel - INFO - Playit process STOPPED with PID 1796
+2025-12-04 23:03:37,536 - control_panel - INFO - Activating profile 'test' (previous: Vanilla)
+2025-12-04 23:03:39,549 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 18052
+2025-12-04 23:03:41,596 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 23:03:41,628 - control_panel - INFO - Controller STARTED for profile 'test' with PID 18052
+2025-12-04 23:03:41,629 - control_panel - INFO - Profile 'test' activated successfully
+2025-12-04 23:03:43,371 - control_panel - INFO - Client connected to follow logs for profile: test
+2025-12-04 23:03:51,594 - control_panel - INFO - Playit.exe STARTED with PID 30828
+2025-12-04 23:03:56,809 - control_panel - INFO - Playit process STOPPED with PID 30828
+2025-12-04 23:03:57,482 - control_panel - INFO - Playit.exe STARTED with PID 31104
+2025-12-04 23:04:14,393 - control_panel - INFO - Activating profile 'Vanilla' (previous: test)
+2025-12-04 23:04:16,394 - control_panel - INFO - Controller STOPPED for profile 'test' with PID 18052
+2025-12-04 23:04:17,724 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 23:04:18,443 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 23:04:18,451 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 18052
+2025-12-04 23:04:18,451 - control_panel - INFO - Profile 'Vanilla' activated successfully
+2025-12-04 23:04:19,127 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 23:05:05,892 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 23:05:05,893 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 23:05:07,904 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 18052
+2025-12-04 23:05:09,951 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 23:05:09,959 - control_panel - INFO - Playit process STOPPED with PID 31104

@@ -33,6 +33,7 @@ let cachedProfiles = [];
 let currentLogProfile = '';
 let selectedProfile = '';
 let playitPrompted = false;
+let cachedPlayitPath = '';
 let dialogResolver = null;
 let lastStatus = null;
 
@@ -47,7 +48,7 @@ const defaultProfile = {
   inactivity_limit: 1800,
   polling_interval: 60,
   pc_sleep_after_inactivity: true,
-  shutdown_app_after_inactivity: false,
+  shutdown_app_after_inactivity: true,
 };
 
 let toastTimeout;
@@ -93,7 +94,15 @@ function closeDialog(result) {
 }
 
 function showDialog(options = {}) {
-  if (!dialogOverlay) return Promise.resolve({ confirmed: false });
+  if (!dialogOverlay || !dialogConfirmBtn || !dialogCancelBtn) {
+    // Fallback to native prompts when modal markup is unavailable
+    if (options.input) {
+      const value = window.prompt(options.message || options.title || '', options.defaultValue || '');
+      return Promise.resolve({ confirmed: Boolean(value !== null), value: value ? value.trim() : null });
+    }
+    const confirmed = window.confirm(options.message || options.title || '');
+    return Promise.resolve({ confirmed });
+  }
   const {
     title = 'Confirm',
     message = '',
@@ -111,9 +120,14 @@ function showDialog(options = {}) {
   dialogCancelBtn.textContent = cancelText;
   dialogCancelBtn.classList.toggle('hidden', !showCancel);
   dialogInputWrapper.classList.toggle('hidden', !input);
-  if (input) {
-    dialogInput.value = defaultValue || '';
-    dialogInput.placeholder = placeholder || '';
+  if (dialogInput) {
+    if (input) {
+      dialogInput.value = defaultValue || '';
+      dialogInput.placeholder = placeholder || '';
+    } else {
+      dialogInput.value = '';
+      dialogInput.placeholder = '';
+    }
   }
 
   dialogOverlay.classList.add('open');
@@ -147,7 +161,10 @@ async function ensurePlayitConfigured() {
   if (lastStatus && lastStatus.playit_configured) return true;
 
   setStatus('No path is defined for Playit.exe', true);
-  await promptForPlayitPath();
+  const saved = await promptForPlayitPath();
+  if (saved) {
+    lastStatus = await refreshStatus();
+  }
   return Boolean(lastStatus && lastStatus.playit_configured);
 }
 
@@ -210,8 +227,24 @@ function updatePlayitChip(configured, running) {
 
 function toggleDrawer(open) {
   if (!drawer) return;
+  // Move focus out before hiding to avoid aria-hidden/focus conflicts
+  if (!open && document.activeElement && drawer.contains(document.activeElement)) {
+    document.activeElement.blur();
+  }
   drawer.classList.toggle('open', Boolean(open));
   drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
+  drawer.toggleAttribute('inert', !open);
+  if (!open) {
+    drawer.removeAttribute('data-profile-name');
+  }
+  if (open) {
+    setTimeout(() => {
+      const nameInput = drawer.querySelector('input[name="name"]');
+      if (nameInput) nameInput.focus();
+    }, 30);
+  } else {
+    if (addProfileBtn) addProfileBtn.focus();
+  }
 }
 
 function setDrawerMode(title, showProperties, profileName = '') {
@@ -277,7 +310,10 @@ function fillFormFromProfile(profile) {
     ? profile.polling_interval
     : defaultProfile.polling_interval;
   form.pc_sleep_after_inactivity.checked = Boolean(profile.pc_sleep_after_inactivity);
-  form.shutdown_app_after_inactivity.checked = Boolean(profile.shutdown_app_after_inactivity);
+  form.shutdown_app_after_inactivity.checked =
+    profile.shutdown_app_after_inactivity !== undefined
+      ? Boolean(profile.shutdown_app_after_inactivity)
+      : Boolean(defaultProfile.shutdown_app_after_inactivity);
 }
 
 async function refreshStatus() {
@@ -352,6 +388,7 @@ async function refreshStatus() {
   }
   if (playitSettingsBtn) {
     playitSettingsBtn.disabled = false;
+    playitSettingsBtn.removeAttribute('disabled');
   }
 
   return data;
@@ -771,12 +808,24 @@ async function stopController() {
 }
 
 async function promptForPlayitPath() {
+  if (!dialogOverlay) {
+    setStatus('Unable to open dialog – missing modal markup', true);
+    return false;
+  }
+
+  const defaultPath =
+    (lastStatus && lastStatus.playit_path) ||
+    cachedPlayitPath ||
+    localStorage.getItem('playitPath') ||
+    '';
+
   const { confirmed, value } = await showInputDialog({
     title: 'Configure PlayitGG',
     message: 'Enter the full path to PlayitGG.exe so we can start the tunnel automatically.',
     confirmText: 'Save & Start',
     cancelText: 'Cancel',
-    placeholder: 'C:/Tools/PlayitGG.exe or /opt/playit/PlayitGG.exe',
+    placeholder: 'C:/foldername/PlayitGG.exe or C:/foldername/',
+    defaultValue: defaultPath,
   });
   if (!confirmed) {
     setStatus('PlayitGG path not updated', true);
@@ -789,6 +838,15 @@ async function promptForPlayitPath() {
     return false;
   }
 
+  // If Playit is currently running, stop it before swapping path
+  if (lastStatus && lastStatus.playit_running) {
+    try {
+      await stopPlayit();
+    } catch (_) {
+      /* ignore */
+    }
+  }
+
   const res = await fetch('/api/playit/path', {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
@@ -797,7 +855,11 @@ async function promptForPlayitPath() {
   const body = await res.json();
   if (res.ok) {
     setStatus('PlayitGG path saved');
+    cachedPlayitPath = path;
+    localStorage.setItem('playitPath', path);
     await refreshStatus();
+    // Start Playit with the new path
+    await startPlayit();
     return true;
   }
 
@@ -808,7 +870,7 @@ async function promptForPlayitPath() {
 async function startPlayit() {
   // Ensure we have fresh status data
   if (!lastStatus) {
-    await refreshStatus();
+    lastStatus = await refreshStatus();
   }
 
   if (!lastStatus || !lastStatus.playit_configured) {
@@ -816,7 +878,7 @@ async function startPlayit() {
     const configured = await promptForPlayitPath();
     if (!configured) return;
     // Refresh after configuration
-    await refreshStatus();
+    lastStatus = await refreshStatus();
   }
 
   if (lastStatus && lastStatus.playit_running) {
@@ -840,7 +902,7 @@ async function startPlayit() {
 async function stopPlayit() {
   // Ensure we have fresh status data
   if (!lastStatus) {
-    await refreshStatus();
+    lastStatus = await refreshStatus();
   }
 
   if (!lastStatus || !lastStatus.playit_configured) {
@@ -860,7 +922,7 @@ async function stopPlayit() {
   } else {
     setStatus(body.error || 'Failed to stop PlayitGG', true);
   }
-  await refreshStatus();
+  lastStatus = await refreshStatus();
 }
 
 function propsToText(map) {
@@ -988,7 +1050,14 @@ function init() {
   const playitSettingsBtn = document.getElementById('playit-settings-btn');
   if (startPlayitBtn) startPlayitBtn.addEventListener('click', startPlayit);
   if (stopPlayitBtn) stopPlayitBtn.addEventListener('click', stopPlayit);
-  if (playitSettingsBtn) playitSettingsBtn.addEventListener('click', promptForPlayitPath);
+  if (playitSettingsBtn) {
+    playitSettingsBtn.disabled = false;
+    playitSettingsBtn.addEventListener('click', (event) => {
+      event.preventDefault();
+      playitPrompted = false; // allow manual prompt even if we already tried
+      promptForPlayitPath();
+    });
+  }
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
   if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
   if (logoutBtn) logoutBtn.addEventListener('click', logout);
@@ -1012,7 +1081,12 @@ function init() {
       }
       if (data && !data.playit_configured && !playitPrompted) {
         playitPrompted = true;
-        await promptForPlayitPath();
+        const configured = await promptForPlayitPath();
+        if (configured) {
+          lastStatus = await refreshStatus();
+        } else {
+          playitPrompted = false; // allow retry on next refresh
+        }
       }
     } catch (err) {
       console.error('Initial status refresh failed', err);

@@ -385,7 +385,7 @@ def _profile_from_request(data: Dict) -> ServerProfile:
     if not isinstance(sleep_flag, bool):
         sleep_flag = str(sleep_flag).strip().lower() in {"1", "true", "yes", "on"}
 
-    shutdown_app_flag = data.get("shutdown_app_after_inactivity", False)
+    shutdown_app_flag = data.get("shutdown_app_after_inactivity", True)
     if not isinstance(shutdown_app_flag, bool):
         shutdown_app_flag = str(shutdown_app_flag).strip().lower() in {"1", "true", "yes", "on"}
 
@@ -1134,9 +1134,16 @@ def set_active(name: str):
     # If forcing a restart on the same profile, reuse the active profile instance; otherwise, switch normally
     profile = previous_profile if previous_profile and previous_profile.name == name else store.set_active(name)
 
+    if force_restart and previous_profile and previous_profile.name == name:
+        logger.info("Restarting services for active profile '%s'", name)
+    else:
+        logger.info("Activating profile '%s' (previous: %s)", name, previous_profile.name if previous_profile else "None")
+
     _stop_services(previous_profile, stop_server=True)
     _apply_profile_environment(profile)
     _ensure_services_running(profile)
+
+    logger.info("Profile '%s' activated successfully", name)
     return jsonify(profile.to_dict())
 
 
@@ -1218,7 +1225,7 @@ def stop_controller():
 
     if _stop_controller(profile.name):
         return jsonify({"message": "Controller stopped"})
-    return jsonify({"error": "Controller was not running"}), 400
+    return jsonify({"error": "Controller is not running"}), 400
 
 
 @app.route("/api/stop/playit", methods=["POST"])
@@ -1232,7 +1239,7 @@ def stop_playit():
     if _stop_playit_process():
         return jsonify({"message": "Playit stopped"})
 
-    return jsonify({"error": "Playit is already stopped"}), 400
+    return jsonify({"error": "Playit is not running"}), 400
 
 
 @app.route("/api/stop/server", methods=["POST"])

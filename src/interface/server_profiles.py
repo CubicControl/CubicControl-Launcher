@@ -36,7 +36,7 @@ class ServerProfile:
     inactivity_limit: int = 1800
     polling_interval: int = 60
     pc_sleep_after_inactivity: bool = True
-    shutdown_app_after_inactivity: bool = False
+    shutdown_app_after_inactivity: bool = True
     description: str = ""
     env_scope: str = "per_server"  # or "global"
 
@@ -118,7 +118,7 @@ class ServerProfile:
             inactivity_limit=data.get("inactivity_limit", 1800),
             polling_interval=data.get("polling_interval", 60),
             pc_sleep_after_inactivity=data.get("pc_sleep_after_inactivity", True),
-            shutdown_app_after_inactivity=data.get("shutdown_app_after_inactivity", False),
+            shutdown_app_after_inactivity=data.get("shutdown_app_after_inactivity", True),
             description=data.get("description", ""),
             env_scope=data.get("env_scope", "per_server"),
         )

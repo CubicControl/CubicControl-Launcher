@@ -26,15 +26,16 @@
     }
 
     * { box-sizing: border-box; }
+    .hidden { display: none !important; }
 
     body {
       margin: 0;
       font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
       background:
-        radial-gradient(circle at 20% 15%, rgba(106, 169, 255, 0.12), transparent 28%),
-        radial-gradient(circle at 80% 10%, rgba(52, 211, 153, 0.1), transparent 22%),
-        radial-gradient(circle at 30% 80%, rgba(248, 113, 113, 0.1), transparent 25%),
-        var(--bg);
+              radial-gradient(circle at 20% 15%, rgba(106, 169, 255, 0.12), transparent 28%),
+              radial-gradient(circle at 80% 10%, rgba(52, 211, 153, 0.1), transparent 22%),
+              radial-gradient(circle at 30% 80%, rgba(248, 113, 113, 0.1), transparent 25%),
+              var(--bg);
       color: var(--text);
       line-height: 1.6;
       min-height: 100vh;
@@ -261,10 +262,25 @@
       padding: 0.7rem 0.8rem;
       border-radius: 10px;
       border: 1px solid var(--border);
-      background: rgba(255, 255, 255, 0.03);
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.05), rgba(10, 14, 25, 0.8));
       color: var(--text);
       font-size: 0.98rem;
       transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    select {
+      appearance: none;
+      background-position: right 0.8rem center;
+      background-repeat: no-repeat;
+      background-size: 12px;
+      background-image: linear-gradient(45deg, transparent 50%, #dbeafe 50%), linear-gradient(135deg, #dbeafe 50%, transparent 50%);
+      background-position: calc(100% - 14px) center, calc(100% - 9px) center;
+      padding-right: 2.2rem;
+      color: #e5e7eb;
+      background-color: #0f1625;
+    }
+    select option {
+      background: #0b1220;
+      color: #e5e7eb;
     }
     select:focus, input:focus, textarea:focus {
       outline: none;
@@ -614,7 +630,7 @@
       <form id="command-form" class="command-row">
         <label for="command-input">Send RCON command</label>
         <div class="command-input-row">
-          <input id="command-input" type="text" placeholder="say Server maintenance starting" />
+          <input id="command-input" type="text" placeholder="/say Hello World" />
           <button type="submit" class="primary">Send</button>
         </div>
         <small class="muted">Requires the server and RCON to be running.</small>
@@ -639,12 +655,8 @@
           <div class="form-grid">
             <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
             <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
-            <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
+            <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description" style="resize: vertical; max-width: 100%;"></textarea></label>
             <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
-            <label class="full-width">RCON Settings (auto-managed)
-              <input type="text" value="RCON + Query locked to controller defaults" disabled />
-              <small class="muted">Ports 27001/27002 and a generated password are applied automatically.</small>
-            </label>
             <label>ADMIN_AUTHKEY<input type="text" name="admin_auth_key" required placeholder="Admin control key" /></label>
             <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
             <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
@@ -655,7 +667,7 @@
               <label for="sleep-checkbox" style="margin: 0;">Sleep PC after inactivity timeout</label>
             </div>
             <div class="checkbox-wrapper full-width">
-              <input type="checkbox" id="shutdown-app-checkbox" name="shutdown_app_after_inactivity" />
+              <input type="checkbox" id="shutdown-app-checkbox" name="shutdown_app_after_inactivity" checked />
               <label for="shutdown-app-checkbox" style="margin: 0;">Close the control panel after inactivity timeout</label>
               <small class="muted" style="display: block; margin-top: 0.25rem;">Stops the Minecraft server, then closes this console/app entirely. Useful for unattended hosts.</small>
             </div>
@@ -677,7 +689,7 @@
         <div class="action-row">
           <button id="save-props-btn" class="primary">Save</button>
         </div>
-        <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
+        <textarea id="properties" aria-label="server.properties" placeholder="key=value" style="min-height: 740px;"></textarea>
         <small class="muted">Edit server.properties for the selected profile.</small>
       </div>
     </div>
@@ -693,6 +705,8 @@
     <div class="modal-body">
       <p class="muted" id="dialog-message" style="margin: 0;"></p>
       <div class="modal-input hidden" id="dialog-input-wrapper">
+        <label for="dialog-input">Value</label>
+        <input id="dialog-input" type="text" placeholder="" />
       </div>
     </div>
     <div class="modal-footer">
