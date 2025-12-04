@@ -1037,6 +1037,7 @@ def api_status():
             "server_running": _is_server_running(store.active_profile_name or "") if store.active_profile_name else False,
             "playit_running": _is_playit_running(),
             "playit_configured": _is_playit_configured(),
+            "playit_path": _playit_path(),
         }
     )
 
@@ -1048,19 +1049,22 @@ def set_playit_path():
     if not raw_path:
         return jsonify({"error": "Path to Playit.exe is required"}), 400
 
+    # Validate the path before saving
     try:
         validated = _validated_playit_path(raw_path)
     except ValueError as exc:
+        # Return error without stopping current instance or saving invalid path
         return jsonify({"error": str(exc)}), 400
 
+    # Save the validated path
     ConfigFileHandler().set_value("Playit location", validated)
-    started = False
-    try:
-        started = _start_playit_process(validated)
-    except Exception as exc:  # pragma: no cover - defensive guard
-        logger.warning("Unable to start Playit after saving path: %s", exc)
 
-    return jsonify({"message": "Playit path saved", "playit_running": _is_playit_running(), "started": started})
+    # Return success - frontend will handle starting Playit if needed
+    return jsonify({
+        "message": "Playit path saved successfully",
+        "playit_running": _is_playit_running(),
+        "playit_path": validated
+    })
 
 @app.route("/api/server/state", methods=["GET"])
 def server_state():

@@ -535,7 +535,7 @@ async function deleteProfile() {
     title: 'Delete profile',
     message: isActive
       ? `Delete active profile "${name}"? This will stop its services and remove it.`
-      : `Delete profile "${name}"? This only removes it from your list.`,
+      : `Delete profile "${name}"?`,
     confirmText: 'Delete',
     cancelText: 'Cancel',
   });
@@ -813,11 +813,11 @@ async function promptForPlayitPath() {
     return false;
   }
 
-  const defaultPath =
-    (lastStatus && lastStatus.playit_path) ||
-    cachedPlayitPath ||
-    localStorage.getItem('playitPath') ||
-    '';
+  // Refresh status to get the latest playit_path from the backend
+  await refreshStatus();
+
+  // Use the current path from the backend (lastStatus.playit_path) or fallback to empty
+  const defaultPath = (lastStatus && lastStatus.playit_path) || '';
 
   const { confirmed, value } = await showInputDialog({
     title: 'Configure PlayitGG',
@@ -838,15 +838,7 @@ async function promptForPlayitPath() {
     return false;
   }
 
-  // If Playit is currently running, stop it before swapping path
-  if (lastStatus && lastStatus.playit_running) {
-    try {
-      await stopPlayit();
-    } catch (_) {
-      /* ignore */
-    }
-  }
-
+  // Save the new path (backend will validate it)
   const res = await fetch('/api/playit/path', {
     method: 'POST',
     headers: authHeaders({ 'Content-Type': 'application/json' }),
@@ -858,11 +850,14 @@ async function promptForPlayitPath() {
     cachedPlayitPath = path;
     localStorage.setItem('playitPath', path);
     await refreshStatus();
-    // Start Playit with the new path
-    await startPlayit();
+    // Only start Playit if it's not already running
+    if (!lastStatus || !lastStatus.playit_running) {
+      await startPlayit();
+    }
     return true;
   }
 
+  // If validation failed, show error but don't affect running instance
   setStatus(body.error || 'Unable to save PlayitGG path', true);
   return false;
 }
