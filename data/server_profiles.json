@@ -12,9 +12,10 @@
       "admin_auth_key": "SECRETADMINKEY",
       "auth_key": "SECRETKEYSPIRIT",
       "shutdown_key": "",
-      "inactivity_limit": 1800,
-      "polling_interval": 60,
-      "pc_sleep_after_inactivity": true,
+      "inactivity_limit": 60,
+      "polling_interval": 30,
+      "pc_sleep_after_inactivity": false,
+      "shutdown_app_after_inactivity": true,
       "description": "",
       "env_scope": "per_server"
     }

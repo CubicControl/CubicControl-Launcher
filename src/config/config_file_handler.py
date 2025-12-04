@@ -1,21 +1,19 @@
 import configparser
 import sys
 from pathlib import Path
-
-# Use executable directory when frozen, otherwise use project root
-if getattr(sys, 'frozen', False):
-    # Running as executable - use the directory where the exe is located
-    PROJECT_ROOT = Path(sys.executable).parent
-else:
-    # Running as script - use project root
-    PROJECT_ROOT = Path(__file__).resolve().parents[2]
-
-CONFIG_PATH = PROJECT_ROOT / "ServerConfig.ini"
-
+from typing import Optional
 
 class ConfigFileHandler:
-    def __init__(self):
-        self.config_file = CONFIG_PATH
+    def __init__(self, data_dir: Optional[Path] = None):
+        if data_dir is None:
+            if getattr(sys, 'frozen', False):
+                base = Path(sys.executable).parent
+            else:
+                base = Path(__file__).resolve().parents[2]
+            data_dir = base / "data"
+        self.data_dir = Path(data_dir)
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.config_file = self.data_dir / "PlayitConfig.ini"
         self.config = configparser.ConfigParser()
         self.config.optionxform = str
 

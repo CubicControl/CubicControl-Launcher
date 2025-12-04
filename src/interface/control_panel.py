@@ -1,15 +1,20 @@
 import os
+import atexit
+import logging
+import os
 import secrets
+import signal
+import socket
 import subprocess
 import sys
+import tempfile
 import threading
-import atexit
+import warnings
 from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
-import logging
-import warnings
 
+import psutil
 import time
 import requests
 import webbrowser
@@ -37,6 +42,128 @@ show_server_banner = lambda *args, **kwargs: None  # hide Flask banner
 
 for noisy in ("werkzeug", "engineio", "socketio", "flask_socketio"):
     logging.getLogger(noisy).setLevel(logging.ERROR)
+
+_single_instance_lock = None
+_instance_socket = None
+
+
+def _acquire_single_instance_lock() -> Path:
+    """
+    Prevent multiple instances by locking a temp file.
+    Works for both frozen executables and normal Python runs.
+    """
+    global _single_instance_lock, _instance_socket
+
+    lock_path = Path(tempfile.gettempdir()) / "minrefact_control_panel.lock"
+    lock_path.parent.mkdir(parents=True, exist_ok=True)
+
+    # If a previous lock exists, check whether the recorded PID is still alive.
+    if lock_path.exists():
+        try:
+            existing_pid = int(lock_path.read_text().strip() or "0")
+            if existing_pid and psutil.pid_exists(existing_pid):
+                raise RuntimeError("Another control panel instance is already running.")
+        except ValueError:
+            # Corrupted PID; fall through to lock attempt
+            pass
+        except RuntimeError:
+            raise
+        # Stale lock; remove before acquiring
+        try:
+            lock_path.unlink()
+        except Exception:
+            pass
+
+    handle = open(lock_path, "a+")
+
+    try:
+        if os.name == "nt":
+            import msvcrt
+            try:
+                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+            except OSError as exc:
+                raise RuntimeError("Another control panel instance is already running.") from exc
+        else:
+            import fcntl
+            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+        # Use a small localhost port as a second guard. Exclusive bind blocks duplicates
+        # even if the file lock is stale or ignored.
+        _instance_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        if os.name == "nt":
+            _instance_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+            # SO_EXCLUSIVEADDRUSE prevents socket reuse on Windows
+            _instance_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        _instance_socket.bind(("127.0.0.1", 38999))
+        _instance_socket.listen(1)
+
+        handle.seek(0)
+        handle.truncate()
+        handle.write(str(os.getpid()))
+        handle.flush()
+        _single_instance_lock = handle
+        return lock_path
+    except Exception:
+        try:
+            handle.close()
+        except Exception:
+            pass
+        if _instance_socket:
+            try:
+                _instance_socket.close()
+            except Exception:
+                pass
+            _instance_socket = None
+        raise
+
+
+def _release_single_instance_lock() -> None:
+    global _single_instance_lock, _instance_socket
+    lock_path = Path(tempfile.gettempdir()) / "minrefact_control_panel.lock"
+
+    if not _single_instance_lock:
+        return
+    try:
+        if os.name != "nt":
+            import fcntl
+            fcntl.flock(_single_instance_lock, fcntl.LOCK_UN)
+    except Exception:
+        pass
+    try:
+        _single_instance_lock.close()
+    finally:
+        _single_instance_lock = None
+
+    if _instance_socket:
+        try:
+            _instance_socket.close()
+        except Exception:
+            pass
+        _instance_socket = None
+
+    try:
+        lock_path.unlink()
+    except Exception:
+        pass
+
+
+def _enforce_single_instance() -> None:
+    try:
+        _acquire_single_instance_lock()
+    except RuntimeError as exc:
+        msg = (
+            "Another instance of the control panel is already running. "
+            "Close the other window or wait a few seconds if it was just closed."
+        )
+        print(msg)
+        try:
+            logger.error(msg)
+        except Exception:
+            pass
+        raise SystemExit(1) from exc
+
+
+_enforce_single_instance()
 
 
 def _print_startup_banner():
@@ -377,7 +504,7 @@ def _start_playit_process(path: Optional[str] = None) -> bool:
         env=env,
         creationflags=creationflags
     )
-    logger.info("Playit.exe started with PID %s", playit_process.pid)
+    logger.info("Playit.exe STARTED with PID %s", playit_process.pid)
     return True
 
 
@@ -393,7 +520,7 @@ def _stop_playit_process() -> bool:
     except subprocess.TimeoutExpired:
         playit_process.kill()
     finally:
-        logger.info("Playit process stopped")
+        logger.info("Playit process STOPPED with PID %s", playit_process.pid)
         playit_process = None
     playit_process = None
     return True
@@ -411,12 +538,14 @@ def _start_controller(profile: ServerProfile) -> bool:
     controllers[profile.name] = controller
     thread = controller.start_in_thread()
     controller_threads[profile.name] = thread
-    logger.info("Controller started for profile '%s'", profile.name)
+    controller_pid = os.getpid()
+    logger.info("Controller STARTED for profile '%s' with PID %s", profile.name, controller_pid)
     return True
 
 
 def _stop_controller(name: str) -> bool:
     controller = controllers.get(name)
+    pid = os.getpid()
     if controller:
         controller.stop_controller()
     thread = controller_threads.get(name)
@@ -426,7 +555,7 @@ def _stop_controller(name: str) -> bool:
     controllers.pop(name, None)
     controller_threads.pop(name, None)
     if stopped:
-        logger.info("Controller stopped for profile '%s'", name)
+        logger.info("Controller STOPPED for profile '%s' with PID %s", name, pid)
     return stopped
 
 
@@ -605,7 +734,7 @@ def _start_server_process(profile: ServerProfile) -> bool:
     server_log_buffers.pop(profile.name, None)
     thread = socketio.start_background_task(_stream_server_output, profile.name, proc)
     server_log_threads[profile.name] = thread
-    logger.info(f"Server started with PID {proc.pid}")
+    logger.info(f"Server STARTED with PID {proc.pid}")
     return True
 
 
@@ -628,7 +757,7 @@ def _stop_server_process(profile: ServerProfile) -> bool:
     if proc:
         try:
             proc.wait(timeout=15)
-            logger.info(f"Server stopped gracefully for profile '{profile.name}'")
+            logger.info(f"Server STOPPED gracefully for profile '{profile.name}'")
         except subprocess.TimeoutExpired:
             logger.warning("Server did not stop gracefully, terminating process")
             proc.terminate()
@@ -1275,17 +1404,73 @@ def open_browser_when_ready():
     if wait_for_server(url):
         webbrowser.open(url)
 
-def cleanup_on_exit():
-    """Cleanup function called when application exits"""
-    logger.info("Application shutting down, cleaning up...")
-    # Note: Browser windows will automatically lose connection when server stops
+_shutdown_in_progress = False
 
+
+def cleanup_on_exit(reason: str = "shutdown"):
+    """Cleanup function called when application exits"""
+    global _shutdown_in_progress
+    if _shutdown_in_progress:
+        return
+    _shutdown_in_progress = True
+
+    logger.info("Application shutting down (%s), cleaning up...", reason)
+    profile = store.active_profile
+
+    try:
+        _stop_services(profile, stop_server=True)
+    except Exception as exc:
+        logger.warning("Failed to stop services during shutdown: %s", exc)
+
+    try:
+        _stop_playit_process()
+    except Exception as exc:
+        logger.warning("Failed to stop Playit.exe during shutdown: %s", exc)
+
+    _release_single_instance_lock()
+
+
+def _handle_exit_signal(signum):
+    logger.info("Received termination signal (%s); shutting down.", signum)
+    cleanup_on_exit(reason=f"signal {signum}")
+    sys.exit(0)
+
+
+def _register_signal_handlers():
+    signals = [signal.SIGINT, getattr(signal, "SIGTERM", None), getattr(signal, "SIGBREAK", None)]
+    for sig in signals:
+        if sig is None:
+            continue
+        try:
+            signal.signal(sig, _handle_exit_signal)
+        except Exception:
+            pass
+
+    # Windows console close (clicking the X in cmd)
+    try:
+        import win32api
+
+        def _console_ctrl_handler(event):
+            logger.info("Console close event received (%s); shutting down.", event)
+            cleanup_on_exit(reason=f"console event {event}")
+            return True
+
+        win32api.SetConsoleCtrlHandler(_console_ctrl_handler, True)
+    except Exception:
+        pass
+
+
+_register_signal_handlers()
 atexit.register(cleanup_on_exit)
 
 
-if __name__ == "__main__":
-    # Initialize services before starting the server
+def main():
+    """Entry point for running the control panel."""
     initialize_services()
     threading.Thread(target=open_browser_when_ready, daemon=True).start()
     logger.info("Starting control panel UI")
     socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)
+
+
+if __name__ == "__main__":
+    main()

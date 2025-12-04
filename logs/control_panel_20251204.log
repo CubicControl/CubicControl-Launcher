@@ -723,3 +723,161 @@ jinja2.exceptions.TemplateNotFound: control_panel.html
 2025-12-04 18:04:05,985 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
 2025-12-04 18:04:17,053 - control_panel - INFO - User logged in successfully
 2025-12-04 18:04:19,417 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:10:08,237 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:10:09,760 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:10:09,760 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:10:10,548 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:10:10,609 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:10:27,429 - control_panel - INFO - User logged in successfully
+2025-12-04 18:10:29,784 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:10:35,025 - control_panel - INFO - Playit.exe started with PID 29168
+2025-12-04 18:10:42,500 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:10:47,285 - control_panel - INFO - Playit.exe started with PID 26136
+2025-12-04 18:10:47,287 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:10:47,287 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:10:50,296 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:10:56,197 - control_panel - INFO - User logged in successfully
+2025-12-04 18:10:58,578 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:11:06,272 - control_panel - INFO - Playit.exe started with PID 32864
+2025-12-04 18:11:12,710 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:11:14,749 - control_panel - INFO - Playit.exe started with PID 29220
+2025-12-04 18:11:14,752 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:11:14,752 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:11:15,614 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:11:15,767 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:11:25,948 - control_panel - INFO - User logged in successfully
+2025-12-04 18:11:28,335 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:11:39,986 - control_panel - INFO - Playit.exe started with PID 33532
+2025-12-04 18:11:45,775 - control_panel - INFO - Playit process stopped
+2025-12-04 18:11:52,242 - control_panel - INFO - Controller stopped for profile 'Vanilla'
+2025-12-04 18:14:19,611 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:14:44,710 - control_panel - INFO - Playit.exe started with PID 29640
+2025-12-04 18:14:44,712 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:14:44,713 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:14:54,706 - control_panel - INFO - User logged in successfully
+2025-12-04 18:14:57,142 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:15:02,674 - control_panel - INFO - Playit.exe started with PID 2828
+2025-12-04 18:15:13,146 - control_panel - INFO - Playit process stopped
+2025-12-04 18:16:24,404 - control_panel - INFO - Playit.exe started with PID 13268
+2025-12-04 18:16:32,206 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:19:31,447 - control_panel - INFO - Playit.exe started with PID 5552
+2025-12-04 18:19:31,449 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:19:31,450 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:19:48,315 - control_panel - INFO - User logged in successfully
+2025-12-04 18:19:50,679 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:20:15,783 - control_panel - INFO - Playit process stopped
+2025-12-04 18:20:18,816 - control_panel - INFO - Playit.exe started with PID 33272
+2025-12-04 18:20:27,885 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:20:42,907 - control_panel - INFO - Playit.exe started with PID 28272
+2025-12-04 18:20:42,909 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:20:42,909 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:20:43,634 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:20:51,193 - control_panel - INFO - User logged in successfully
+2025-12-04 18:20:53,576 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:21:03,588 - control_panel - INFO - Controller stopped for profile 'Vanilla'
+2025-12-04 18:21:05,633 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:21:05,668 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:21:06,630 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:21:27,730 - control_panel - INFO - Playit process stopped
+2025-12-04 18:21:30,778 - control_panel - INFO - Playit.exe started with PID 28228
+2025-12-04 18:22:34,551 - control_panel - INFO - Playit.exe started with PID 28348
+2025-12-04 18:22:34,553 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:22:34,553 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:22:35,007 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:22:36,297 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:22:47,004 - control_panel - INFO - User logged in successfully
+2025-12-04 18:22:49,369 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:25:50,405 - control_panel - INFO - Playit.exe started with PID 17188
+2025-12-04 18:25:50,407 - control_panel - INFO - Controller started for profile 'Vanilla'
+2025-12-04 18:25:50,408 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:28:40,283 - control_panel - INFO - Playit.exe started with PID 28776
+2025-12-04 18:28:40,285 - control_panel - INFO - Controller started for profile 'Vanilla' with PID 10832
+2025-12-04 18:28:40,286 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:36:15,454 - control_panel - INFO - Playit.exe STARTED with PID 4248
+2025-12-04 18:36:15,456 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 29756
+2025-12-04 18:36:15,456 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:36:23,843 - control_panel - INFO - User logged in successfully
+2025-12-04 18:36:26,278 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:36:26,530 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 18:36:26,546 - control_panel - INFO - Server STARTED with PID 32644
+2025-12-04 18:37:01,874 - control_panel - INFO - Application shutting down, cleaning up...
+2025-12-04 18:46:08,775 - control_panel - INFO - Playit.exe STARTED with PID 1696
+2025-12-04 18:46:08,777 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 30196
+2025-12-04 18:46:08,785 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:46:15,566 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:46:15,567 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:46:17,575 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 30196
+2025-12-04 18:46:19,618 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:46:19,632 - control_panel - INFO - Playit process STOPPED with PID <Popen: returncode: 1 args: ['D:\\playit\\playit.exe']>
+2025-12-04 18:46:31,547 - control_panel - INFO - User logged in successfully
+2025-12-04 18:46:33,976 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:46:35,944 - control_panel - INFO - Playit.exe STARTED with PID 14756
+2025-12-04 18:46:38,928 - control_panel - INFO - Playit process STOPPED with PID <Popen: returncode: 1 args: ['D:\\playit\\playit.exe']>
+2025-12-04 18:46:48,719 - control_panel - INFO - Playit.exe STARTED with PID 13332
+2025-12-04 18:46:48,722 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 33172
+2025-12-04 18:46:48,722 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:46:57,871 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:46:57,871 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:46:59,880 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 33172
+2025-12-04 18:47:04,190 - control_panel - INFO - Playit.exe STARTED with PID 600
+2025-12-04 18:47:04,192 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 28552
+2025-12-04 18:47:04,193 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:47:14,044 - control_panel - INFO - User logged in successfully
+2025-12-04 18:47:16,453 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:47:43,620 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:47:43,620 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:47:45,624 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 28552
+2025-12-04 18:47:47,669 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:47:47,680 - control_panel - INFO - Playit process STOPPED with PID <Popen: returncode: 1 args: ['D:\\playit\\playit.exe']>
+2025-12-04 18:49:17,362 - control_panel - INFO - Playit.exe STARTED with PID 14028
+2025-12-04 18:49:17,364 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 28088
+2025-12-04 18:49:17,364 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:49:33,777 - control_panel - INFO - User logged in successfully
+2025-12-04 18:49:36,153 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:49:43,407 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:49:43,407 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:49:45,421 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 28088
+2025-12-04 18:49:47,465 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:49:47,472 - control_panel - INFO - Playit process STOPPED with PID <Popen: returncode: 1 args: ['D:\\playit\\playit.exe']>
+2025-12-04 18:51:10,533 - control_panel - INFO - Playit.exe STARTED with PID 2288
+2025-12-04 18:51:10,535 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 13412
+2025-12-04 18:51:10,544 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:51:14,758 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:51:14,759 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:51:16,773 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 13412
+2025-12-04 18:51:18,820 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:51:18,829 - control_panel - INFO - Playit process STOPPED with PID 2288
+2025-12-04 18:51:39,776 - control_panel - INFO - Playit.exe STARTED with PID 14280
+2025-12-04 18:51:39,778 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 2972
+2025-12-04 18:51:39,779 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:51:52,460 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:51:52,460 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:51:54,469 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 2972
+2025-12-04 18:51:56,514 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:51:56,522 - control_panel - INFO - Playit process STOPPED with PID 14280
+2025-12-04 18:52:23,217 - control_panel - INFO - Playit.exe STARTED with PID 3776
+2025-12-04 18:52:23,219 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 20656
+2025-12-04 18:52:23,219 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:52:25,780 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:52:25,781 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:52:27,790 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 20656
+2025-12-04 18:57:52,446 - control_panel - INFO - Playit.exe STARTED with PID 29000
+2025-12-04 18:57:52,448 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 23556
+2025-12-04 18:57:52,448 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:58:02,368 - control_panel - INFO - User logged in successfully
+2025-12-04 18:58:04,726 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 18:58:16,131 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:58:16,131 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:58:18,140 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 23556
+2025-12-04 18:58:20,185 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 18:58:20,190 - control_panel - INFO - Playit process STOPPED with PID 29000
+2025-12-04 18:58:22,893 - control_panel - INFO - Playit.exe STARTED with PID 7748
+2025-12-04 18:58:22,895 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 31348
+2025-12-04 18:58:22,895 - control_panel - INFO - Starting control panel UI
+2025-12-04 18:58:23,134 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 18:58:23,134 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 18:58:24,294 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 19:02:18,365 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-04 19:02:20,414 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 19:02:33,372 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-04 19:02:35,414 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
