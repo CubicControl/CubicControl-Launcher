@@ -248,12 +248,20 @@ def _enforce_rcon_defaults(profile: ServerProfile) -> ServerProfile:
     return profile
 
 
+def _shutdown_key(profile: Optional[ServerProfile]) -> str:
+    """Return the shutdown key, falling back to ADMIN_AUTH_KEY when blank."""
+
+    if profile and profile.shutdown_key:
+        return profile.shutdown_key
+
+    return os.environ.get("SHUTDOWN_AUTH_KEY") or settings.ADMIN_AUTH_KEY
+
+
 def _apply_profile_environment(profile: ServerProfile) -> None:
     """Set process env vars to match the selected profile."""
     os.environ["RCON_PASSWORD"] = profile.rcon_password
     os.environ["AUTHKEY_SERVER_WEBSITE"] = profile.auth_key
-    if profile.shutdown_key:
-        os.environ["SHUTDOWN_AUTH_KEY"] = profile.shutdown_key
+    os.environ["SHUTDOWN_AUTH_KEY"] = _shutdown_key(profile)
     os.environ["QUERY_PORT"] = str(profile.query_port)
     os.environ["RCON_PORT"] = str(profile.rcon_port)
 
@@ -283,7 +291,12 @@ def _is_api_running(profile: Optional[ServerProfile]) -> bool:
 def _playit_path() -> str:
     handler = ConfigFileHandler()
     try:
-        return handler.get_value("Playit location", allow_empty=True).strip()
+        path = handler.get_value("Playit location", allow_empty=True).strip()
+        if path:
+            return path
+
+        # Backward compatibility with older config keys
+        return handler.get_value("PlayitGG location", allow_empty=True).strip()
     except Exception:
         return ""
 
@@ -308,11 +321,13 @@ def _start_playit_process(path: Optional[str] = None) -> bool:
 
     validated_path = _validated_playit_path(exe_path)
     env = os.environ.copy()
+    creationflags = getattr(subprocess, "CREATE_NO_WINDOW", 0)
+
     playit_process = subprocess.Popen(
         [validated_path],
         cwd=str(Path(validated_path).parent),
         env=env,
-        creationflags=subprocess.CREATE_NEW_CONSOLE
+        creationflags=creationflags
     )
     logger.info("Playit.exe started with PID %s", playit_process.pid)
     return True
@@ -347,7 +362,7 @@ def _start_api_process(profile: ServerProfile) -> bool:
         {
             "RCON_PASSWORD": profile.rcon_password,
             "AUTHKEY_SERVER_WEBSITE": profile.auth_key,
-            "SHUTDOWN_AUTH_KEY": profile.shutdown_key,
+            "SHUTDOWN_AUTH_KEY": _shutdown_key(profile),
             "QUERY_PORT": str(profile.query_port),
             "RCON_PORT": str(profile.rcon_port),
         }
@@ -391,7 +406,8 @@ def _stop_api_process(profile: Optional[ServerProfile]) -> bool:
 
         # Try remote shutdown
         if profile:
-            headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": profile.shutdown_key}
+            shutdown_key = _shutdown_key(profile)
+            headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": shutdown_key}
             try:
                 resp = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=3)
                 if resp.status_code == 200:
@@ -434,7 +450,8 @@ def _stop_api_process(profile: Optional[ServerProfile]) -> bool:
 
     # Try remote shutdown as fallback
     if profile:
-        headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": profile.shutdown_key}
+        shutdown_key = _shutdown_key(profile)
+        headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": shutdown_key}
         try:
             resp = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=2)
             logger.info("Sent remote shutdown to API (fallback)")
