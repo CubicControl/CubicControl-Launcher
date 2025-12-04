@@ -491,7 +491,6 @@
     </div>
   </div>
   <div class="top-actions">
-    <span class="pill">Active Profile: <span id="active-profile">None</span></span>
     <div class="top-buttons">
       <button id="logout-btn" class="secondary">Logout</button>
     </div>
@@ -516,7 +515,10 @@
             <p class="eyebrow">Live status</p>
             <h3>Runtime overview</h3>
           </div>
-          <span class="muted" id="status-text"></span>
+          <div style="display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; justify-content: flex-end;">
+            <span class="pill">Active Profile: <span id="active-profile">None</span></span>
+            <span class="muted" id="status-text"></span>
+          </div>
         </div>
 
         <div class="status-grid">
@@ -691,8 +693,6 @@
     <div class="modal-body">
       <p class="muted" id="dialog-message" style="margin: 0;"></p>
       <div class="modal-input hidden" id="dialog-input-wrapper">
-        <label for="dialog-input">Value</label>
-        <input id="dialog-input" type="text" placeholder="" />
       </div>
     </div>
     <div class="modal-footer">

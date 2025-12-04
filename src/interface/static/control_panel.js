@@ -325,7 +325,7 @@ async function refreshStatus() {
     const isStarting = serverState === 'starting';
     const isStopping = serverState === 'stopping';
     startBtn.disabled = isRunning || isStarting;
-    stopBtn.disabled = isStarting;
+    stopBtn.disabled = !(isRunning || isStarting || isStopping);
     // Enable force stop if server is running, starting, or stopping
     forceStopBtn.disabled = !(isRunning || isStarting || isStopping);
   }
@@ -341,6 +341,14 @@ async function refreshStatus() {
   if (startPlayitBtn && stopPlayitBtn) {
     startPlayitBtn.disabled = !data.playit_configured || data.playit_running;
     stopPlayitBtn.disabled = !data.playit_running;
+  }
+
+  const startControllerBtn = document.getElementById('start-controller-btn');
+  const stopControllerBtn = document.getElementById('stop-controller-btn');
+  if (startControllerBtn && stopControllerBtn) {
+    const controllerRunning = Boolean(data.controller_running);
+    startControllerBtn.disabled = controllerRunning;
+    stopControllerBtn.disabled = !controllerRunning;
   }
   if (playitSettingsBtn) {
     playitSettingsBtn.disabled = false;

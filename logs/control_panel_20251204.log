@@ -929,3 +929,48 @@ jinja2.exceptions.TemplateNotFound: control_panel.html
 2025-12-04 19:52:14,489 - control_panel - INFO - Starting control panel UI
 2025-12-04 19:52:23,044 - control_panel - INFO - User logged in successfully
 2025-12-04 19:52:25,422 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 19:57:35,285 - control_panel - INFO - Playit.exe STARTED with PID 33556
+2025-12-04 19:57:35,287 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 25648
+2025-12-04 19:57:35,287 - control_panel - INFO - Starting control panel UI
+2025-12-04 19:57:44,706 - control_panel - INFO - User logged in successfully
+2025-12-04 19:57:47,106 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 19:57:52,469 - control_panel - INFO - Playit process STOPPED with PID 33556
+2025-12-04 19:57:56,765 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 25648
+2025-12-04 19:58:02,450 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 25648
+2025-12-04 19:58:06,814 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 25648
+2025-12-04 19:58:08,209 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 19:58:08,218 - control_panel - INFO - Server STARTED with PID 29372
+2025-12-04 19:58:28,677 - control_panel - INFO - Force stopping server process for profile 'Vanilla' (PID: 29372)
+2025-12-04 19:58:28,686 - control_panel - INFO - Killing child process PID: 1940
+2025-12-04 19:58:28,688 - control_panel - INFO - Killed process tree for PID: 29372
+2025-12-04 19:58:37,030 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 19:58:37,059 - control_panel - INFO - Server STARTED with PID 12792
+2025-12-04 19:59:17,055 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 19:59:17,055 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 19:59:17,087 - control_panel - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-04 19:59:23,500 - control_panel - INFO - Playit.exe STARTED with PID 28388
+2025-12-04 19:59:23,505 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 30992
+2025-12-04 19:59:23,506 - control_panel - INFO - Starting control panel UI
+2025-12-04 19:59:25,269 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 19:59:32,087 - control_panel - INFO - User logged in successfully
+2025-12-04 19:59:34,509 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 19:59:36,861 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 19:59:36,873 - control_panel - INFO - Server STARTED with PID 8116
+2025-12-04 20:00:24,721 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-04 20:00:24,722 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-04 20:00:26,728 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 30992
+2025-12-04 20:00:28,770 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-04 20:00:28,771 - control_panel - INFO - Server STOPPED gracefully for profile 'Vanilla'
+2025-12-04 20:00:28,777 - control_panel - INFO - Playit process STOPPED with PID 28388
+2025-12-04 20:00:35,535 - control_panel - INFO - Playit.exe STARTED with PID 28792
+2025-12-04 20:00:35,540 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 21360
+2025-12-04 20:00:35,541 - control_panel - INFO - Starting control panel UI
+2025-12-04 20:00:37,269 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:00:45,368 - control_panel - WARNING - Failed login attempt
+2025-12-04 20:00:48,077 - control_panel - INFO - User logged in successfully
+2025-12-04 20:00:50,621 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-04 20:01:11,836 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-04 20:01:11,851 - control_panel - INFO - Server STARTED with PID 2968
+2025-12-04 20:01:22,813 - control_panel - INFO - Force stopping server process for profile 'Vanilla' (PID: 2968)
+2025-12-04 20:01:22,825 - control_panel - INFO - Killing child process PID: 4236
+2025-12-04 20:01:22,827 - control_panel - INFO - Killed process tree for PID: 2968
