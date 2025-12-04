@@ -1,11 +1,19 @@
 import json
+import sys
 from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Dict, List, Optional
 
 from src.minecraft import server_properties
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Use executable directory when frozen, otherwise use project root
+if getattr(sys, 'frozen', False):
+    # Running as executable - use the directory where the exe is located
+    PROJECT_ROOT = Path(sys.executable).parent
+else:
+    # Running as script - use project root
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
 DATA_DIR = PROJECT_ROOT / "data"
 DATA_DIR.mkdir(exist_ok=True)
 PROFILES_PATH = DATA_DIR / "server_profiles.json"
@@ -79,7 +87,7 @@ class ServerProfile:
             "rcon.password": self.rcon_password,
             "enable-query": "true",
             "query.port": str(self.query_port),
-            "server-ip": self.server_ip,
+            # Note: server-ip is NOT set here - let users configure it themselves
         }
 
         self.server_properties_path.parent.mkdir(parents=True, exist_ok=True)
@@ -138,14 +146,23 @@ class ServerProfileStore:
 
     def _load(self) -> None:
         if not self.path.exists():
+            print(f"Profile file does not exist: {self.path}")
             self._save()
             return
-        with open(self.path, "r", encoding="utf-8") as f:
-            data = json.load(f)
-        self.active_profile_name = data.get("active")
-        profiles_data = data.get("profiles", {})
-        for name, profile_data in profiles_data.items():
-            self._profiles[name] = ServerProfile.from_dict(profile_data)
+        try:
+            with open(self.path, "r", encoding="utf-8") as f:
+                data = json.load(f)
+            print(f"Loaded profile data: {data}")
+            self.active_profile_name = data.get("active")
+            profiles_data = data.get("profiles", {})
+            print(f"Found {len(profiles_data)} profiles to load")
+            for name, profile_data in profiles_data.items():
+                self._profiles[name] = ServerProfile.from_dict(profile_data)
+                print(f"Loaded profile: {name}")
+        except Exception as e:
+            print(f"Error loading profiles: {e}")
+            import traceback
+            traceback.print_exc()
 
     def _save(self) -> None:
         payload = {

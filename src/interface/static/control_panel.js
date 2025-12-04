@@ -17,6 +17,7 @@ const propertiesPanel = document.getElementById('properties-panel');
 const propertiesProfileLabel = document.getElementById('properties-profile-label');
 const closeDrawerBtn = document.getElementById('close-drawer-btn');
 const addProfileBtn = document.getElementById('add-profile-btn');
+const logoutBtn = document.getElementById('logout-btn');
 const openToolsBtn = document.getElementById('open-tools-btn');
 const commandForm = document.getElementById('command-form');
 const commandInput = document.getElementById('command-input');
@@ -40,7 +41,6 @@ const defaultProfile = {
   name: '',
   server_path: '',
   description: '',
-  server_ip: 'localhost',
   run_script: 'run.bat',
   admin_auth_key: '',
   auth_key: '',
@@ -249,7 +249,6 @@ function fillFormFromProfile(profile) {
   form.name.value = profile.name || '';
   form.server_path.value = profile.server_path || '';
   form.description.value = profile.description || '';
-  form.server_ip.value = profile.server_ip || '';
   form.run_script.value = profile.run_script || '';
   form.admin_auth_key.value = profile.admin_auth_key || '';
   form.auth_key.value = profile.auth_key || '';
@@ -303,11 +302,15 @@ async function refreshStatus() {
   // Update button states
   const startBtn = document.getElementById('start-server-btn');
   const stopBtn = document.getElementById('stop-server-btn');
-  if (startBtn && stopBtn) {
+  const forceStopBtn = document.getElementById('force-stop-server-btn');
+  if (startBtn && stopBtn && forceStopBtn) {
     const isRunning = serverState === 'running';
     const isStarting = serverState === 'starting';
+    const isStopping = serverState === 'stopping';
     startBtn.disabled = isRunning || isStarting;
     stopBtn.disabled = isStarting;
+    // Enable force stop if server is running, starting, or stopping
+    forceStopBtn.disabled = !(isRunning || isStarting || isStopping);
   }
 
   const active = data.active_profile || '';
@@ -523,9 +526,7 @@ async function saveProfile(evt) {
     const isNew = !exists;
     const isActiveProfile = activeProfileEl && activeProfileEl.textContent === body.name;
     setStatus(`${exists ? 'Updated' : 'Saved'} profile ${body.name}`);
-    if (isNew) {
-      showLoading(true, 'Profile saved', 'Initializing the new instance...');
-    }
+
     await refreshStatus();
     profileSelect.value = body.name;
     fillFormFromProfile(body);
@@ -534,18 +535,23 @@ async function saveProfile(evt) {
     closeDrawer();
 
     if (isNew) {
+      // Hide loading before showing dialog
+      showLoading(false);
+
       const { confirmed: shouldActivate } = await showDialog({
         title: 'Start new profile?',
         message: `Start profile "${body.name}" now? This will stop services for the current profile.`,
         confirmText: 'Start now',
         cancelText: 'Not now',
       });
+
       if (shouldActivate) {
+        showLoading(true, 'Starting profile...', 'Initializing services for the new profile.');
         await activateProfile(body.name, true);
+        showLoading(false);
       } else {
         setStatus(`Saved profile ${body.name}`);
       }
-      setTimeout(() => showLoading(false), 1200);
     } else if (isActiveProfile) {
       const { confirmed: restartNow } = await showDialog({
         title: 'Restart services now?',
@@ -638,6 +644,36 @@ async function stopServer() {
   await refreshStatus();
 }
 
+async function forceStopServer() {
+  const { confirmed } = await showDialog({
+    title: 'Force Stop Server?',
+    message: 'This will immediately kill the server process without saving. Players may lose progress. Continue?',
+    confirmText: 'Force Stop',
+    cancelText: 'Cancel',
+  });
+
+  if (!confirmed) return;
+
+  const stopBtn = document.getElementById('stop-server-btn');
+  const startBtn = document.getElementById('start-server-btn');
+  const forceStopBtn = document.getElementById('force-stop-server-btn');
+
+  const res = await fetch('/api/stop/server/force', { method: 'POST', headers: authHeaders() });
+  const body = await res.json();
+  if (res.ok) {
+    setStatus(body.message || 'Server force stopped');
+    if (stopBtn) stopBtn.disabled = true;
+    if (forceStopBtn) forceStopBtn.disabled = true;
+    if (startBtn) startBtn.disabled = false;
+    updateServerChip('stopped');
+    // Poll for shutdown to update chip and status
+    await pollServerShutdown();
+  } else {
+    setStatus(body.error || 'Failed to force stop server', true);
+  }
+  // Always refresh status after force stop to update button states
+  await refreshStatus();
+}
 async function pollServerReadiness(retries = 20) {
   for (let i = 0; i < retries; i += 1) {
     await new Promise((resolve) => setTimeout(resolve, 2000));
@@ -676,14 +712,17 @@ async function pollServerShutdown(retries = 15) {
 
 
 async function startApi() {
+  showLoading(true, 'Starting API…', 'Please wait while the API service is starting.');
   const status = await refreshStatus();
   if (status?.api_running) {
+    showLoading(false);
     setStatus('API already running');
     return;
   }
 
   const res = await fetch('/api/start/api', { method: 'POST', headers: authHeaders() });
   const body = await res.json();
+  showLoading(false);
   if (res.ok) {
     setStatus(body.message || 'API starting');
   } else setStatus(body.error || 'Failed to start API', true);
@@ -907,12 +946,40 @@ async function sendCommand(evt) {
   }
 }
 
+async function logout() {
+  const result = await showDialog({
+    title: 'Logout',
+    message: 'Are you sure you want to logout?',
+    confirmText: 'Logout',
+    cancelText: 'Cancel',
+  });
+
+  if (!result.confirmed) return;
+
+  try {
+    const res = await fetch('/auth/logout', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    if (res.ok) {
+      window.location.href = '/login';
+    } else {
+      setStatus('Failed to logout', true);
+    }
+  } catch (error) {
+    console.error('Logout error:', error);
+    setStatus('Failed to logout', true);
+  }
+}
+
 function init() {
   document.getElementById('profile-form').addEventListener('submit', saveProfile);
   document.getElementById('activate-btn').addEventListener('click', activateProfile);
   document.getElementById('delete-profile-btn').addEventListener('click', deleteProfile);
   document.getElementById('start-server-btn').addEventListener('click', startServer);
   document.getElementById('stop-server-btn').addEventListener('click', stopServer);
+  document.getElementById('force-stop-server-btn').addEventListener('click', forceStopServer);
   document.getElementById('start-api-btn').addEventListener('click', startApi);
   document.getElementById('start-controller-btn').addEventListener('click', startController);
   document.getElementById('stop-api-btn').addEventListener('click', stopApi);
@@ -925,6 +992,7 @@ function init() {
   if (playitSettingsBtn) playitSettingsBtn.addEventListener('click', promptForPlayitPath);
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
   if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
+  if (logoutBtn) logoutBtn.addEventListener('click', logout);
   if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);
   if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
   if (commandForm) commandForm.addEventListener('submit', sendCommand);

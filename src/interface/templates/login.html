@@ -1,0 +1,478 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <title>ServerSide Control Panel - Login</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --primary: #60a5fa;
+      --primary-hover: #3b82f6;
+      --success: #34d399;
+      --success-hover: #10b981;
+      --danger: #f87171;
+      --danger-hover: #ef4444;
+      --warning: #fbbf24;
+      --bg: #0b1220;
+      --card-bg: #111827;
+      --border: #1f2937;
+      --text: #e5e7eb;
+      --text-muted: #9ca3af;
+      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.4);
+      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.45);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: radial-gradient(circle at 10% 20%, rgba(96, 165, 250, 0.08), transparent 25%),
+      radial-gradient(circle at 90% 10%, rgba(52, 211, 153, 0.07), transparent 20%),
+      radial-gradient(circle at 30% 80%, rgba(249, 115, 22, 0.05), transparent 25%),
+      var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1rem;
+    }
+
+    .login-container {
+      width: 100%;
+      max-width: 420px;
+    }
+
+    .login-card {
+      background: linear-gradient(145deg, rgba(17, 24, 39, 0.95), rgba(24, 33, 50, 0.95));
+      border-radius: 16px;
+      padding: 2.5rem;
+      box-shadow: var(--shadow-lg);
+      border: 1px solid var(--border);
+      animation: fadeInUp 0.4s ease-out;
+    }
+
+    @keyframes fadeInUp {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .login-header {
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    .login-header h1 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      background: linear-gradient(135deg, var(--primary), var(--success));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .login-header p {
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .form-group {
+      margin-bottom: 1.5rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text);
+      font-size: 0.95rem;
+    }
+
+    .form-group input {
+      width: 100%;
+      padding: 0.85rem 1rem;
+      background: rgba(15, 23, 42, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: var(--text);
+      font-size: 1rem;
+      transition: all 0.2s;
+      outline: none;
+    }
+
+    .form-group input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.1);
+      background: rgba(15, 23, 42, 0.8);
+    }
+
+    .form-group input::placeholder {
+      color: var(--text-muted);
+      opacity: 0.6;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 0.9rem 1.5rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(96, 165, 250, 0.3);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+    }
+
+    .btn-success:hover:not(:disabled) {
+      background: var(--success-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(52, 211, 153, 0.3);
+    }
+
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+    }
+
+    .alert {
+      padding: 0.85rem 1rem;
+      border-radius: 8px;
+      margin-bottom: 1.5rem;
+      font-size: 0.95rem;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .alert.show {
+      display: block;
+    }
+
+    .alert-danger {
+      background: rgba(248, 113, 113, 0.15);
+      border: 1px solid rgba(248, 113, 113, 0.3);
+      color: var(--danger);
+    }
+
+    .alert-success {
+      background: rgba(52, 211, 153, 0.15);
+      border: 1px solid rgba(52, 211, 153, 0.3);
+      color: var(--success);
+    }
+
+    .alert-info {
+      background: rgba(96, 165, 250, 0.15);
+      border: 1px solid rgba(96, 165, 250, 0.3);
+      color: var(--primary);
+    }
+
+    .setup-mode {
+      display: none;
+    }
+
+    .login-mode {
+      display: none;
+    }
+
+    .password-requirements {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-top: 0.5rem;
+      padding: 0.75rem;
+      background: rgba(96, 165, 250, 0.08);
+      border-radius: 6px;
+      border: 1px solid rgba(96, 165, 250, 0.2);
+    }
+
+    .password-match {
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+      padding: 0.5rem;
+      border-radius: 6px;
+      display: none;
+    }
+
+    .password-match.match {
+      display: block;
+      background: rgba(52, 211, 153, 0.15);
+      color: var(--success);
+    }
+
+    .password-match.no-match {
+      display: block;
+      background: rgba(248, 113, 113, 0.15);
+      color: var(--danger);
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <div class="login-card">
+      <div class="login-header">
+        <h1>Control Panel</h1>
+        <p id="subtitle">Control Panel Access</p>
+      </div>
+
+      <div id="alert" class="alert"></div>
+
+      <!-- Login Mode -->
+      <form id="login-form" class="login-mode">
+        <div class="form-group">
+          <label for="login-password">Password</label>
+          <input
+            type="password"
+            id="login-password"
+            name="password"
+            placeholder="Enter your password"
+            required
+            autocomplete="current-password"
+          />
+        </div>
+        <button type="submit" class="btn btn-primary">
+          <span>Login</span>
+        </button>
+      </form>
+
+      <!-- Setup Mode (First Time) -->
+      <form id="setup-form" class="setup-mode">
+        <div class="form-group">
+          <label for="new-password">Create Password</label>
+          <input
+            type="password"
+            id="new-password"
+            name="password"
+            placeholder="Create a secure password"
+            required
+            autocomplete="new-password"
+            minlength="4"
+          />
+          <div class="password-requirements">
+            Password must be at least 4 characters long
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="confirm-password">Confirm Password</label>
+          <input
+            type="password"
+            id="confirm-password"
+            name="confirm_password"
+            placeholder="Re-enter your password"
+            required
+            autocomplete="new-password"
+            minlength="4"
+          />
+          <div id="password-match-indicator" class="password-match"></div>
+        </div>
+        <button type="submit" class="btn btn-success" id="setup-btn" disabled>
+          <span>Create Password</span>
+        </button>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    const loginForm = document.getElementById('login-form');
+    const setupForm = document.getElementById('setup-form');
+    const alert = document.getElementById('alert');
+    const subtitle = document.getElementById('subtitle');
+    const newPassword = document.getElementById('new-password');
+    const confirmPassword = document.getElementById('confirm-password');
+    const passwordMatchIndicator = document.getElementById('password-match-indicator');
+    const setupBtn = document.getElementById('setup-btn');
+
+    function showAlert(message, type = 'danger') {
+      alert.className = `alert alert-${type} show`;
+      alert.textContent = message;
+    }
+
+    function hideAlert() {
+      alert.className = 'alert';
+      alert.textContent = '';
+    }
+
+    // Check if password is already set
+    async function checkAuthStatus() {
+      try {
+        const response = await fetch('/auth/status');
+        const data = await response.json();
+
+        if (data.has_password) {
+          // Show login form
+          loginForm.classList.add('login-mode');
+          loginForm.style.display = 'block';
+          subtitle.textContent = 'Enter your password to continue';
+        } else {
+          // Show setup form
+          setupForm.classList.add('setup-mode');
+          setupForm.style.display = 'block';
+          subtitle.textContent = 'First time setup - Create your password';
+          showAlert('Welcome! Please create a password to secure your control panel.', 'info');
+        }
+      } catch (error) {
+        showAlert('Failed to connect to server. Please try again.');
+      }
+    }
+
+    // Password match validation
+    function checkPasswordMatch() {
+      const pwd = newPassword.value;
+      const confirm = confirmPassword.value;
+
+      if (!confirm) {
+        passwordMatchIndicator.className = 'password-match';
+        setupBtn.disabled = true;
+        return;
+      }
+
+      if (pwd === confirm && pwd.length >= 4) {
+        passwordMatchIndicator.className = 'password-match match';
+        passwordMatchIndicator.textContent = '✓ Passwords match';
+        setupBtn.disabled = false;
+      } else {
+        passwordMatchIndicator.className = 'password-match no-match';
+        passwordMatchIndicator.textContent = '✗ Passwords do not match';
+        setupBtn.disabled = true;
+      }
+    }
+
+    newPassword.addEventListener('input', checkPasswordMatch);
+    confirmPassword.addEventListener('input', checkPasswordMatch);
+
+    // Handle login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const password = document.getElementById('login-password').value;
+      const btn = loginForm.querySelector('button');
+      btn.disabled = true;
+      btn.innerHTML = '<span>Logging in...</span>';
+
+      try {
+        const response = await fetch('/auth/login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert('Login successful! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 500);
+        } else {
+          showAlert(data.error || 'Invalid password. Please try again.');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Login</span>';
+          document.getElementById('login-password').value = '';
+          document.getElementById('login-password').focus();
+        }
+      } catch (error) {
+        showAlert('Login failed. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Login</span>';
+      }
+    });
+
+    // Handle setup
+    setupForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      hideAlert();
+
+      const password = newPassword.value;
+      const confirm = confirmPassword.value;
+
+      if (password !== confirm) {
+        showAlert('Passwords do not match!');
+        return;
+      }
+
+      if (password.length < 4) {
+        showAlert('Password must be at least 4 characters long!');
+        return;
+      }
+
+      const btn = setupForm.querySelector('button');
+      btn.disabled = true;
+      btn.innerHTML = '<span>Creating...</span>';
+
+      try {
+        const response = await fetch('/auth/setup', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ password }),
+        });
+
+        const data = await response.json();
+
+        if (response.ok && data.success) {
+          showAlert('Password created successfully! Redirecting...', 'success');
+          setTimeout(() => {
+            window.location.href = '/';
+          }, 1000);
+        } else {
+          showAlert(data.error || 'Failed to create password. Please try again.');
+          btn.disabled = false;
+          btn.innerHTML = '<span>Create Password</span>';
+        }
+      } catch (error) {
+        showAlert('Setup failed. Please try again.');
+        btn.disabled = false;
+        btn.innerHTML = '<span>Create Password</span>';
+      }
+    });
+
+    // Initialize
+    checkAuthStatus();
+  </script>
+</body>
+</html>
+

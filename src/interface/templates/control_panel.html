@@ -824,8 +824,8 @@
   <h1>🎮 ServerSide Control Panel</h1>
   <p>Manage your Minecraft server profiles with ease</p>
   <div class="header-actions">
-    <span class="soft-badge">🟢 Live log streaming enabled</span>
     <button id="add-profile-btn" class="primary">＋ Add new profile</button>
+    <button id="logout-btn" class="secondary" title="Logout">🚪 Logout</button>
   </div>
 </header>
 
@@ -862,6 +862,7 @@
               <div class="actions">
                 <button id="start-server-btn" class="success">▶ Start</button>
                 <button id="stop-server-btn" class="danger">⏹ Stop</button>
+                <button id="force-stop-server-btn" class="danger" title="Force kill the server process immediately">⏹⚠ Force Stop</button>
               </div>
             </div>
 
@@ -936,7 +937,6 @@
             <label>Profile Name<input type="text" name="name" required placeholder="e.g., Vanilla" /></label>
             <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla" /></label>
             <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description"></textarea></label>
-            <label>Server IP<input type="text" name="server_ip" value="localhost" /></label>
             <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
             <label class="full-width">RCON Settings (auto-managed)
               <input type="text" value="RCON + Query locked to controller defaults" disabled />

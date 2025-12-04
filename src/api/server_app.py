@@ -2,11 +2,11 @@
 
 import os
 import signal
-import subprocess
 import threading
 import time
 
 import pygetwindow as gw
+import requests
 from flask import Flask, request
 from flask_socketio import SocketIO
 from mcrcon import MCRcon
@@ -15,14 +15,15 @@ from mcstatus import JavaServer
 from src.config import settings
 from src.config.config_file_handler import ConfigFileHandler
 from src.logging_utils.logger import logger
-from src.minecraft import server_properties
 
 app = Flask(__name__)
 socketio = SocketIO(app, cors_allowed_origins="*")
 
 is_restarting = False
 is_stopping = False
+is_stopping_since = None  # Timestamp when stopping started
 last_player_count = 0
+shutdown_requested = False  # Flag to signal shutdown
 
 
 @app.before_request
@@ -87,15 +88,37 @@ def _status_response():
 
 
 def _stop_server():
-    global is_stopping
+    """Stop the Minecraft server by calling the control panel API."""
+    global is_stopping, is_stopping_since
     status_result = get_server_status()
     if status_result == "off":
         return "Server is already offline", 400
     if status_result == "fully_loaded":
-        is_stopping = True
-        send_rcon_command("stop")
-        _emit_status_update()
-        return "Server is stopping...", 200
+        try:
+            is_stopping = True
+            is_stopping_since = time.time()
+            # Call the control panel API to stop the server
+            import requests
+            headers = {"Authorization": f"Bearer {settings.ADMIN_AUTH_KEY}"}
+            response = requests.post("http://localhost:38000/api/stop/server", headers=headers, timeout=5)
+            _emit_status_update()
+            if response.status_code == 200:
+                return "Server is stopping...", 200
+            else:
+                is_stopping = False
+                is_stopping_since = None
+                error_msg = response.json().get("error", "Unknown error")
+                return f"Error stopping server: {error_msg}", response.status_code
+        except requests.RequestException as exc:
+            is_stopping = False
+            is_stopping_since = None
+            logger.error(f"Error calling control panel API to stop server: {exc}")
+            return "Error stopping server: Cannot reach control panel", 500
+        except Exception as exc:
+            is_stopping = False
+            is_stopping_since = None
+            logger.error(f"Error stopping server: {exc}")
+            return "Error stopping server", 500
     if status_result == "starting":
         return "Processing, please wait...", 302
     if status_result == "restarting":
@@ -104,20 +127,26 @@ def _stop_server():
 
 
 def _start_server():
+    """Start the Minecraft server by calling the control panel API."""
     status_result = get_server_status()
     if status_result in ["fully_loaded", "starting", "restarting"]:
         return f"Server is already {status_result.replace('_', ' ')}", 400
     if status_result == "off":
         try:
-            config_handler = ConfigFileHandler()
-            server_location = config_handler.get_value('Run.bat location')
-            os.chdir(server_location)
-            subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
-            _emit_status_update()
-            return "Server is starting...", 200
-        except ValueError as exc:
-            return str(exc), 400
-        except Exception as exc:  # pragma: no cover - defensive logging only
+            # Call the control panel API to start the server
+            import requests
+            headers = {"Authorization": f"Bearer {settings.ADMIN_AUTH_KEY}"}
+            response = requests.post("http://localhost:38000/api/start/server", headers=headers, timeout=5)
+            if response.status_code == 200:
+                _emit_status_update()
+                return "Server is starting...", 200
+            else:
+                error_msg = response.json().get("error", "Unknown error")
+                return f"Error starting server: {error_msg}", response.status_code
+        except requests.RequestException as exc:
+            logger.error(f"Error calling control panel API to start server: {exc}")
+            return "Error starting server: Cannot reach control panel", 500
+        except Exception as exc:
             logger.error(f"Error starting server: {exc}")
             return "Error starting server", 500
     return "Error starting server", 500
@@ -191,6 +220,8 @@ def players():
 
 @app.route('/shutdown', methods=['POST'])
 def shutdown_api():
+    global shutdown_requested
+
     if request.remote_addr not in settings.ALLOWED_IPS:
         return "Unauthorized IP address", 403
 
@@ -200,12 +231,33 @@ def shutdown_api():
     if not provided_auth_key or provided_auth_key != expected_auth_key:
         return "Unauthorized, incorrect shutdown-down header", 403
 
-    def delayed_shutdown():
-        time.sleep(2)
-        os.kill(os.getpid(), signal.SIGINT)
+    # Check if running as subprocess or thread
+    import sys
+    if getattr(sys, 'frozen', False):
+        # Running in thread mode (frozen exe) - use proper shutdown
+        logger.info("API shutdown requested (thread mode)")
 
-    threading.Thread(target=delayed_shutdown).start()
-    return "Shutting down the server...", 200
+        def delayed_shutdown():
+            time.sleep(0.5)  # Brief delay to allow response to send
+            try:
+                # Stop the SocketIO server gracefully
+                socketio.stop()
+                logger.info("SocketIO server stopped")
+            except Exception as e:
+                logger.error(f"Error stopping SocketIO: {e}")
+                # Force exit as last resort
+                os._exit(0)
+
+        threading.Thread(target=delayed_shutdown, daemon=True).start()
+        return "API shutting down...", 200
+    else:
+        # Running as subprocess - can kill process
+        def delayed_shutdown():
+            time.sleep(1)
+            os.kill(os.getpid(), signal.SIGINT)
+
+        threading.Thread(target=delayed_shutdown, daemon=True).start()
+        return "Shutting down the API server...", 200
 
 
 def send_rcon_command(command):
@@ -223,15 +275,29 @@ def send_rcon_command(command):
 
 
 def get_server_status():
-    global is_restarting, is_stopping
+    global is_restarting, is_stopping, is_stopping_since
+
     if is_restarting:
         return "restarting"
+
     if is_stopping:
-        windows = gw.getWindowsWithTitle('MinecraftServer')
-        if not windows:
+        # Check if stopping timeout has been exceeded (30 seconds)
+        if is_stopping_since and (time.time() - is_stopping_since) > 30:
+            logger.warning("is_stopping timeout exceeded, resetting flag")
             is_stopping = False
-            return "off"
-        return "stopping"
+            is_stopping_since = None
+            # Continue to normal status check
+        else:
+            # Check if server is actually stopped
+            server_is_off = _check_server_actually_off()
+            if server_is_off:
+                is_stopping = False
+                is_stopping_since = None
+                return "off"
+            # Still stopping
+            return "stopping"
+
+    # Normal status check when not stopping
     try:
         windows = gw.getWindowsWithTitle('MinecraftServer')
         if windows:
@@ -244,6 +310,27 @@ def get_server_status():
     except Exception as exc:  # pragma: no cover - defensive logging only
         print(f"Error checking server status: {exc}")
         return "error"
+
+
+def _check_server_actually_off():
+    """Check if the server is actually off by checking both window and query."""
+    # Try to query the server
+    try:
+        JavaServer(settings.SERVER_IP, settings.QUERY_PORT).query()
+        return False  # Server is responding, not off
+    except Exception:
+        pass  # Query failed, continue checking
+
+    # Try to check if window exists
+    try:
+        windows = gw.getWindowsWithTitle('MinecraftServer')
+        if windows:
+            return False  # Window exists, not off
+    except Exception:
+        pass  # Can't check windows, assume off if query also failed
+
+    # Both query and window check indicate server is off
+    return True
 
 
 def get_player_info():
@@ -261,23 +348,24 @@ def perform_restart():
     try:
         is_restarting = True
 
-        # 1) Stop the server directly via RCON
-        send_rcon_command("stop")
-        _emit_status_update()  # optional: let clients know it's stopping
+        # 1) Stop the server via control panel API
+        try:
+            headers = {"Authorization": f"Bearer {settings.ADMIN_AUTH_KEY}"}
+            requests.post("http://localhost:38000/api/stop/server", headers=headers, timeout=5)
+            _emit_status_update()
+        except Exception as exc:
+            logger.error(f"Error stopping server during restart: {exc}")
 
-        # 2) Wait for it to fully stop (you could improve this by polling status instead of fixed sleep)
+        # 2) Wait for it to fully stop
         time.sleep(20)
 
-        # 3) Start the server directly (same logic as /start)
+        # 3) Start the server via control panel API
         try:
-            config_handler = ConfigFileHandler()
-            server_location = config_handler.get_value('Run.bat location')
-            os.chdir(server_location)
-            subprocess.Popen("run.bat", creationflags=subprocess.CREATE_NEW_CONSOLE)
-        except Exception as exc:  # pragma: no cover - defensive logging only
-            logger.error(f"Error starting server during restart: {exc}")
-        finally:
+            headers = {"Authorization": f"Bearer {settings.ADMIN_AUTH_KEY}"}
+            requests.post("http://localhost:38000/api/start/server", headers=headers, timeout=5)
             _emit_status_update()
+        except Exception as exc:
+            logger.error(f"Error starting server during restart: {exc}")
 
     finally:
         is_restarting = False

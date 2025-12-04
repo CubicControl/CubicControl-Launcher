@@ -1,7 +1,10 @@
+import atexit
 import os
 import secrets
 import subprocess
 import sys
+import threading
+import atexit
 from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
@@ -10,13 +13,15 @@ import warnings
 
 import time
 import requests
+import webbrowser
 from mcstatus import JavaServer
 from mcrcon import MCRcon
 
-from flask import Flask, jsonify, render_template, request
+from flask import Flask, jsonify, render_template, request, redirect, session, url_for
 from flask_socketio import SocketIO, emit, join_room
 
 from src.config import settings
+from src.config.auth_handler import AuthHandler
 from src.config.config_file_handler import ConfigFileHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
@@ -34,11 +39,63 @@ show_server_banner = lambda *args, **kwargs: None  # hide Flask banner
 for noisy in ("werkzeug", "engineio", "socketio", "flask_socketio"):
     logging.getLogger(noisy).setLevel(logging.ERROR)
 
+if getattr(sys, 'frozen', False):
+    # Running as a PyInstaller bundle
+    base_path = sys._MEIPASS
+    print(f"Running as frozen executable. Base path: {base_path}")
+
+    # Try multiple possible locations for templates/static
+    possible_template_paths = [
+        os.path.join(base_path, 'templates'),
+        os.path.join(base_path, 'interface', 'templates'),
+        os.path.join(base_path, 'src', 'interface', 'templates'),
+    ]
+    possible_static_paths = [
+        os.path.join(base_path, 'static'),
+        os.path.join(base_path, 'interface', 'static'),
+        os.path.join(base_path, 'src', 'interface', 'static'),
+    ]
+
+    # Find the first existing template folder
+    template_folder = None
+    for path in possible_template_paths:
+        if os.path.exists(path):
+            template_folder = path
+            print(f"Found templates at: {path}")
+            break
+    if not template_folder:
+        template_folder = possible_template_paths[0]  # fallback
+        print(f"Template folder not found, using fallback: {template_folder}")
+
+    # Find the first existing static folder
+    static_folder = None
+    for path in possible_static_paths:
+        if os.path.exists(path):
+            static_folder = path
+            print(f"Found static files at: {path}")
+            break
+    if not static_folder:
+        static_folder = possible_static_paths[0]  # fallback
+        print(f"Static folder not found, using fallback: {static_folder}")
+else:
+    # Running in normal Python
+    here = os.path.dirname(os.path.abspath(__file__))
+    template_folder = os.path.join(here, 'templates')
+    static_folder = os.path.join(here, 'static')
+    print(f"Running in development mode. Templates: {template_folder}, Static: {static_folder}")
+
 app = Flask(
     __name__,
-    template_folder=str(APP_DIR / "templates"),
-    static_folder=str(APP_DIR / "static"),
+    template_folder=template_folder,
+    static_folder=static_folder,
 )
+
+# Secret key for sessions
+app.secret_key = secrets.token_hex(32)
+
+# Initialize auth handler
+auth_handler = AuthHandler()
+
 socketio = SocketIO(
     app,
     cors_allowed_origins="*",
@@ -47,20 +104,34 @@ socketio = SocketIO(
     engineio_logger=False,
 )
 
+
 @app.before_request
-def _validate_web_auth():
-    if request.path.startswith('/socket.io'):
-        return None
-    if not request.path.startswith('/api/'):
-        return None
-
-    expected = settings.ADMIN_AUTH_KEY
-    if not expected:
+def _check_authentication():
+    """Check if user is authenticated before allowing access to protected routes."""
+    # Allow access to auth-related routes
+    if request.path in ['/auth/login', '/auth/setup', '/auth/status', '/login']:
         return None
 
-    provided = request.headers.get('Authorization', '')
-    if provided != f'Bearer {expected}':
-        return jsonify({'error': 'Unauthorized'}), 403
+    # Allow access to static files
+    if request.path.startswith('/static/'):
+        return None
+
+    # Check if user is logged in
+    if not session.get('authenticated'):
+        # For API/AJAX requests, return 401
+        if request.path.startswith('/api/') or request.path.startswith('/socket.io'):
+            return jsonify({'error': 'Unauthorized - Please login'}), 401
+        # For page requests, redirect to login
+        return redirect(url_for('login'))
+
+    # Additional API auth check if ADMIN_AUTH_KEY is set (for external API access)
+    if request.path.startswith('/api/'):
+        expected = settings.ADMIN_AUTH_KEY
+        if expected:
+            provided = request.headers.get('Authorization', '')
+            if provided and provided != f'Bearer {expected}':
+                return jsonify({'error': 'Unauthorized'}), 403
+
     return None
 
 store = ServerProfileStore()
@@ -144,7 +215,7 @@ def _profile_from_request(data: Dict) -> ServerProfile:
     return ServerProfile(
         name=name,
         server_path=str(server_path),
-        server_ip=data.get("server_ip", "localhost"),
+        server_ip="localhost",  # Always use localhost, not user-configurable
         run_script=(data.get("run_script") or "run.bat").strip(),
         rcon_password=rcon_password,
         rcon_port=settings.RCON_PORT,
@@ -189,7 +260,13 @@ def _apply_profile_environment(profile: ServerProfile) -> None:
 
 def _is_api_running(profile: Optional[ServerProfile]) -> bool:
     global api_process
-    if api_process and api_process.poll() is None:
+
+    # Check if it's a thread (frozen exe)
+    if isinstance(api_process, threading.Thread):
+        if api_process.is_alive():
+            return True
+    # Check if it's a process (dev mode)
+    elif api_process and hasattr(api_process, 'poll') and api_process.poll() is None:
         return True
 
     if not profile:
@@ -275,34 +352,109 @@ def _start_api_process(profile: ServerProfile) -> bool:
             "RCON_PORT": str(profile.rcon_port),
         }
     )
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
 
-    cmd = [sys.executable, "-m", "src.api.server_app"]
-    api_process = subprocess.Popen(cmd, env=env)
-    logger.info("API started for profile '%s' with PID %s", profile.name, api_process.pid)
-    return True
+    if getattr(sys, 'frozen', False):
+        # When running as frozen executable, start API in a thread with shutdown capability
+        def run_api_server():
+            # Import here to avoid circular imports
+            from src.api import server_app
+            # Use Flask's development server in threaded mode (can be stopped)
+            try:
+                server_app.app.run(host='0.0.0.0', port=37000, debug=False, use_reloader=False, threaded=True)
+            except Exception as e:
+                logger.error(f"API server error: {e}")
+
+        api_thread = threading.Thread(target=run_api_server, daemon=False)  # Not daemon so it can be stopped
+        api_thread.start()
+        logger.info("API started in thread for profile '%s'", profile.name)
+        # Store thread reference
+        api_process = api_thread
+
+        # Give it time to start
+        time.sleep(2)
+        return True
+    else:
+        # Running in development - use subprocess
+        env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
+        cmd = [sys.executable, "-m", "src.api.server_app"]
+        api_process = subprocess.Popen(cmd, env=env)
+        logger.info("API started for profile '%s' with PID %s", profile.name, api_process.pid)
+        return True
 
 
 def _stop_api_process(profile: Optional[ServerProfile]) -> bool:
     global api_process
-    if api_process and api_process.poll() is None:
+
+    # If it's a thread (frozen exe), try remote shutdown
+    if isinstance(api_process, threading.Thread):
+        api_process = None  # Clear reference immediately
+
+        # Try remote shutdown
+        if profile:
+            headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": profile.shutdown_key}
+            try:
+                resp = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=3)
+                if resp.status_code == 200:
+                    logger.info("Sent remote shutdown to API (thread mode)")
+
+                    # Wait for API to actually stop (check multiple times)
+                    for i in range(10):  # Check for up to 5 seconds
+                        time.sleep(0.5)
+                        try:
+                            requests.get("http://localhost:37000/status",
+                                       headers={"Authorization": f"Bearer {profile.auth_key}"},
+                                       timeout=0.5)
+                            if i >= 9:  # Last attempt failed
+                                logger.warning("API still responding after 5 seconds")
+                                return False
+                        except requests.RequestException:
+                            # API is not responding - it's stopped!
+                            logger.info("API successfully stopped (thread mode)")
+                            return True
+                else:
+                    logger.warning(f"API shutdown returned status {resp.status_code}")
+                    return False
+            except requests.RequestException as e:
+                logger.warning(f"Remote API shutdown failed: {e}")
+                # If we can't connect, it might already be stopped
+                return True
+        return False
+
+    # If it's a process (dev mode), terminate it
+    elif api_process and hasattr(api_process, 'poll') and api_process.poll() is None:
         api_process.terminate()
         try:
             api_process.wait(timeout=5)
-        except subprocess.TimeoutExpired:  # pragma: no cover - defensive guard
+        except subprocess.TimeoutExpired:
             api_process.kill()
         finally:
             logger.info("API process stopped")
             api_process = None
         return True
 
+    # Try remote shutdown as fallback
     if profile:
         headers = {"Authorization": f"Bearer {profile.auth_key}", "shutdown-header": profile.shutdown_key}
         try:
-            requests.post("http://localhost:37000/shutdown", headers=headers, timeout=2)
-            return True
+            resp = requests.post("http://localhost:37000/shutdown", headers=headers, timeout=2)
+            logger.info("Sent remote shutdown to API (fallback)")
+
+            # Wait and verify shutdown
+            time.sleep(2)
+            try:
+                requests.get("http://localhost:37000/status",
+                           headers={"Authorization": f"Bearer {profile.auth_key}"},
+                           timeout=1)
+                logger.warning("API still responding after fallback shutdown")
+                return False
+            except requests.RequestException:
+                logger.info("API stopped (fallback)")
+                return True
         except requests.RequestException:
-            return False
+            # Can't connect - might be stopped already
+            logger.info("API not responding, assuming stopped")
+            return True
+
     return False
 
 
@@ -332,6 +484,8 @@ def _stop_controller(name: str) -> bool:
     stopped = name in controllers
     controllers.pop(name, None)
     controller_threads.pop(name, None)
+    if stopped:
+        logger.info("Controller stopped for profile '%s'", name)
     return stopped
 
 
@@ -362,7 +516,6 @@ def _ensure_services_running(profile: Optional[ServerProfile]) -> None:
     profile = _enforce_rcon_defaults(profile)
     profile.ensure_scaffold()
     profile.sync_server_properties()
-    ConfigFileHandler().set_value('Run.bat location', str(profile.root))
     _apply_profile_environment(profile)
     if not _is_api_running(profile):
         _start_api_process(profile)
@@ -510,6 +663,63 @@ def _stop_server_process(profile: ServerProfile) -> bool:
     return stop_attempted
 
 
+def _kill_process_tree(pid: int) -> bool:
+    """Kill a process and all its children recursively."""
+    import psutil
+    try:
+        parent = psutil.Process(pid)
+        for child in parent.children(recursive=True):
+            try:
+                logger.info(f"Killing child process PID: {child.pid}")
+                child.kill()
+            except Exception as exc:
+                logger.warning(f"Failed to kill child PID {child.pid}: {exc}")
+        parent.kill()
+        logger.info(f"Killed process tree for PID: {pid}")
+        return True
+    except Exception as exc:
+        logger.error(f"Error killing process tree for PID {pid}: {exc}")
+        return False
+
+
+def _kill_by_window_title(title: str) -> bool:
+    """Find windows by title and kill their process trees."""
+    import pygetwindow as gw
+    import win32process
+    import psutil
+    killed = False
+    try:
+        windows = gw.getWindowsWithTitle(title)
+        for window in windows:
+            try:
+                _, pid = win32process.GetWindowThreadProcessId(window._hWnd)
+                if _kill_process_tree(pid):
+                    killed = True
+            except Exception as exc:
+                logger.warning(f"Failed to kill window process: {exc}")
+    except Exception as exc:
+        logger.warning(f"Failed to find window '{title}': {exc}")
+    return killed
+
+
+def _force_stop_server_process(profile: ServerProfile) -> bool:
+    """Force stop the Minecraft server immediately, killing run.bat and all child processes (Java server)."""
+    proc = server_processes.get(profile.name)
+    killed = False
+    if proc:
+        logger.info(f"Force stopping server process for profile '{profile.name}' (PID: {proc.pid})")
+        killed = _kill_process_tree(proc.pid)
+        try:
+            proc.wait(timeout=5)
+        except Exception:
+            pass
+        server_processes.pop(profile.name, None)
+        server_log_threads.pop(profile.name, None)
+    if not killed:
+        killed = _kill_by_window_title('MinecraftServer')
+    return bool(killed)
+
+
 def _send_profile_command(profile: ServerProfile, command: str) -> str:
     if not command.strip():
         raise ValueError("Command cannot be empty")
@@ -518,6 +728,69 @@ def _send_profile_command(profile: ServerProfile, command: str) -> str:
         return mcr.command(command)
 
 
+
+
+# ---------- Authentication Routes ----------
+@app.route("/login")
+def login():
+    """Display the login page."""
+    # If already authenticated, redirect to main page
+    if session.get('authenticated'):
+        return redirect(url_for('index'))
+    return render_template("login.html")
+
+
+@app.route("/auth/status")
+def auth_status():
+    """Check if password has been set."""
+    return jsonify({
+        'has_password': auth_handler.has_password()
+    })
+
+
+@app.route("/auth/setup", methods=["POST"])
+def auth_setup():
+    """Set up password for first time."""
+    if auth_handler.has_password():
+        return jsonify({'error': 'Password already set'}), 400
+
+    data = request.get_json()
+    password = data.get('password', '').strip()
+
+    if not password or len(password) < 4:
+        return jsonify({'error': 'Password must be at least 4 characters'}), 400
+
+    try:
+        auth_handler.set_password(password)
+        session['authenticated'] = True
+        logger.info("Initial password setup completed")
+        return jsonify({'success': True})
+    except Exception as e:
+        logger.error(f"Failed to set password: {e}")
+        return jsonify({'error': 'Failed to set password'}), 500
+
+
+@app.route("/auth/login", methods=["POST"])
+def auth_login():
+    """Authenticate user."""
+    data = request.get_json()
+    password = data.get('password', '')
+
+    if auth_handler.verify_password(password):
+        session['authenticated'] = True
+        logger.info("User logged in successfully")
+        return jsonify({'success': True})
+    else:
+        logger.warning("Failed login attempt")
+        return jsonify({'error': 'Invalid password'}), 401
+
+
+@app.route("/auth/logout", methods=["POST"])
+def auth_logout():
+    """Logout user."""
+    session.pop('authenticated', None)
+    logger.info("User logged out")
+    return jsonify({'success': True})
 
 
 # ---------- Routes ----------
@@ -626,12 +899,17 @@ def profile_detail(name: str):
 
 @app.route("/api/profiles/<name>/activate", methods=["POST"])
 def set_active(name: str):
+    payload = request.get_json(silent=True) or {}
+    force_restart = bool(payload.get("force_restart"))
+
     previous_profile = store.active_profile
-    if previous_profile and previous_profile.name == name:
+    if previous_profile and previous_profile.name == name and not force_restart:
         return jsonify({"error": "Profile is already active"}), 400
-    profile = store.set_active(name)
+
+    # If forcing a restart on the same profile, reuse the active profile instance; otherwise, switch normally
+    profile = previous_profile if previous_profile and previous_profile.name == name else store.set_active(name)
+
     _stop_services(previous_profile, stop_server=True)
-    ConfigFileHandler().set_value('Run.bat location', str(profile.root))
     _apply_profile_environment(profile)
     _ensure_services_running(profile)
     return jsonify(profile.to_dict())
@@ -778,6 +1056,23 @@ def stop_server():
     return jsonify({"message": f"Stopping server for profile '{profile.name}'"})
 
 
+@app.route("/api/stop/server/force", methods=["POST"])
+def force_stop_server():
+    """Force stop the Minecraft server immediately without graceful shutdown."""
+    profile = store.active_profile
+    if not profile:
+        return jsonify({"error": "No active profile"}), 400
+
+    def _force_stop_async():
+        try:
+            _force_stop_server_process(profile)
+        except Exception as exc:  # pragma: no cover - defensive guard
+            logger.error("Failed to force stop server for profile '%s': %s", profile.name, exc)
+
+    socketio.start_background_task(_force_stop_async)
+    return jsonify({"message": f"Force stopping server for profile '{profile.name}'"})
+
+
 @app.route("/api/server/command", methods=["POST"])
 def send_command():
     profile = store.active_profile
@@ -795,6 +1090,22 @@ def send_command():
 
     try:
         output = _send_profile_command(profile, command)
+
+        # Emit command and response to live logs
+        socketio.emit(
+            "log_line",
+            {"message": f"> {command}", "profile": profile.name, "source": "command"},
+            namespace='/',
+            room=_log_room(profile.name),
+        )
+        if output:
+            socketio.emit(
+                "log_line",
+                {"message": output, "profile": profile.name, "source": "command_response"},
+                namespace='/',
+                room=_log_room(profile.name),
+            )
+
         return jsonify({"message": output or "Command sent"})
     except Exception as exc:  # pragma: no cover - defensive guard
         logger.error("Failed to send command via RCON: %s", exc)
@@ -853,12 +1164,39 @@ def test_socket():
         return jsonify({"error": str(e)}), 500
 
 
-@app.before_first_request
-def auto_start_services():
+def initialize_services():
+    """Initialize services on startup"""
     _ensure_playit_running()
     _ensure_services_running(store.active_profile)
 
+def wait_for_server(url, timeout=30):
+    start = time.time()
+    while time.time() - start < timeout:
+        try:
+            r = requests.get(url)
+            if r.status_code == 200:
+                return True
+        except Exception:
+            pass
+        time.sleep(0.5)
+    return False
+
+def open_browser_when_ready():
+    url = "http://localhost:38000"
+    if wait_for_server(url):
+        webbrowser.open(url)
+
+def cleanup_on_exit():
+    """Cleanup function called when application exits"""
+    logger.info("Application shutting down, cleaning up...")
+    # Note: Browser windows will automatically lose connection when server stops
+
+atexit.register(cleanup_on_exit)
+
 
 if __name__ == "__main__":
+    # Initialize services before starting the server
+    initialize_services()
+    threading.Thread(target=open_browser_when_ready, daemon=True).start()
     logger.info("Starting control panel UI")
     socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)

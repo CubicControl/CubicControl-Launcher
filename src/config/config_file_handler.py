@@ -1,7 +1,15 @@
 import configparser
+import sys
 from pathlib import Path
 
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
+# Use executable directory when frozen, otherwise use project root
+if getattr(sys, 'frozen', False):
+    # Running as executable - use the directory where the exe is located
+    PROJECT_ROOT = Path(sys.executable).parent
+else:
+    # Running as script - use project root
+    PROJECT_ROOT = Path(__file__).resolve().parents[2]
+
 CONFIG_PATH = PROJECT_ROOT / "ServerConfig.ini"
 
 
@@ -15,10 +23,10 @@ class ConfigFileHandler:
         if not self.config_file.exists():
             with open(self.config_file, 'w', encoding='utf-8') as configfile:
                 self.config['PROPERTIES'] = {
-                    'Run.bat location': '',
                     'PlayitGG location': '',
                 }
-                configfile.write("# Location of run.bat of the server you want to start\n")
+                configfile.write("# Configuration file for ServerSide Control Panel\n")
+                configfile.write("# PlayitGG location: Path to playit.exe for tunneling\n")
                 self.config.write(configfile)
 
     def get_value(self, value: str, *, allow_empty: bool = False):

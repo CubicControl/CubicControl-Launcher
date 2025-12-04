@@ -1,8 +1,14 @@
 import logging
 from pathlib import Path
 from datetime import datetime
+import sys
 
-log_dir = Path(__file__).resolve().parents[2] / "logs"
+if getattr(sys, 'frozen', False):
+    # If running as a PyInstaller executable, put logs next to the .exe
+    log_dir = Path(sys.executable).parent / "logs"
+else:
+    # Otherwise, use project root
+    log_dir = Path(__file__).resolve().parents[2] / "logs"
 log_dir.mkdir(exist_ok=True)
 
 log_file = log_dir / f"control_panel_{datetime.now().strftime('%Y%m%d')}.log"
