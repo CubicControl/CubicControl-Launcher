@@ -10,3 +10,4 @@ ServerConfig.ini
 ServerLogs
 /tests
 /TestTask.xml
+/dist

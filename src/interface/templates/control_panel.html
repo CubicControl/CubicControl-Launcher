@@ -10,760 +10,450 @@
   </script>
   <style>
     :root {
-      --primary: #60a5fa;
-      --primary-hover: #3b82f6;
+      --bg: #050b16;
+      --bg-2: #0b1324;
+      --card: #0e192b;
+      --card-2: #0d1525;
+      --primary: #6aa9ff;
+      --primary-2: #4f8ff8;
       --success: #34d399;
-      --success-hover: #10b981;
-      --danger: #f87171;
-      --danger-hover: #ef4444;
       --warning: #fbbf24;
-      --secondary: #94a3b8;
-      --secondary-hover: #cbd5e1;
-      --bg: #0b1220;
-      --card-bg: #111827;
-      --border: #1f2937;
-      --text: #e5e7eb;
-      --text-muted: #9ca3af;
-      --shadow: 0 1px 3px rgba(0, 0, 0, 0.4), 0 1px 2px rgba(0, 0, 0, 0.4);
-      --shadow-lg: 0 10px 30px rgba(0, 0, 0, 0.45);
+      --danger: #f87171;
+      --border: #1f2a3d;
+      --muted: #9aa7be;
+      --text: #e6edf7;
+      --shadow: 0 12px 40px rgba(0, 0, 0, 0.35);
     }
 
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    .hidden {
-      display: none !important;
-    }
+    * { box-sizing: border-box; }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: radial-gradient(circle at 10% 20%, rgba(96, 165, 250, 0.08), transparent 25%),
-      radial-gradient(circle at 90% 10%, rgba(52, 211, 153, 0.07), transparent 20%),
-      radial-gradient(circle at 30% 80%, rgba(249, 115, 22, 0.05), transparent 25%),
-      var(--bg);
+      margin: 0;
+      font-family: "Inter", "Segoe UI", system-ui, -apple-system, sans-serif;
+      background:
+        radial-gradient(circle at 20% 15%, rgba(106, 169, 255, 0.12), transparent 28%),
+        radial-gradient(circle at 80% 10%, rgba(52, 211, 153, 0.1), transparent 22%),
+        radial-gradient(circle at 30% 80%, rgba(248, 113, 113, 0.1), transparent 25%),
+        var(--bg);
       color: var(--text);
       line-height: 1.6;
       min-height: 100vh;
-      overflow-x: hidden;
-
-      /* NEW: make layout use full height */
       display: flex;
       flex-direction: column;
     }
 
-    header {
-      background: linear-gradient(135deg, #0f172a 0%, #111827 60%, #1f2937 100%);
-      color: white;
-      padding: 1.5rem 2rem;
-      box-shadow: var(--shadow-lg);
-      border-bottom: 1px solid var(--border);
+    a { color: inherit; }
+
+    .topbar {
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 10;
+      backdrop-filter: blur(8px);
+      background: linear-gradient(120deg, rgba(14, 25, 43, 0.92), rgba(14, 21, 37, 0.92));
+      border-bottom: 1px solid var(--border);
+      padding: 1rem 1.5rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
     }
 
-    header h1 {
-      font-size: 2rem;
-      margin-bottom: 0.25rem;
-      font-weight: 700;
-    }
-
-    header p {
-      opacity: 0.95;
-      font-size: 1rem;
-    }
-
-    .header-actions {
-      margin-top: 0.75rem;
+    .brand {
       display: flex;
       align-items: center;
       gap: 0.75rem;
-      flex-wrap: wrap;
+    }
+    .brand h1 {
+      margin: 0;
+      font-size: clamp(1.15rem, 1.3vw, 1.35rem);
+      letter-spacing: 0.01em;
+    }
+    .brand p {
+      margin: 0.15rem 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
     }
 
-    .soft-badge {
-      background: rgba(148, 163, 184, 0.15);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 0.35rem 0.75rem;
-      border-radius: 999px;
-      font-size: 0.9rem;
+    .top-actions {
+      display: grid;
+      gap: 0.4rem;
+      align-items: center;
+      justify-items: end;
+    }
+    .pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.35rem;
+      gap: 0.5rem;
+      padding: 0.45rem 0.8rem;
+      background: rgba(106, 169, 255, 0.12);
+      border: 1px solid rgba(106, 169, 255, 0.4);
+      border-radius: 999px;
+      color: #dbeafe;
+      font-weight: 600;
+      font-size: 0.95rem;
+      white-space: nowrap;
+    }
+    .top-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      justify-content: flex-end;
     }
 
-    .container {
-      /* CHANGED: use almost full width instead of a 1400px centered box */
+    main {
       width: 100%;
-      max-width: 100%;
-      margin: 0;
-      padding: 1.5rem 2rem 2.5rem;
-      flex: 1; /* make it grow with the page height */
+      max-width: 1600px;
+      margin: 0 auto;
+      padding: 1.25rem 1.25rem 2.5rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
     }
 
-    @media (min-width: 1400px) {
-      .container {
-        padding-inline: 3rem;
-      }
-    }
-
-    @media (min-width: 1800px) {
-      .container {
-        padding-inline: 4rem;
-      }
-    }
-
-    .main-grid {
+    .layout {
       display: grid;
-      /* Three columns: system, profile, logs */
-      grid-template-columns: minmax(280px, 0.9fr) minmax(280px, 0.9fr) minmax(420px, 1.8fr);
-      grid-template-areas: "system profile logs";
-      gap: 1.5rem;
-      width: 100%;
-      min-height: 50vh;
-      align-items: flex-start;
+      grid-template-columns: 0.9fr 1.2fr;
+      gap: 1.25rem;
+      align-items: start;
     }
-
-    .system-card { grid-area: system; }
-    .profile-card { grid-area: profile; }
-    .log-card { grid-area: logs; }
-
-    /* Responsive: collapse to two columns with logs spanning when window is narrower */
-    @media (max-width: 1400px) {
-      .main-grid {
-        grid-template-columns: minmax(260px, 1fr) minmax(260px, 1fr);
-        grid-template-areas:
-          "system profile"
-          "logs logs";
-      }
+    .stacked {
+      display: grid;
+      gap: 1.25rem;
     }
-
-    /* Responsive: single column stack on small screens */
-    @media (max-width: 900px) {
-      .main-grid {
+    @media (max-width: 1300px) {
+      .layout {
         grid-template-columns: 1fr;
-        grid-template-areas:
-          "system"
-          "profile"
-          "logs";
       }
     }
 
     .card {
-      background: linear-gradient(145deg, rgba(17, 24, 39, 0.9), rgba(24, 33, 50, 0.9));
-      border-radius: 12px;
-      padding: 1.25rem;
-      box-shadow: var(--shadow);
+      background: linear-gradient(145deg, var(--card), var(--card-2));
       border: 1px solid var(--border);
-      transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
-      min-width: 0;
-      height: auto; /* cards only as tall as their content */
+      border-radius: 14px;
+      padding: 1.2rem;
+      box-shadow: var(--shadow);
       display: flex;
       flex-direction: column;
-    }
-
-    .card-header-row {
-      display: flex;
-      justify-content: space-between;
       gap: 0.75rem;
-      align-items: flex-start;
-      flex-wrap: wrap;
-      margin-bottom: 0.75rem;
+      min-width: 0;
     }
-
-    .card:hover {
-      transform: translateY(-2px);
-      box-shadow: var(--shadow-lg);
-    }
-
     .card h3 {
-      font-size: 1.25rem;
-      font-weight: 600;
-      margin-bottom: 1rem;
-      color: var(--text);
+      margin: 0;
+      font-size: 1.15rem;
+      letter-spacing: 0.01em;
       display: flex;
       align-items: center;
-      gap: 0.5rem;
-      letter-spacing: 0.01em;
+      gap: 0.45rem;
     }
-
     .card h3::before {
-      content: '';
-      width: 4px;
-      height: 20px;
-      background: var(--primary);
-      border-radius: 2px;
+      content: "";
+      width: 8px;
+      height: 22px;
+      border-radius: 999px;
+      background: linear-gradient(180deg, var(--primary), var(--primary-2));
+      display: inline-block;
+    }
+    .eyebrow {
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      font-size: 0.75rem;
+      color: var(--muted);
+      margin: 0;
+    }
+    .muted { color: var(--muted); }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 1rem;
+      flex-wrap: wrap;
     }
 
     .status-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 1rem;
-      margin: 1rem 0;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 0.9rem;
     }
-
+    .status-item {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 0.75rem;
+      display: grid;
+      gap: 0.55rem;
+    }
     .status-chip {
       display: flex;
       align-items: center;
       justify-content: space-between;
-      gap: 0.75rem;
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      font-size: 0.95rem;
-      font-weight: 600;
-      background: rgba(31, 41, 55, 0.9);
-      border: 1px solid var(--border);
-      color: var(--text);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
-      width: 100%;
-      transition: all 0.2s ease;
-    }
-
-    .status-chip:hover {
-      transform: translateX(2px);
-      border-color: var(--primary);
-    }
-
-    .status-chip .status-label {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex: 1;
-      white-space: nowrap;
-    }
-
-    .status-chip .status-indicator {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--secondary);
-      flex-shrink: 0;
-    }
-
-    .status-chip .status-value {
-      margin-left: auto;
-      font-weight: 500;
-      opacity: 0.9;
-    }
-
-    .status-chip.status-on {
-      background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(16, 185, 129, 0.1));
-      border-color: #16a34a;
-      color: #d1fae5;
-    }
-
-    .status-chip.status-on .status-indicator {
-      background: var(--success);
-      box-shadow: 0 0 8px rgba(16, 185, 129, 0.6);
-      animation: pulse 2s infinite;
-    }
-
-    .status-chip.status-off {
-      background: linear-gradient(135deg, rgba(248, 113, 113, 0.25), rgba(248, 113, 113, 0.1));
-      border-color: var(--danger);
-      color: #fecaca;
-    }
-
-    .status-chip.status-off .status-indicator {
-      background: var(--danger);
-      box-shadow: 0 0 6px rgba(248, 113, 113, 0.4);
-    }
-
-    .status-chip.status-starting {
-      background: linear-gradient(135deg, rgba(251, 191, 36, 0.28), rgba(251, 191, 36, 0.1));
-      border-color: var(--warning);
-      color: #fef3c7;
-    }
-
-    .status-chip.status-starting .status-indicator {
-      background: var(--warning);
-      box-shadow: 0 0 8px rgba(251, 191, 36, 0.6);
-      animation: pulse 1.6s infinite;
-    }
-
-    .status-chip.status-stopping {
-      background: linear-gradient(135deg, rgba(248, 113, 113, 0.22), rgba(248, 113, 113, 0.1));
-      border-color: var(--danger);
-      color: #fecaca;
-    }
-
-    .status-chip.status-stopping .status-indicator {
-      background: var(--danger);
-      box-shadow: 0 0 8px rgba(248, 113, 113, 0.6);
-      animation: pulse 1.6s infinite;
-    }
-
-    .status-panel {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-    }
-
-    /* NEW: stacked rows for system status + actions */
-    .system-status-rows {
-      display: grid;
-      gap: 0.75rem;
-      margin-top: 0.5rem;
-    }
-    .status-row {
-      display: grid;
-      grid-template-columns: minmax(280px, 380px) auto;
-      align-items: center;
-      gap: 0.75rem;
-      padding: 0.6rem 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 10px;
-      background: rgba(17, 24, 39, 0.6);
-    }
-    .status-row .actions {
-      display: flex;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .status-hero {
-      display: flex;
-      justify-content: space-between;
-      gap: 1rem;
-      align-items: center;
-      background: linear-gradient(120deg, rgba(96, 165, 250, 0.14), rgba(16, 185, 129, 0.12));
-      border: 1px solid var(--border);
-      border-radius: 12px;
-      padding: 0.75rem 1rem;
-    }
-
-    .status-hero h4 {
-      margin: 0;
-      font-size: 1.05rem;
-      letter-spacing: 0.01em;
-    }
-
-    .status-subtitle {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-    }
-
-    .status-card-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-      gap: 0.75rem;
-    }
-
-    .status-tile {
-      border: 1px solid var(--border);
-      background: rgba(17, 24, 39, 0.8);
-      border-radius: 12px;
-      padding: 0.75rem;
-      display: flex;
-      flex-direction: column;
-      gap: 0.35rem;
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
-    }
-
-    .status-tile-label {
-      font-size: 0.9rem;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 0.35rem;
-    }
-
-    .status-tile-label span {
-      width: 18px;
-      height: 18px;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      background: rgba(148, 163, 184, 0.2);
-      border: 1px solid var(--border);
-      font-size: 0.8rem;
-    }
-
-    @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    label {
-      display: block;
-      font-weight: 500;
-      margin-bottom: 0.5rem;
-      color: var(--text);
-      font-size: 0.9rem;
-    }
-
-    input[type="text"],
-    input[type="number"],
-    select,
-    textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border);
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
-      font-family: inherit;
-      background: rgba(30, 41, 59, 0.8);
-      color: var(--text);
-    }
-
-    input:focus,
-    select:focus,
-    textarea:focus {
-      outline: none;
-      border-color: var(--primary);
-      box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.2);
-    }
-
-    textarea {
-      resize: vertical;
-      min-height: 120px;
-      font-family: 'Courier New', monospace;
-    }
-
-    .btn-group {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-    }
-
-    .btn-row {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-      margin-top: 0.75rem;
-    }
-
-    button {
-      padding: 0.75rem 1.25rem;
-      border: none;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      font-weight: 500;
-      cursor: pointer;
-      transition: all 0.2s;
-      font-family: inherit;
-      color: #0b1220;
-    }
-
-    button.primary {
-      background: var(--primary);
-      color: white;
-    }
-
-    button.primary:hover {
-      background: var(--primary-hover);
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
-
-    button.success {
-      background: var(--success);
-      color: #052e16;
-    }
-
-    button.success:hover {
-      background: var(--success-hover);
-      transform: translateY(-1px);
-    }
-
-    button.danger {
-      background: var(--danger);
-      color: #450a0a;
-    }
-
-    button.danger:hover {
-      background: var(--danger-hover);
-      transform: translateY(-1px);
-    }
-
-    button.secondary {
-      background: var(--secondary);
-      color: #0b1220;
-    }
-
-    button.secondary:hover {
-      background: var(--secondary-hover);
-      transform: translateY(-1px);
-    }
-
-    .log-panel {
-      min-width: 0;
-      width: 100%;
-      height: auto;
-      min-height: 300px;
-      max-height: 70vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-    }
-
-    .command-row {
-      margin-top: 1rem;
-      display: grid;
-      gap: 0.35rem;
-    }
-
-    .command-input-row {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .command-input-row input {
-      flex: 1;
-    }
-
-    .server-properties-panel {
-      display: flex;
-      flex-direction: column;
-      min-width: 0;
-      width: 100%;
-      height: auto;
-      min-height: 300px;
-      max-height: 70vh;
-      overflow: hidden;
-    }
-
-    .server-properties-panel #properties {
-      flex: 1;
-      min-height: 300px;
-      max-height: 50vh;
-      overflow-y: auto;
-    }
-
-    .service-controls {
-      display: flex;
-      flex-direction: column;
-      gap: 0.75rem;
-      margin-top: 0.75rem;
-    }
-
-    .service-row {
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
       gap: 0.65rem;
-      flex-wrap: wrap;
+      padding: 0.65rem 0.75rem;
+      border-radius: 10px;
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid var(--border);
     }
-
-    .service-label {
-      font-size: 0.9rem;
-      font-weight: 500;
+    .status-left {
+      display: flex;
+      align-items: center;
+      gap: 0.55rem;
+      min-width: 0;
+    }
+    .status-indicator {
+      width: 11px;
+      height: 11px;
+      border-radius: 50%;
+      background: var(--muted);
+      box-shadow: 0 0 0 rgba(0,0,0,0);
+    }
+    .status-label {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+    }
+    .status-value {
+      font-weight: 600;
       color: var(--text);
+      text-align: right;
       min-width: 90px;
     }
 
-    .service-buttons {
-      display: flex;
-      gap: 0.35rem;
-      flex-wrap: wrap;
+    .status-chip.status-on {
+      border-color: rgba(52, 211, 153, 0.5);
+      background: rgba(52, 211, 153, 0.1);
+    }
+    .status-chip.status-on .status-indicator {
+      background: var(--success);
+      box-shadow: 0 0 12px rgba(52, 211, 153, 0.5);
+    }
+    .status-chip.status-starting {
+      border-color: rgba(251, 191, 36, 0.6);
+      background: rgba(251, 191, 36, 0.1);
+    }
+    .status-chip.status-starting .status-indicator {
+      background: var(--warning);
+      box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+    }
+    .status-chip.status-stopping,
+    .status-chip.status-off {
+      border-color: rgba(248, 113, 113, 0.35);
+      background: rgba(248, 113, 113, 0.06);
+    }
+    .status-chip.status-stopping .status-indicator,
+    .status-chip.status-off .status-indicator {
+      background: var(--danger);
+      box-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
     }
 
-    .active-profile-pill {
-      font-size: 1.05rem;
-      font-weight: 700;
-      background: rgba(96, 165, 250, 0.14);
-      border: 1px solid #3b82f6;
-      padding: 0.4rem 0.9rem;
-      border-radius: 999px;
-      display: inline-flex;
+    .action-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 0.35rem;
+      display: inline-block;
+    }
+    select, input[type="text"], input[type="number"], textarea {
+      width: 100%;
+      padding: 0.7rem 0.8rem;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: rgba(255, 255, 255, 0.03);
+      color: var(--text);
+      font-size: 0.98rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    select:focus, input:focus, textarea:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(106, 169, 255, 0.25);
+    }
+
+    .select-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.65rem;
       align-items: center;
+    }
+    @media (max-width: 640px) {
+      .select-row { grid-template-columns: 1fr; }
+      .topbar { flex-direction: column; align-items: flex-start; }
+      .top-actions { width: 100%; justify-items: start; }
+      .top-buttons { width: 100%; justify-content: flex-start; }
+    }
+
+    button {
+      border: none;
+      border-radius: 10px;
+      padding: 0.7rem 1rem;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    }
+    button.primary { background: linear-gradient(120deg, var(--primary), var(--primary-2)); color: #041025; }
+    button.success { background: linear-gradient(120deg, #4ade80, #22c55e); color: #04150f; }
+    button.danger { background: linear-gradient(120deg, #f87171, #ef4444); color: #300404; }
+    button.secondary { background: rgba(255, 255, 255, 0.08); color: var(--text); border: 1px solid var(--border); }
+    button:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+    button:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(0,0,0,0.25); }
+
+    .log-card {
+      min-height: 420px;
+    }
+    #logs {
+      font-family: "JetBrains Mono", "Consolas", monospace;
+      font-size: 14px;
+      white-space: pre-wrap;
+      word-break: break-word;
+      line-height: 1.45;
+      background: #0b0f18;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 0.9rem;
+      flex: 1;
+      min-height: 260px;
+      max-height: 60vh;
+      overflow-y: auto;
+    }
+    .command-row {
+      display: grid;
       gap: 0.35rem;
-      color: #dbeafe;
+    }
+    .command-input-row {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 0.5rem;
+    }
+    @media (max-width: 640px) {
+      .command-input-row { grid-template-columns: 1fr; }
     }
 
     .drawer {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.45);
+      background: rgba(0, 0, 0, 0.55);
       display: none;
-      align-items: center; /* Center vertically */
-      justify-content: center; /* Center horizontally */
-      padding: 2rem;
-      z-index: 12;
-      backdrop-filter: blur(2px);
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+      z-index: 20;
+      backdrop-filter: blur(4px);
     }
-
-    .drawer.open {
-      display: flex;
-    }
-
+    .drawer.open { display: flex; }
     .drawer-content {
-      background: linear-gradient(180deg, rgba(17, 24, 39, 0.98), rgba(15, 23, 42, 0.95));
-      width: min(960px, 100%);
-      max-height: 90vh;
-      border-radius: 14px;
+      background: linear-gradient(160deg, #0b1323, #0c1629);
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-lg);
-      overflow: hidden;
+      border-radius: 14px;
+      box-shadow: var(--shadow);
+      width: min(1100px, 100%);
+      max-height: 92vh;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
-
     .drawer-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
       padding: 1rem 1.25rem;
       border-bottom: 1px solid var(--border);
-      background: rgba(17, 24, 39, 0.8);
-      gap: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 0.75rem;
+      background: rgba(255, 255, 255, 0.02);
     }
-
     .drawer-body {
       padding: 1rem 1.25rem 1.25rem;
       overflow-y: auto;
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
-      align-items: start;
       gap: 1rem;
-      width: 100%;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
     }
-
-    .drawer-body > .card {
-      width: 100%;
-      height: 100%;
-    }
-
     .drawer-close {
       background: transparent;
       color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 999px;
-      padding: 0.35rem 0.65rem;
-      cursor: pointer;
+      padding: 0.45rem 0.8rem;
+      border-radius: 10px;
+    }
+
+    .form-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 0.85rem;
+    }
+    .form-grid label { display: flex; flex-direction: column; }
+    .form-grid .full-width { grid-column: 1 / -1; }
+    .checkbox-wrapper { display: flex; align-items: center; gap: 0.5rem; }
+
+    #properties {
+      min-height: 320px;
+      max-height: 55vh;
+      resize: vertical;
+      font-family: "JetBrains Mono", "Consolas", monospace;
     }
 
     .modal {
       position: fixed;
       inset: 0;
-      background: rgba(0, 0, 0, 0.5);
       display: none;
       align-items: center;
       justify-content: center;
       padding: 1rem;
-      z-index: 20;
+      background: rgba(0, 0, 0, 0.55);
+      z-index: 30;
       backdrop-filter: blur(3px);
     }
-
-    .modal.open {
-      display: flex;
-    }
-
+    .modal.open { display: flex; }
     .modal-content {
-      background: linear-gradient(175deg, rgba(15, 23, 42, 0.96), rgba(15, 23, 42, 0.9));
+      background: linear-gradient(165deg, #0c1322, #0c1626);
       border: 1px solid var(--border);
       border-radius: 12px;
-      width: min(480px, 100%);
-      min-width: 320px;
-      max-width: 90vw;
-      box-shadow: var(--shadow-lg);
+      width: min(500px, 100%);
+      box-shadow: var(--shadow);
       overflow: hidden;
     }
-
-    .modal-header,
-    .modal-footer {
-      padding: 0.85rem 1rem;
-      border-bottom: 1px solid var(--border);
+    .modal-header, .modal-footer {
+      padding: 0.9rem 1rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
+      border-bottom: 1px solid var(--border);
       gap: 0.5rem;
     }
-
-    .modal-footer {
-      border-top: 1px solid var(--border);
-      border-bottom: none;
-      justify-content: flex-end;
-      gap: 0.5rem;
-    }
-
-    .modal-body {
-      padding: 1rem;
-      color: var(--text);
-      display: grid;
-      gap: 0.75rem;
-    }
-
-    .modal-actions {
-      display: flex;
-      gap: 0.5rem;
-      justify-content: flex-end;
-    }
-
-    .modal-input label {
-      margin: 0;
-      font-weight: 600;
-    }
-
+    .modal-footer { border-top: 1px solid var(--border); border-bottom: none; justify-content: flex-end; }
+    .modal-body { padding: 1rem; display: grid; gap: 0.65rem; }
     .modal-close {
       background: transparent;
-      color: var(--text);
       border: 1px solid var(--border);
-      border-radius: 8px;
-      padding: 0.25rem 0.5rem;
-      cursor: pointer;
-    }
-
-    #logs {
-      font-family: monospace;
-      font-size: 14px;
-      white-space: pre-wrap;
-      word-break: break-word;
-      line-height: 1.45;
-      flex: 1;
-      overflow-y: auto;
-      background: #181818;
-      border-radius: 8px;
-      padding: 10px;
-      margin-top: 8px;
-      min-height: 200px;
-      max-height: 50vh;
+      color: var(--text);
+      border-radius: 10px;
+      padding: 0.35rem 0.55rem;
     }
 
     .toast {
       position: fixed;
       top: 16px;
       left: 50%;
-      transform: translate(-50%, -10px);
-      background: rgba(17, 24, 39, 0.95);
+      transform: translate(-50%, -12px);
+      background: rgba(12, 19, 34, 0.95);
       border: 1px solid var(--border);
       color: var(--text);
-      padding: 0.75rem 1rem;
-      border-radius: 10px;
-      box-shadow: var(--shadow-lg);
+      padding: 0.7rem 1rem;
+      border-radius: 12px;
+      box-shadow: var(--shadow);
       opacity: 0;
-      transition: opacity 0.2s, transform 0.2s;
-      z-index: 9999;
-      width: fit-content;
-      max-width: 90vw;
+      transition: opacity 0.2s ease, transform 0.2s ease;
+      z-index: 50;
       pointer-events: none;
       text-align: center;
+      min-width: 220px;
     }
-
-
-    .toast.show {
-      opacity: 1;
-      transform: translate(-50%, 0); /* animate straight down */
-    }
-
-    .toast.error {
-      border-color: var(--danger);
-      color: #fecdd3;
-    }
-
-    .toast.success {
-      border-color: var(--success);
-      color: #c7f9cc;
-    }
+    .toast.show { opacity: 1; transform: translate(-50%, 0); }
+    .toast.error { border-color: var(--danger); color: #fecdd3; }
+    .toast.success { border-color: var(--success); color: #c7f9cc; }
 
     .loading-overlay {
       position: fixed;
@@ -772,205 +462,173 @@
       display: none;
       align-items: center;
       justify-content: center;
-      z-index: 9;
+      z-index: 25;
       backdrop-filter: blur(2px);
     }
-
-    .loading-overlay.show {
-      display: flex;
-    }
-
+    .loading-overlay.show { display: flex; }
     .loading-card {
-      background: #0f172a;
-      padding: 1.5rem 2rem;
-      border-radius: 12px;
+      background: #0e182a;
       border: 1px solid var(--border);
-      box-shadow: var(--shadow-lg);
+      border-radius: 12px;
+      padding: 1.35rem 1.6rem;
       text-align: center;
-      color: var(--text);
-      min-width: 280px;
-    }
-
-    .form-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1rem;
-      width: 100%;
-    }
-
-    .form-grid label {
-      display: flex;
-      flex-direction: column;
-    }
-
-    .form-grid .full-width {
-      grid-column: 1 / -1;
-    }
-
-    /* NEW: make checkbox row not awkward */
-    .checkbox-wrapper {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
-
-    .checkbox-wrapper input[type="checkbox"] {
-      width: auto;
-      margin: 0;
-    }
-
-
-
-    @media (max-width: 1200px) {
-      .main-grid {
-        grid-template-columns: 1fr;
-      }
-      .log-panel, .server-properties-panel {
-        min-width: 0;
-        width: 100%;
-        margin-top: 1rem;
-      }
-    }
-
-    @media (max-width: 900px) {
-      .drawer {
-        padding: 1rem;
-      }
-      .drawer-content {
-        max-height: 95vh;
-      }
-      .drawer-body {
-        grid-template-columns: 1fr;
-      }
+      min-width: 260px;
+      box-shadow: var(--shadow);
     }
   </style>
 </head>
 <body>
-<header>
-  <h1>
-    <svg width="28" height="28" viewBox="0 0 28 28" style="vertical-align: middle; margin-right: 0.4em;">
-      <rect x="2" y="8" width="24" height="18" rx="3" fill="#7c5e3c" stroke="#222" stroke-width="1"/>
-      <rect x="2" y="2" width="24" height="8" rx="2" fill="#6fcf4b" stroke="#222" stroke-width="1"/>
-      <rect x="2" y="8" width="24" height="2" fill="#a3e072" stroke="#222" stroke-width="0.5"/>
+<header class="topbar">
+  <div class="brand">
+    <svg width="34" height="34" viewBox="0 0 28 28" aria-hidden="true">
+      <rect x="2" y="8" width="24" height="18" rx="3" fill="#7c5e3c" stroke="#111" stroke-width="1"/>
+      <rect x="2" y="2" width="24" height="8" rx="2" fill="#6fcf4b" stroke="#111" stroke-width="1"/>
+      <rect x="2" y="8" width="24" height="2" fill="#a3e072" stroke="#111" stroke-width="0.5"/>
     </svg>
-    CubicControl Panel
-  </h1>
-  <p>Manage your Minecraft server profiles with ease</p>
-  <div class="header-actions">
-    <button id="add-profile-btn" class="primary">＋ Add new profile</button>
-    <button id="logout-btn" class="secondary" title="Logout">🚪 Logout</button>
+    <div>
+      <h1>CubicControl Panel</h1>
+      <p>Manage servers, controller, and Playit from one place.</p>
+    </div>
+  </div>
+  <div class="top-actions">
+    <span class="pill">Active Profile: <span id="active-profile">None</span></span>
+    <div class="top-buttons">
+      <button id="logout-btn" class="secondary">Logout</button>
+    </div>
   </div>
 </header>
 
 <div class="loading-overlay" id="loading-overlay" aria-live="polite" aria-busy="true">
   <div class="loading-card">
-    <p id="loading-title" style="margin-bottom: 0.35rem; font-weight: 600;">Switching profile…</p>
-    <small id="loading-subtitle">Stopping active services and preparing the next profile.</small>
+    <p id="loading-title" style="margin: 0 0 0.25rem; font-weight: 700;">Switching profile...</p>
+    <small id="loading-subtitle" class="muted">Stopping active services and preparing the next profile.</small>
   </div>
 </div>
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<div class="container">
-  <div class="main-grid">
-      <div class="card system-card">
-        <div class="card-header-row">
-          <h3>System Status</h3>
-          <span class="active-profile-pill" aria-live="polite">Active Profile: <span id="active-profile">None</span></span>
+<main>
+  <div class="layout">
+    <div class="stacked">
+      <div class="card status-card">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Live status</p>
+            <h3>Runtime overview</h3>
+          </div>
+          <span class="muted" id="status-text"></span>
         </div>
-        <div class="status-panel">
-          <div class="system-status-rows">
 
-            <!-- Server row -->
-            <div class="status-row">
-              <div id="server-status" class="status-chip status-off">
-                <span class="status-label">
-                  <span class="status-indicator"></span>
-                  <span>Server</span>
-                </span>
-                <span class="status-value">Off</span>
+        <div class="status-grid">
+          <div class="status-item">
+            <div id="server-status" class="status-chip status-off">
+              <div class="status-left">
+                <span class="status-indicator"></span>
+                <div>
+                  <div class="status-label">Server</div>
+                  <small class="muted">Starts the run script for the active profile.</small>
+                </div>
               </div>
-              <div class="actions">
-                <button id="start-server-btn" class="success">▶ Start</button>
-                <button id="stop-server-btn" class="danger">⏹ Stop</button>
-                <button id="force-stop-server-btn" class="danger" title="Force kill the server process immediately">⏹⚠ Force Stop</button>
-              </div>
+              <span class="status-value">Off</span>
             </div>
-
-            <!-- Controller row -->
-            <div class="status-row">
-              <div id="controller-status" class="status-chip status-off">
-                <span class="status-label">
-                  <span class="status-indicator"></span>
-                  <span>Controller</span>
-                </span>
-                <span class="status-value">Off</span>
-              </div>
-              <div class="actions">
-                <button id="start-controller-btn" class="success">▶ Start</button>
-                <button id="stop-controller-btn" class="danger">⏹ Stop</button>
-              </div>
-            </div>
-
-            <!-- Playit row -->
-            <div class="status-row">
-              <div id="playit-status" class="status-chip status-off">
-                <span class="status-label">
-                  <span class="status-indicator"></span>
-                  <span>Playit</span>
-                </span>
-                <span class="status-value">Not configured</span>
-              </div>
-              <div class="actions">
-                <button id="start-playit-btn" class="success">▶ Start</button>
-                <button id="stop-playit-btn" class="danger">⏹ Stop</button>
-                <button id="playit-settings-btn" class="secondary">⚙ Path</button>
-              </div>
+            <div class="action-row">
+              <button id="start-server-btn" class="success">Start</button>
+              <button id="stop-server-btn" class="danger">Stop</button>
+              <button id="force-stop-server-btn" class="danger" title="Force kill the server process immediately">Force stop</button>
             </div>
           </div>
-          <p id="status-text" style="margin-top: 0.5rem; font-size: 0.9rem; color: var(--text-muted);"></p>
+
+          <div class="status-item">
+            <div id="controller-status" class="status-chip status-off">
+              <div class="status-left">
+                <span class="status-indicator"></span>
+                <div>
+                  <div class="status-label">Controller</div>
+                  <small class="muted">Watches inactivity and handles auto-shutdown.</small>
+                </div>
+              </div>
+              <span class="status-value">Off</span>
+            </div>
+            <div class="action-row">
+              <button id="start-controller-btn" class="success">Start</button>
+              <button id="stop-controller-btn" class="danger">Stop</button>
+            </div>
+          </div>
+
+          <div class="status-item">
+            <div id="playit-status" class="status-chip status-off">
+              <div class="status-left">
+                <span class="status-indicator"></span>
+                <div>
+                  <div class="status-label">Playit</div>
+                  <small class="muted">Tunnel helper for remote access.</small>
+                </div>
+              </div>
+              <span class="status-value">Not configured</span>
+            </div>
+            <div class="action-row">
+              <button id="start-playit-btn" class="success">Start</button>
+              <button id="stop-playit-btn" class="danger">Stop</button>
+              <button id="playit-settings-btn" class="secondary">Set path</button>
+            </div>
+          </div>
         </div>
       </div>
 
       <div class="card profile-card">
-        <div class="card-header-row">
-          <h3>Profile Manager</h3>
-          <span class="soft-badge">Profiles stored in <code>server_profiles.json</code></span>
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">Profiles</p>
+            <h3>Profile manager</h3>
+          </div>
+          <span class="muted">Stored in <code>server_profiles.json</code></span>
         </div>
-        <label for="profile-select">Select Profile</label>
-        <select id="profile-select"></select>
-        <div class="btn-row">
-          <button id="activate-btn" class="success">✓ Activate</button>
-          <button id="open-tools-btn" class="primary">🛠 Manage tools</button>
-          <button id="delete-profile-btn" class="danger">🗑 Delete</button>
+
+        <label for="profile-select">Select profile</label>
+        <div class="select-row">
+          <select id="profile-select"></select>
+          <button id="activate-btn" class="primary">Activate</button>
         </div>
-        <p style="margin-top: 0.75rem; color: var(--text-muted); font-size: 0.9rem;">Use "Manage tools" to edit the selected profile or tweak its server.properties.</p>
+        <p class="muted" style="margin: 0;">Activate switches the running controller/server to the chosen profile.</p>
+
+        <div class="action-row">
+          <button id="add-profile-btn" class="primary">New profile</button>
+          <button id="open-tools-btn" class="secondary">Manage tools</button>
+          <button id="delete-profile-btn" class="danger">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card log-card">
+      <div class="section-header">
+        <div>
+          <p class="eyebrow">Logs</p>
+          <h3>Live server output</h3>
+        </div>
+        <span class="muted">RCON commands available when server is running</span>
       </div>
 
-    <div class="card log-panel log-card">
-      <h3>Live Server Logs</h3>
-      <p style="margin-bottom: 1rem; color: var(--text-muted); font-size: 0.85rem;">Real-time output from the Minecraft server</p>
       <div id="logs"></div>
       <form id="command-form" class="command-row">
-        <label for="command-input">Send RCON command to the running server</label>
+        <label for="command-input">Send RCON command</label>
         <div class="command-input-row">
           <input id="command-input" type="text" placeholder="say Server maintenance starting" />
           <button type="submit" class="primary">Send</button>
         </div>
-        <small style="color: var(--text-muted);">Available when the server is running and RCON is enabled.</small>
+        <small class="muted">Requires the server and RCON to be running.</small>
       </form>
     </div>
   </div>
-</div>
+</main>
 
 <div class="drawer" id="profile-drawer" aria-hidden="true">
   <div class="drawer-content">
     <div class="drawer-header">
       <div>
-        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 0.25rem;">Profile workspace</p>
+        <p class="muted" style="margin: 0 0 0.25rem;">Profile workspace</p>
         <h3 id="drawer-title" style="margin: 0;">Create profile</h3>
       </div>
-      <button id="close-drawer-btn" class="drawer-close">✕ Close</button>
+      <button id="close-drawer-btn" class="drawer-close">Close</button>
     </div>
     <div class="drawer-body">
       <div class="card" style="height: fit-content;">
@@ -983,7 +641,7 @@
             <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
             <label class="full-width">RCON Settings (auto-managed)
               <input type="text" value="RCON + Query locked to controller defaults" disabled />
-              <small>Ports 27001/27002 and a generated password are applied automatically.</small>
+              <small class="muted">Ports 27001/27002 and a generated password are applied automatically.</small>
             </label>
             <label>ADMIN_AUTHKEY<input type="text" name="admin_auth_key" required placeholder="Admin control key" /></label>
             <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
@@ -997,26 +655,29 @@
             <div class="checkbox-wrapper full-width">
               <input type="checkbox" id="shutdown-app-checkbox" name="shutdown_app_after_inactivity" />
               <label for="shutdown-app-checkbox" style="margin: 0;">Close the control panel after inactivity timeout</label>
-              <small style="color: var(--text-muted); display: block; margin-top: 0.25rem;">Stops the Minecraft server, then closes this console/app entirely. Useful for unattended hosts.</small>
+              <small class="muted" style="display: block; margin-top: 0.25rem;">Stops the Minecraft server, then closes this console/app entirely. Useful for unattended hosts.</small>
             </div>
             <div class="full-width">
-              <button type="submit" class="primary">💾 Save Profile</button>
+              <button type="submit" class="primary">Save Profile</button>
             </div>
           </div>
         </form>
       </div>
 
-        <div class="card server-properties-panel" id="properties-panel">
-          <div class="card-header-row">
+      <div class="card server-properties-panel" id="properties-panel">
+        <div class="section-header">
+          <div>
+            <p class="eyebrow">server.properties</p>
             <h3>Server Properties</h3>
-            <span class="soft-badge" id="properties-profile-label">Profile: None</span>
           </div>
-          <div class="btn-row">
-            <button id="save-props-btn" class="primary">💾 Save</button>
-          </div>
-          <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
-          <small>Edit server.properties for the selected profile</small>
+          <span class="pill" id="properties-profile-label">Profile: None</span>
         </div>
+        <div class="action-row">
+          <button id="save-props-btn" class="primary">Save</button>
+        </div>
+        <textarea id="properties" aria-label="server.properties" placeholder="key=value"></textarea>
+        <small class="muted">Edit server.properties for the selected profile.</small>
+      </div>
     </div>
   </div>
 </div>
@@ -1025,17 +686,17 @@
   <div class="modal-content" role="dialog" aria-modal="true">
     <div class="modal-header">
       <h4 id="dialog-title" style="margin: 0;">Confirm</h4>
-      <button class="modal-close" id="dialog-close-btn">✕</button>
+      <button class="modal-close" id="dialog-close-btn">Close</button>
     </div>
     <div class="modal-body">
-      <p class="status-subtitle" id="dialog-message" style="margin: 0;"></p>
+      <p class="muted" id="dialog-message" style="margin: 0;"></p>
       <div class="modal-input hidden" id="dialog-input-wrapper">
         <label for="dialog-input">Value</label>
         <input id="dialog-input" type="text" placeholder="" />
       </div>
     </div>
     <div class="modal-footer">
-      <div class="modal-actions">
+      <div class="action-row">
         <button class="secondary" id="dialog-cancel-btn">Cancel</button>
         <button class="primary" id="dialog-confirm-btn">Confirm</button>
       </div>
