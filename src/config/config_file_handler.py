@@ -23,10 +23,10 @@ class ConfigFileHandler:
         if not self.config_file.exists():
             with open(self.config_file, 'w', encoding='utf-8') as configfile:
                 self.config['PROPERTIES'] = {
-                    'PlayitGG location': '',
+                    'Playit location': '',
                 }
                 configfile.write("# Configuration file for ServerSide Control Panel\n")
-                configfile.write("# PlayitGG location: Path to playit.exe for tunneling\n")
+                configfile.write("# Playit location: Path to playit.exe for tunneling\n")
                 self.config.write(configfile)
 
     def get_value(self, value: str, *, allow_empty: bool = False):
