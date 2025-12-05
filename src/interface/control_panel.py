@@ -192,7 +192,6 @@ _print_startup_banner()
 if getattr(sys, 'frozen', False):
     # Running as a PyInstaller bundle
     base_path = sys._MEIPASS
-    print(f"Running as frozen executable. Base path: {base_path}")
 
     # Try multiple possible locations for templates/static
     possible_template_paths = [
@@ -211,7 +210,6 @@ if getattr(sys, 'frozen', False):
     for path in possible_template_paths:
         if os.path.exists(path):
             template_folder = path
-            print(f"Found templates at: {path}")
             break
     if not template_folder:
         template_folder = possible_template_paths[0]  # fallback
@@ -222,7 +220,6 @@ if getattr(sys, 'frozen', False):
     for path in possible_static_paths:
         if os.path.exists(path):
             static_folder = path
-            print(f"Found static files at: {path}")
             break
     if not static_folder:
         static_folder = possible_static_paths[0]  # fallback
@@ -556,14 +553,12 @@ def _start_controller(profile: ServerProfile) -> bool:
     controllers[profile.name] = controller
     thread = controller.start_in_thread()
     controller_threads[profile.name] = thread
-    controller_pid = os.getpid()
-    logger.info("Controller STARTED for profile '%s' with PID %s", profile.name, controller_pid)
+    logger.info("Controller STARTED for profile '%s'", profile.name)
     return True
 
 
 def _stop_controller(name: str) -> bool:
     controller = controllers.get(name)
-    pid = os.getpid()
     if controller:
         controller.stop_controller()
     thread = controller_threads.get(name)
@@ -573,7 +568,7 @@ def _stop_controller(name: str) -> bool:
     controllers.pop(name, None)
     controller_threads.pop(name, None)
     if stopped:
-        logger.info("Controller STOPPED for profile '%s' with PID %s", name, pid)
+        logger.info("Controller STOPPED for profile '%s'", name)
     return stopped
 
 

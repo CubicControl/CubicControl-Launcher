@@ -62,3 +62,21 @@
 2025-12-05 00:18:28,704 - control_panel - INFO - Console close event received (0); shutting down.
 2025-12-05 00:18:28,704 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
 2025-12-05 00:18:30,715 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 22932
+2025-12-05 18:48:19,459 - control_panel - INFO - Playit.exe STARTED with PID 5716
+2025-12-05 18:48:19,463 - control_panel - INFO - Controller STARTED for profile 'Vanilla' with PID 10248
+2025-12-05 18:48:19,464 - control_panel - INFO - Starting control panel UI
+2025-12-05 18:48:27,658 - control_panel - INFO - User logged in successfully
+2025-12-05 18:48:30,457 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-05 18:48:35,540 - control_panel - INFO - Playit process STOPPED with PID 5716
+2025-12-05 18:48:38,606 - control_panel - INFO - Controller STOPPED for profile 'Vanilla' with PID 10248
+2025-12-05 18:48:40,085 - control_panel - INFO - Playit.exe STARTED with PID 11328
+2025-12-05 18:48:42,181 - control_panel - INFO - Playit process STOPPED with PID 11328
+2025-12-05 18:49:39,843 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-05 18:49:39,844 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-05 18:49:41,892 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-05 20:00:32,743 - control_panel - INFO - Playit.exe STARTED with PID 3128
+2025-12-05 20:00:32,745 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-05 20:00:32,746 - control_panel - INFO - Starting control panel UI
+2025-12-05 20:00:52,857 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-05 20:00:52,857 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-05 20:00:54,871 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
