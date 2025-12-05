@@ -9,14 +9,11 @@
       "rcon_password": "TCUlhNLva0J_AjavoXx08Q",
       "rcon_port": 27001,
       "query_port": 27002,
-      "admin_auth_key": "SECRETADMINKEY",
-      "auth_key": "SECRETKEYSPIRIT",
-      "shutdown_key": "",
       "inactivity_limit": 600,
       "polling_interval": 30,
       "pc_sleep_after_inactivity": false,
       "shutdown_app_after_inactivity": true,
-      "description": "",
+      "description": "qweqweqweqwe",
       "env_scope": "per_server"
     }
   }

@@ -5,8 +5,8 @@
   <title>CubicControl Server Manager</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <script>
-    window.ADMIN_AUTH_KEY = "{{ auth_key }}";
-    window.AUTH_KEY = window.ADMIN_AUTH_KEY;
+    window.ADMIN_AUTH_KEY = {{ admin_auth_key|tojson }};
+    window.AUTH_KEY = {{ auth_key|tojson }};
   </script>
   <style>
     :root {
@@ -535,6 +535,27 @@
 
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<div class="modal" id="auth-key-modal" aria-hidden="true">
+  <div class="modal-content" role="dialog" aria-modal="true">
+    <div class="modal-header">
+      <h4 style="margin: 0;">Set Authentication Keys</h4>
+    </div>
+    <div class="modal-body" style="gap: 0.9rem;">
+      <p class="muted" style="margin: 0;">
+        These keys are required for the admin/internal API (ADMIN_AUTH_KEY) and the lightweight remote API (AUTH_KEY).
+        AUTH_KEY must match the AUTH_KEY set in CubicClient.
+        They are encrypted and stored securely in <code>data/auth_keys.bin</code>. You must set them before using the panel.
+      </p>
+      <label>ADMIN_AUTH_KEY<input type="text" id="admin-auth-key-input" placeholder="Required for internal API" /></label>
+      <label>AUTH_KEY<input type="text" id="auth-key-input" placeholder="Required for lightweight API." /></label>
+      <small class="muted" style="display: block;">Keep these somewhere safe. Changing them will immediately update API access.</small>
+    </div>
+    <div class="modal-footer">
+      <button class="primary" id="save-auth-keys-btn">Save & Continue</button>
+    </div>
+  </div>
+</div>
+
 <main>
   <div class="layout">
     <div class="stacked">
@@ -670,9 +691,6 @@
             <label>Server Folder<input type="text" name="server_path" required placeholder="C:/MCServers/Vanilla"/></label>
             <label class="full-width">Description<textarea name="description" rows="2" placeholder="Optional description" style="resize: vertical; max-width: 100%;"></textarea></label>
             <label>Run Script<input type="text" name="run_script" value="run.bat" /></label>
-            <label>ADMIN_AUTHKEY<input type="text" name="admin_auth_key" required placeholder="Admin control key" /></label>
-            <label>Auth Key<input type="text" name="auth_key" placeholder="API authentication" /></label>
-            <label>Shutdown Key<input type="text" name="shutdown_key" placeholder="Shutdown authentication" /></label>
             <label>Inactivity Timeout (seconds)<input type="number" name="inactivity_limit" value="1800" /></label>
             <label>Polling Interval (seconds)<input type="number" name="polling_interval" value="60" /></label>
             <div class="checkbox-wrapper full-width">

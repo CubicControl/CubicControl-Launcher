@@ -28,6 +28,10 @@ const dialogInput = document.getElementById('dialog-input');
 const dialogConfirmBtn = document.getElementById('dialog-confirm-btn');
 const dialogCancelBtn = document.getElementById('dialog-cancel-btn');
 const dialogCloseBtn = document.getElementById('dialog-close-btn');
+const authKeyModal = document.getElementById('auth-key-modal');
+const adminAuthKeyInput = document.getElementById('admin-auth-key-input');
+const authKeyInput = document.getElementById('auth-key-input');
+const saveAuthKeysBtn = document.getElementById('save-auth-keys-btn');
 let socket;
 let cachedProfiles = [];
 let currentLogProfile = '';
@@ -36,15 +40,14 @@ let playitPrompted = false;
 let cachedPlayitPath = '';
 let dialogResolver = null;
 let lastStatus = null;
+let authKeysConfigured = Boolean(globalThis.ADMIN_AUTH_KEY && globalThis.AUTH_KEY);
+let statusIntervalId = null;
 
 const defaultProfile = {
   name: '',
   server_path: '',
   description: '',
   run_script: 'run.bat',
-  admin_auth_key: '',
-  auth_key: '',
-  shutdown_key: '',
   inactivity_limit: 1800,
   polling_interval: 60,
   pc_sleep_after_inactivity: true,
@@ -152,6 +155,87 @@ function showDialog(options = {}) {
 
 function showInputDialog(options = {}) {
   return showDialog({ ...options, input: true });
+}
+
+function openAuthKeyModal(prefill = {}) {
+  if (!authKeyModal) return;
+  authKeyModal.classList.add('open');
+  authKeyModal.setAttribute('aria-hidden', 'false');
+  if (adminAuthKeyInput) adminAuthKeyInput.value = prefill.admin_auth_key || globalThis.ADMIN_AUTH_KEY || '';
+  if (authKeyInput) authKeyInput.value = prefill.auth_key || globalThis.AUTH_KEY || '';
+  document.body.dataset.authKeysRequired = 'true';
+}
+
+function closeAuthKeyModal() {
+  if (!authKeyModal) return;
+  authKeyModal.classList.remove('open');
+  authKeyModal.setAttribute('aria-hidden', 'true');
+  delete document.body.dataset.authKeysRequired;
+}
+
+async function ensureAuthKeysConfigured(forcePrompt = false) {
+  try {
+    const res = await fetch('/api/auth-keys/status', { headers: { 'Content-Type': 'application/json' } });
+    const body = await res.json();
+    if (res.ok) {
+      if (body.admin_auth_key) globalThis.ADMIN_AUTH_KEY = body.admin_auth_key;
+      if (body.auth_key) globalThis.AUTH_KEY = body.auth_key;
+      authKeysConfigured = Boolean(body.configured);
+      if (!authKeysConfigured || forcePrompt) {
+        openAuthKeyModal(body);
+        return false;
+      }
+      closeAuthKeyModal();
+      return true;
+    }
+    setStatus(body.error || 'Unable to verify auth keys', true);
+  } catch (err) {
+    setStatus('Unable to verify auth keys', true);
+  }
+  if (forcePrompt || !authKeysConfigured) openAuthKeyModal();
+  return authKeysConfigured;
+}
+
+async function saveAuthKeys(event) {
+  if (event) event.preventDefault();
+  const adminKey = (adminAuthKeyInput?.value || '').trim();
+  const authKey = (authKeyInput?.value || '').trim();
+
+  if (!adminKey || !authKey) {
+    setStatus('Both ADMIN_AUTH_KEY and AUTH_KEY are required', true);
+    return;
+  }
+
+  if (saveAuthKeysBtn) {
+    saveAuthKeysBtn.disabled = true;
+    saveAuthKeysBtn.textContent = 'Saving...';
+  }
+
+  try {
+    const res = await fetch('/api/auth-keys', {
+      method: 'POST',
+      headers: authHeaders({ 'Content-Type': 'application/json' }),
+      body: JSON.stringify({ admin_auth_key: adminKey, auth_key: authKey }),
+    });
+    const body = await res.json();
+    if (res.ok) {
+      globalThis.ADMIN_AUTH_KEY = adminKey;
+      globalThis.AUTH_KEY = authKey;
+      authKeysConfigured = true;
+      setStatus('Authentication keys saved');
+      closeAuthKeyModal();
+      await bootstrapApp();
+    } else {
+      setStatus(body.error || 'Failed to save authentication keys', true);
+    }
+  } catch (err) {
+    setStatus('Failed to save authentication keys', true);
+  } finally {
+    if (saveAuthKeysBtn) {
+      saveAuthKeysBtn.disabled = false;
+      saveAuthKeysBtn.textContent = 'Save & Continue';
+    }
+  }
 }
 
 async function ensurePlayitConfigured() {
@@ -300,9 +384,6 @@ function fillFormFromProfile(profile) {
   form.server_path.value = profile.server_path || '';
   form.description.value = profile.description || '';
   form.run_script.value = profile.run_script || '';
-  form.admin_auth_key.value = profile.admin_auth_key || '';
-  form.auth_key.value = profile.auth_key || '';
-  form.shutdown_key.value = profile.shutdown_key || '';
   form.inactivity_limit.value = Number.isFinite(profile.inactivity_limit)
     ? profile.inactivity_limit
     : defaultProfile.inactivity_limit;
@@ -572,11 +653,6 @@ async function saveProfile(evt) {
 
   if (!isAbsolutePath(payload.server_path)) {
     setStatus('Server folder must be an absolute path (e.g. C:/Servers/Pack or /srv/mc/pack)', true);
-    return;
-  }
-
-  if (!payload.admin_auth_key || !payload.admin_auth_key.trim()) {
-    setStatus('ADMIN_AUTHKEY is required', true);
     return;
   }
 
@@ -1031,6 +1107,32 @@ async function logout() {
   }
 }
 
+async function bootstrapApp() {
+  try {
+    const data = await refreshStatus();
+    const current = profileSelect.value;
+    if (current) {
+      connectLogs(current);
+    }
+    if (data && !data.playit_configured && !playitPrompted) {
+      playitPrompted = true;
+      const configured = await promptForPlayitPath();
+      if (configured) {
+        lastStatus = await refreshStatus();
+      } else {
+        playitPrompted = false; // allow retry
+      }
+    }
+    if (!statusIntervalId) {
+      statusIntervalId = setInterval(() => {
+        refreshStatus().catch((err) => console.error('Periodic status refresh failed', err));
+      }, 5000);
+    }
+  } catch (err) {
+    console.error('Initial status refresh failed', err);
+  }
+}
+
 function init() {
   document.getElementById('profile-form').addEventListener('submit', saveProfile);
   document.getElementById('activate-btn').addEventListener('click', activateProfile);
@@ -1059,6 +1161,7 @@ function init() {
   if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);
   if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
   if (commandForm) commandForm.addEventListener('submit', sendCommand);
+  if (saveAuthKeysBtn) saveAuthKeysBtn.addEventListener('click', saveAuthKeys);
   if (drawer) {
     drawer.addEventListener('click', (event) => {
       if (event.target === drawer) closeDrawer();
@@ -1068,28 +1171,10 @@ function init() {
     selectedProfile = profileSelect.value;
   });
   (async () => {
-    try {
-      const data = await refreshStatus();
-      const current = profileSelect.value;
-      if (current) {
-        connectLogs(current);
-      }
-      if (data && !data.playit_configured && !playitPrompted) {
-        playitPrompted = true;
-        const configured = await promptForPlayitPath();
-        if (configured) {
-          lastStatus = await refreshStatus();
-        } else {
-          playitPrompted = false; // allow retry on next refresh
-        }
-      }
-    } catch (err) {
-      console.error('Initial status refresh failed', err);
-    }
+    const ready = await ensureAuthKeysConfigured();
+    if (!ready) return;
+    await bootstrapApp();
   })();
-  setInterval(() => {
-    refreshStatus().catch((err) => console.error('Periodic status refresh failed', err));
-  }, 5000);
 }
 
 document.addEventListener('DOMContentLoaded', init);

@@ -30,9 +30,6 @@ class ServerProfile:
     rcon_password: str = ""
     rcon_port: int = 27001
     query_port: int = 27002
-    admin_auth_key: str = ""
-    auth_key: str = ""
-    shutdown_key: str = ""
     inactivity_limit: int = 1800
     polling_interval: int = 60
     pc_sleep_after_inactivity: bool = True
@@ -112,9 +109,6 @@ class ServerProfile:
             rcon_password=data.get("rcon_password", ""),
             rcon_port=data.get("rcon_port", 27001),
             query_port=data.get("query_port", 27002),
-            admin_auth_key=data.get("admin_auth_key", ""),
-            auth_key=data.get("auth_key", ""),
-            shutdown_key=data.get("shutdown_key", ""),
             inactivity_limit=data.get("inactivity_limit", 1800),
             polling_interval=data.get("polling_interval", 60),
             pc_sleep_after_inactivity=data.get("pc_sleep_after_inactivity", True),

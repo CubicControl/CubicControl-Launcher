@@ -27,6 +27,7 @@ from flask_socketio import SocketIO, emit, join_room
 from src.config import settings
 from src.config.auth_handler import AuthHandler
 from src.config.config_file_handler import ConfigFileHandler
+from src.config.secret_store import SecretStore
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
@@ -244,6 +245,20 @@ app.secret_key = secrets.token_hex(32)
 
 # Initialize auth handler
 auth_handler = AuthHandler()
+secret_store = SecretStore()
+
+
+def _sync_auth_keys_from_store() -> None:
+    """Load persisted auth keys into settings/env for reuse."""
+    admin_key, auth_key = secret_store.get_keys()
+    settings.apply_auth_keys(admin_key, auth_key)
+    if admin_key:
+        os.environ["ADMIN_AUTH_KEY"] = admin_key
+    if auth_key:
+        os.environ["AUTHKEY_SERVER_WEBSITE"] = auth_key
+
+
+_sync_auth_keys_from_store()
 
 socketio = SocketIO(
     app,
@@ -264,6 +279,17 @@ PUBLIC_REMOTE_PATHS = {
     "/api/server/restart",
 }
 
+KEY_SETUP_SAFE_PATHS = {
+    "/",
+    "/login",
+    "/auth/login",
+    "/auth/logout",
+    "/auth/status",
+    "/auth/setup",
+    "/api/auth-keys",
+    "/api/auth-keys/status",
+}
+
 STATUS_RESPONSES = {
     "fully_loaded": ("Server Machine is live!\nMinecraft Server is RUNNING", 200),
     "starting": ("Server Machine is live!\nMinecraft Server is STARTING", 205),
@@ -276,11 +302,9 @@ STATUS_RESPONSES = {
 
 def _authorized_for_public_api() -> bool:
     """Allow bearer token access for lightweight remote control endpoints."""
+    admin_key, auth_key = secret_store.get_keys()
     provided = request.headers.get("Authorization", "")
-    tokens = [
-        settings.AUTH_KEY,
-        settings.ADMIN_AUTH_KEY,
-    ]
+    tokens = [auth_key, admin_key]
     return any(provided == f"Bearer {token}" for token in tokens if token)
 
 
@@ -309,9 +333,16 @@ def _check_authentication():
         # For page requests, redirect to login
         return redirect(url_for('login'))
 
+    if session.get("authenticated") and not secret_store.has_keys():
+        # Block access to everything except the key setup endpoints until keys are configured
+        if request.path not in KEY_SETUP_SAFE_PATHS and not request.path.startswith("/static/"):
+            if request.path.startswith("/api/") or request.path.startswith("/socket.io"):
+                return jsonify({'error': 'AUTH_KEYS_REQUIRED'}), 428
+            return redirect(url_for('index'))
+
     # Additional API auth check if ADMIN_AUTH_KEY is set (for external API access)
     if request.path.startswith('/api/'):
-        expected = settings.ADMIN_AUTH_KEY
+        expected, _ = secret_store.get_keys()
         if expected:
             provided = request.headers.get('Authorization', '')
             if provided and provided != f'Bearer {expected}':
@@ -393,10 +424,6 @@ def _profile_from_request(data: Dict) -> ServerProfile:
     if not name:
         raise ValueError("Profile name is required.")
 
-    admin_auth_key = (data.get("admin_auth_key") or "").strip()
-    if not admin_auth_key:
-        raise ValueError("ADMIN_AUTHKEY is required.")
-
     existing_profile = store.get_profile(name)
     server_path = Path(_validated_server_path(data.get("server_path", "")))
     _ensure_server_properties_exists(server_path)
@@ -411,9 +438,6 @@ def _profile_from_request(data: Dict) -> ServerProfile:
         rcon_password=rcon_password,
         rcon_port=settings.RCON_PORT,
         query_port=settings.QUERY_PORT,
-        admin_auth_key=admin_auth_key,
-        auth_key=data.get("auth_key", ""),
-        shutdown_key=data.get("shutdown_key", ""),
         inactivity_limit=int(data.get("inactivity_limit", 1800)),
         polling_interval=int(data.get("polling_interval", 60)),
         pc_sleep_after_inactivity=sleep_flag,
@@ -440,22 +464,16 @@ def _enforce_rcon_defaults(profile: ServerProfile) -> ServerProfile:
     return profile
 
 
-def _shutdown_key(profile: Optional[ServerProfile]) -> str:
-    """Return the shutdown key, falling back to ADMIN_AUTH_KEY when blank."""
-
-    if profile and profile.shutdown_key:
-        return profile.shutdown_key
-
-    return os.environ.get("SHUTDOWN_AUTH_KEY") or settings.ADMIN_AUTH_KEY
-
-
 def _apply_profile_environment(profile: ServerProfile) -> None:
     """Set process env vars to match the selected profile."""
+    admin_key, auth_key = secret_store.get_keys()
     os.environ["RCON_PASSWORD"] = profile.rcon_password
-    os.environ["AUTHKEY_SERVER_WEBSITE"] = profile.auth_key
-    os.environ["SHUTDOWN_AUTH_KEY"] = _shutdown_key(profile)
     os.environ["QUERY_PORT"] = str(profile.query_port)
     os.environ["RCON_PORT"] = str(profile.rcon_port)
+    if admin_key:
+        os.environ["ADMIN_AUTH_KEY"] = admin_key
+    if auth_key:
+        os.environ["AUTHKEY_SERVER_WEBSITE"] = auth_key
 
 
 def _is_api_running(profile: Optional[ServerProfile]) -> bool:
@@ -969,7 +987,8 @@ def login():
 def auth_status():
     """Check if password has been set."""
     return jsonify({
-        'has_password': auth_handler.has_password()
+        'has_password': auth_handler.has_password(),
+        'has_keys': secret_store.has_keys(),
     })
 
 
@@ -1006,7 +1025,8 @@ def auth_login():
         logger.info("User logged in successfully")
         return jsonify({'success': True})
     else:
-        logger.warning("Failed login attempt")
+        # Include the IP address of the incoming request in the log for security auditing
+        logger.warning("Failed login attempt from IP: %s", request.remote_addr)
         return jsonify({'error': 'Invalid password'}), 401
 
 
@@ -1018,10 +1038,61 @@ def auth_logout():
     return jsonify({'success': True})
 
 
+@app.route("/api/auth-keys/status")
+def auth_keys_status():
+    """Return whether global AUTH/ADMIN keys are configured (values included for logged-in users)."""
+    admin_key, auth_key = secret_store.get_keys()
+    configured = bool(admin_key and auth_key)
+    response = {
+        "configured": configured,
+        "admin_auth_key_set": bool(admin_key),
+        "auth_key_set": bool(auth_key),
+    }
+    if session.get("authenticated"):
+        response.update({"admin_auth_key": admin_key, "auth_key": auth_key})
+    return jsonify(response)
+
+
+@app.route("/api/auth-keys", methods=["POST"])
+def set_auth_keys():
+    """Persist the global ADMIN_AUTH_KEY and AUTH_KEY secrets."""
+    if not session.get('authenticated'):
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    payload = request.get_json(force=True) or {}
+    admin_key = str(payload.get("admin_auth_key", "")).strip()
+    auth_key = str(payload.get("auth_key", "")).strip()
+
+    if not admin_key or not auth_key:
+        return jsonify({"error": "Both ADMIN_AUTH_KEY and AUTH_KEY are required"}), 400
+
+    try:
+        secret_store.save_keys(admin_key, auth_key)
+        _sync_auth_keys_from_store()
+        logger.info("Global auth keys saved to secret store")
+    except ValueError as exc:
+        return jsonify({"error": str(exc)}), 400
+    except Exception as exc:  # pragma: no cover - defensive guard
+        logger.error("Failed to persist auth keys: %s", exc)
+        return jsonify({"error": "Failed to save auth keys"}), 500
+
+    return jsonify({
+        "success": True,
+        "configured": True,
+        "admin_auth_key": admin_key,
+        "auth_key": auth_key,
+    })
+
+
 # ---------- Routes ----------
 @app.route("/")
 def index():
-    return render_template("control_panel.html", auth_key=settings.ADMIN_AUTH_KEY)
+    admin_key, auth_key = secret_store.get_keys()
+    return render_template(
+        "control_panel.html",
+        admin_auth_key=admin_key,
+        auth_key=auth_key,
+    )
 
 
 @app.route("/api/status")
