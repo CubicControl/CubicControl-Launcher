@@ -255,18 +255,18 @@ class CaddyManager:
             self._log_dir = Path(sys.executable).parent / "logs"
         else:
             self._log_dir = Path(__file__).resolve().parents[2] / "logs"
-            self._log_dir.mkdir(parents=True, exist_ok=True)
-            self._log_file_path: Optional[Path] = None
-            self._log_file_handle: Optional[object] = None
-            self._log_thread: Optional[threading.Thread] = None
-            self._process: Optional[subprocess.Popen] = None
-            self._pid: Optional[int] = None
-            self._binary_path: Optional[Path] = None
-            self._hostname: Optional[str] = None
-            self._last_start_errors: list[str] = []
-            self._last_start_exit_code: Optional[int] = None
-            self._last_start_log_tail: list[str] = []
-            self._last_start_had_failure: bool = False
+        self._log_dir.mkdir(parents=True, exist_ok=True)
+        self._log_file_path: Optional[Path] = None
+        self._log_file_handle: Optional[object] = None
+        self._log_thread: Optional[threading.Thread] = None
+        self._process: Optional[subprocess.Popen] = None
+        self._pid: Optional[int] = None
+        self._binary_path: Optional[Path] = None
+        self._hostname: Optional[str] = None
+        self._last_start_errors: list[str] = []
+        self._last_start_exit_code: Optional[int] = None
+        self._last_start_log_tail: list[str] = []
+        self._last_start_had_failure: bool = False
 
     def _discover_binary(self) -> Optional[Path]:
         candidate = shutil.which("caddy")

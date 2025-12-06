@@ -917,3 +917,41 @@ Console close event received (0); shutting down.
 2025-12-06 04:31:31,636 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
 2025-12-06 04:31:31,648 - control_panel - INFO - Playit process STOPPED for PID 29064
 2025-12-06 04:31:31,653 - control_panel - INFO - Caddy process STOPPED for PID 31904
+2025-12-06 04:35:45,614 - control_panel - INFO - Starting CubicControl
+2025-12-06 04:35:45,614 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 04:35:49,114 - control_panel - INFO - Caddy STARTED with PID 26744
+2025-12-06 04:35:49,178 - control_panel - INFO - Playit.exe STARTED with PID 5896
+2025-12-06 04:35:49,181 - control_panel - INFO - Controller STARTED for profile 'TEST'
+2025-12-06 04:35:49,181 - control_panel - INFO - Starting control panel UI
+2025-12-06 04:35:56,960 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 04:35:56,961 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 04:35:58,973 - control_panel - INFO - Controller STOPPED for profile 'TEST'
+2025-12-06 04:36:01,018 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 04:36:01,030 - control_panel - INFO - Playit process STOPPED for PID 5896
+2025-12-06 04:36:01,035 - control_panel - INFO - Caddy process STOPPED for PID 26744
+2025-12-06 04:36:30,185 - control_panel - INFO - Starting CubicControl
+2025-12-06 04:36:30,185 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 04:36:33,643 - control_panel - INFO - Caddy STARTED with PID 23016
+2025-12-06 04:36:33,701 - control_panel - INFO - Playit.exe STARTED with PID 32240
+2025-12-06 04:36:33,703 - control_panel - INFO - Controller STARTED for profile 'TEST'
+2025-12-06 04:36:33,703 - control_panel - INFO - Starting control panel UI
+2025-12-06 04:36:43,371 - control_panel - INFO - User logged in successfully
+2025-12-06 04:36:45,851 - control_panel - INFO - Client connected to follow logs for profile: TEST
+2025-12-06 04:36:50,607 - control_panel - INFO - Caddy process STOPPED for PID 23016
+2025-12-06 04:36:55,556 - control_panel - INFO - Playit process STOPPED for PID 32240
+2025-12-06 04:36:59,245 - control_panel - INFO - Controller STOPPED for profile 'TEST'
+2025-12-06 04:37:07,655 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 04:37:07,655 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 04:37:09,693 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 04:37:20,928 - control_panel - INFO - Starting CubicControl
+2025-12-06 04:37:20,928 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 04:37:24,462 - control_panel - INFO - Caddy STARTED with PID 30008
+2025-12-06 04:37:24,509 - control_panel - INFO - Playit.exe STARTED with PID 14576
+2025-12-06 04:37:24,511 - control_panel - INFO - Controller STARTED for profile 'TEST'
+2025-12-06 04:37:24,512 - control_panel - INFO - Starting control panel UI
+2025-12-06 04:37:30,838 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 04:37:30,838 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 04:37:32,848 - control_panel - INFO - Controller STOPPED for profile 'TEST'
+2025-12-06 04:37:34,890 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 04:37:34,899 - control_panel - INFO - Playit process STOPPED for PID 14576
+2025-12-06 04:37:34,902 - control_panel - INFO - Caddy process STOPPED for PID 30008

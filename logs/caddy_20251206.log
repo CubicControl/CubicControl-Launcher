@@ -950,3 +950,72 @@ CADDY START 2025-12-06 04:30:44
 [2025-12-06 04:30:44] {"level":"info","ts":1764995444.1034956,"msg":"serving initial configuration"}
 [2025-12-06 04:30:44] {"level":"info","ts":1764995444.1059954,"logger":"tls","msg":"storage cleaning happened too recently; skipping for now","storage":"FileStorage:C:\\Users\\romai\\AppData\\Roaming\\Caddy","instance":"3acdda7e-315f-47e7-a0dd-9e5fe5f44e19","try_again":1765081844.1059954,"try_again_in":86400}
 [2025-12-06 04:30:44] {"level":"info","ts":1764995444.1059954,"logger":"tls","msg":"finished cleaning storage units"}
+
+================================================================================
+CADDY START 2025-12-06 04:35:46
+================================================================================
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1631625,"msg":"maxprocs: Leaving GOMAXPROCS=24: CPU quota undefined"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1631625,"msg":"GOMEMLIMIT is updated","package":"github.com/KimMachineGun/automemlimit/memlimit","GOMEMLIMIT":30679629004,"previous":9223372036854775807}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1631625,"msg":"using config from file","file":"B:\\Prog Projects\\MINREFACT\\ServerSide\\data\\Caddyfile"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1636622,"msg":"adapted config to JSON","adapter":"caddyfile"}
+[2025-12-06 04:35:46] {"level":"warn","ts":1764995746.1636622,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"B:\\Prog Projects\\MINREFACT\\ServerSide\\data\\Caddyfile","line":2}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.170561,"logger":"admin","msg":"admin endpoint started","address":"localhost:2019","enforce_origin":false,"origins":["//localhost:2019","//[::1]:2019","//127.0.0.1:2019"]}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.170561,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0xc000459000"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.170561,"logger":"http.auto_https","msg":"server is listening only on the HTTPS port but has no TLS connection policies; adding one to enable TLS","server_name":"srv0","https_port":443}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.170561,"logger":"http.auto_https","msg":"enabling automatic HTTP->HTTPS redirects","server_name":"srv0"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.170561,"logger":"http","msg":"enabling HTTP/3 listener","addr":":443"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1726727,"logger":"http.log","msg":"server running","name":"srv0","protocols":["h1","h2","h3"]}
+[2025-12-06 04:35:46] {"level":"warn","ts":1764995746.1726727,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":80"}
+[2025-12-06 04:35:46] {"level":"warn","ts":1764995746.1726727,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":80"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1726727,"logger":"http.log","msg":"server running","name":"remaining_auto_https_redirects","protocols":["h1","h2","h3"]}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1726727,"logger":"http","msg":"enabling automatic TLS certificate management","domains":["jmgaming.chickenkiller.com"]}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1736732,"msg":"autosaved config (load with --resume flag)","file":"C:\\Users\\romai\\AppData\\Roaming\\Caddy\\autosave.json"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1736732,"msg":"serving initial configuration"}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1741729,"logger":"tls","msg":"storage cleaning happened too recently; skipping for now","storage":"FileStorage:C:\\Users\\romai\\AppData\\Roaming\\Caddy","instance":"3acdda7e-315f-47e7-a0dd-9e5fe5f44e19","try_again":1765082146.1741729,"try_again_in":86400}
+[2025-12-06 04:35:46] {"level":"info","ts":1764995746.1746728,"logger":"tls","msg":"finished cleaning storage units"}
+
+================================================================================
+CADDY START 2025-12-06 04:36:30
+================================================================================
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.6995544,"msg":"maxprocs: Leaving GOMAXPROCS=24: CPU quota undefined"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.6995544,"msg":"GOMEMLIMIT is updated","package":"github.com/KimMachineGun/automemlimit/memlimit","GOMEMLIMIT":30679629004,"previous":9223372036854775807}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.6995544,"msg":"using config from file","file":"B:\\Prog Projects\\MINREFACT\\ServerSide\\data\\Caddyfile"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7005541,"msg":"adapted config to JSON","adapter":"caddyfile"}
+[2025-12-06 04:36:30] {"level":"warn","ts":1764995790.7005541,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"B:\\Prog Projects\\MINREFACT\\ServerSide\\data\\Caddyfile","line":2}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.707555,"logger":"admin","msg":"admin endpoint started","address":"localhost:2019","enforce_origin":false,"origins":["//127.0.0.1:2019","//localhost:2019","//[::1]:2019"]}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.707555,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0xc0001a7100"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.707555,"logger":"http.auto_https","msg":"server is listening only on the HTTPS port but has no TLS connection policies; adding one to enable TLS","server_name":"srv0","https_port":443}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.707555,"logger":"http.auto_https","msg":"enabling automatic HTTP->HTTPS redirects","server_name":"srv0"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7080548,"logger":"http","msg":"enabling HTTP/3 listener","addr":":443"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7080548,"logger":"http.log","msg":"server running","name":"srv0","protocols":["h1","h2","h3"]}
+[2025-12-06 04:36:30] {"level":"warn","ts":1764995790.7080548,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":80"}
+[2025-12-06 04:36:30] {"level":"warn","ts":1764995790.7080548,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":80"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7080548,"logger":"http.log","msg":"server running","name":"remaining_auto_https_redirects","protocols":["h1","h2","h3"]}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7080548,"logger":"http","msg":"enabling automatic TLS certificate management","domains":["jmgaming.chickenkiller.com"]}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7090542,"msg":"autosaved config (load with --resume flag)","file":"C:\\Users\\romai\\AppData\\Roaming\\Caddy\\autosave.json"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7090542,"msg":"serving initial configuration"}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7100554,"logger":"tls","msg":"storage cleaning happened too recently; skipping for now","storage":"FileStorage:C:\\Users\\romai\\AppData\\Roaming\\Caddy","instance":"3acdda7e-315f-47e7-a0dd-9e5fe5f44e19","try_again":1765082190.7100554,"try_again_in":86400}
+[2025-12-06 04:36:30] {"level":"info","ts":1764995790.7100554,"logger":"tls","msg":"finished cleaning storage units"}
+
+================================================================================
+CADDY START 2025-12-06 04:37:21
+================================================================================
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5093286,"msg":"maxprocs: Leaving GOMAXPROCS=24: CPU quota undefined"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5093286,"msg":"GOMEMLIMIT is updated","package":"github.com/KimMachineGun/automemlimit/memlimit","GOMEMLIMIT":30679629004,"previous":9223372036854775807}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5093286,"msg":"using config from file","file":"B:\\Prog Projects\\MINREFACT\\ServerSide\\data\\Caddyfile"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5098293,"msg":"adapted config to JSON","adapter":"caddyfile"}
+[2025-12-06 04:37:21] {"level":"warn","ts":1764995841.5098293,"msg":"Caddyfile input is not formatted; run 'caddy fmt --overwrite' to fix inconsistencies","adapter":"caddyfile","file":"B:\\Prog Projects\\MINREFACT\\ServerSide\\data\\Caddyfile","line":2}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5173287,"logger":"admin","msg":"admin endpoint started","address":"localhost:2019","enforce_origin":false,"origins":["//localhost:2019","//[::1]:2019","//127.0.0.1:2019"]}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.51783,"logger":"http.auto_https","msg":"server is listening only on the HTTPS port but has no TLS connection policies; adding one to enable TLS","server_name":"srv0","https_port":443}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.51783,"logger":"http.auto_https","msg":"enabling automatic HTTP->HTTPS redirects","server_name":"srv0"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.51783,"logger":"tls.cache.maintenance","msg":"started background certificate maintenance","cache":"0xc000814380"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.51783,"logger":"http","msg":"enabling HTTP/3 listener","addr":":443"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5183296,"logger":"http.log","msg":"server running","name":"srv0","protocols":["h1","h2","h3"]}
+[2025-12-06 04:37:21] {"level":"warn","ts":1764995841.5183296,"logger":"http","msg":"HTTP/2 skipped because it requires TLS","network":"tcp","addr":":80"}
+[2025-12-06 04:37:21] {"level":"warn","ts":1764995841.5183296,"logger":"http","msg":"HTTP/3 skipped because it requires TLS","network":"tcp","addr":":80"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5183296,"logger":"http.log","msg":"server running","name":"remaining_auto_https_redirects","protocols":["h1","h2","h3"]}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5183296,"logger":"http","msg":"enabling automatic TLS certificate management","domains":["jmgaming.chickenkiller.com"]}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5193303,"msg":"autosaved config (load with --resume flag)","file":"C:\\Users\\romai\\AppData\\Roaming\\Caddy\\autosave.json"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5193303,"msg":"serving initial configuration"}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5203378,"logger":"tls","msg":"storage cleaning happened too recently; skipping for now","storage":"FileStorage:C:\\Users\\romai\\AppData\\Roaming\\Caddy","instance":"3acdda7e-315f-47e7-a0dd-9e5fe5f44e19","try_again":1765082241.5203378,"try_again_in":86400}
+[2025-12-06 04:37:21] {"level":"info","ts":1764995841.5203378,"logger":"tls","msg":"finished cleaning storage units"}

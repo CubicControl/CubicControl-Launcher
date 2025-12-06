@@ -3060,6 +3060,9 @@
   ('src.config.auth_handler',
    'B:\\Prog Projects\\MINREFACT\\ServerSide\\src\\config\\auth_handler.py',
    'PYMODULE'),
+  ('src.config.caddy_handler',
+   'B:\\Prog Projects\\MINREFACT\\ServerSide\\src\\config\\caddy_handler.py',
+   'PYMODULE'),
   ('src.config.config_file_handler',
    'B:\\Prog '
    'Projects\\MINREFACT\\ServerSide\\src\\config\\config_file_handler.py',
