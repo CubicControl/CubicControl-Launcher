@@ -52,6 +52,12 @@ def find_caddy_asset_name(assets, os_name, arch):
     return None
 
 
+def fetch_latest_release() -> dict:
+    response = requests.get(GITHUB_API_LATEST, timeout=30)
+    response.raise_for_status()
+    return response.json()
+
+
 def download_archive(download_url: str) -> Path:
     ext = os.path.splitext(download_url)[1]
     with requests.get(download_url, stream=True, timeout=60) as response:
@@ -87,15 +93,13 @@ def extract_caddy_from_archive(archive_path: Path, target_dir: Path) -> Path:
     return extracted_caddy
 
 
-def download_latest_caddy(target_dir: Path) -> Path:
+def download_latest_caddy(target_dir: Path, release_data: Optional[dict] = None) -> Path:
     """
     Download latest Caddy, extract it to target_dir, and return the path to the caddy binary.
     """
     target_dir.mkdir(parents=True, exist_ok=True)
 
-    response = requests.get(GITHUB_API_LATEST, timeout=30)
-    response.raise_for_status()
-    release = response.json()
+    release = release_data or fetch_latest_release()
 
     assets = release.get("assets", [])
     os_name, arch = _get_os_arch()
@@ -117,6 +121,54 @@ def download_latest_caddy(target_dir: Path) -> Path:
     extracted_caddy.chmod(extracted_caddy.stat().st_mode | 0o111)
     logger.info("Caddy installed at: %s", extracted_caddy)
     return extracted_caddy
+
+
+def _parse_version(version: str) -> Optional[tuple[int, ...]]:
+    cleaned = version.strip()
+    if not cleaned:
+        return None
+    if cleaned.lower().startswith("v"):
+        cleaned = cleaned[1:]
+    cleaned = cleaned.split()[0].split("-")[0]
+    parts: list[int] = []
+    for piece in cleaned.split("."):
+        if not piece.isdigit():
+            break
+        parts.append(int(piece))
+    return tuple(parts) if parts else None
+
+
+def _is_newer_version(latest: str, installed: str) -> bool:
+    latest_parts = _parse_version(latest)
+    installed_parts = _parse_version(installed)
+    if not latest_parts or not installed_parts:
+        return False
+    max_len = max(len(latest_parts), len(installed_parts))
+    latest_list = list(latest_parts) + [0] * (max_len - len(latest_parts))
+    installed_list = list(installed_parts) + [0] * (max_len - len(installed_parts))
+    return tuple(latest_list) > tuple(installed_list)
+
+
+def _get_installed_version(binary_path: Path) -> Optional[str]:
+    try:
+        _ensure_env_path(binary_path)
+        result = subprocess.run(
+            [str(binary_path), "version"],
+            capture_output=True,
+            text=True,
+            check=True,
+            cwd=str(binary_path.parent),
+        )
+        output = (result.stdout or result.stderr or "").strip()
+        if not output:
+            return None
+        first_line = output.splitlines()[0].strip()
+        if not first_line:
+            return None
+        return first_line.split()[0]
+    except Exception as exc:
+        logger.warning("Failed to read installed Caddy version: %s", exc)
+        return None
 
 
 def _read_new_log_lines(log_path: Path, start_offset: int) -> tuple[list[str], int]:
@@ -233,10 +285,13 @@ class CaddyManager:
 
     def ensure_binary(self) -> Path:
         if self.is_available():
-            return Path(self._binary_path)
+            binary = Path(self._binary_path)
+            self._check_for_updates(binary)
+            return binary
 
         logger.info("Caddy not found locally, downloading the latest release...")
-        caddy_binary = download_latest_caddy(self.data_dir)
+        release = fetch_latest_release()
+        caddy_binary = download_latest_caddy(self.data_dir, release_data=release)
         self._binary_path = caddy_binary
         # Only write the Caddyfile on first install (or when missing)
         self._ensure_caddyfile()
@@ -256,6 +311,33 @@ class CaddyManager:
         with open(self.caddyfile_path, "w", encoding="utf-8") as file:
             file.write(caddyfile_content.strip() + "\n")
         logger.info("Caddyfile written to: %s", self.caddyfile_path)
+
+    def _check_for_updates(self, binary_path: Path) -> None:
+        installed_version = _get_installed_version(binary_path)
+        if not installed_version:
+            return
+
+        try:
+            release = fetch_latest_release()
+        except Exception as exc:
+            logger.warning("Unable to fetch latest Caddy release info: %s", exc)
+            return
+
+        latest_version = release.get("tag_name")
+        if not latest_version:
+            return
+
+        if not _is_newer_version(latest_version, installed_version):
+            return
+
+        try:
+            logger.info("New Caddy version %s available (installed: %s), updating...", latest_version, installed_version)
+            updated_binary = download_latest_caddy(self.data_dir, release_data=release)
+            self._binary_path = updated_binary
+            _ensure_env_path(updated_binary)
+            logger.info("Caddy updated to version %s", latest_version)
+        except Exception as exc:
+            logger.warning("Failed to download Caddy update: %s", exc)
 
     def _capture_running_pid(self) -> Optional[int]:
         if self._process and self._process.poll() is None:

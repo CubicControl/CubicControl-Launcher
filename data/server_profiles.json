@@ -1,5 +1,5 @@
 {
-  "active": "Vanilla",
+  "active": "TEST",
   "profiles": {
     "Vanilla": {
       "name": "Vanilla",
@@ -14,6 +14,21 @@
       "pc_sleep_after_inactivity": false,
       "shutdown_app_after_inactivity": true,
       "description": "qweqweqweqwe",
+      "env_scope": "per_server"
+    },
+    "TEST": {
+      "name": "TEST",
+      "server_path": "D:\\MINECRAFT_SERVER_TEST",
+      "server_ip": "localhost",
+      "run_script": "run.bat",
+      "rcon_password": "Y_BqYkbYckrGhaVcTx5IKQ",
+      "rcon_port": 27001,
+      "query_port": 27002,
+      "inactivity_limit": 60,
+      "polling_interval": 10,
+      "pc_sleep_after_inactivity": false,
+      "shutdown_app_after_inactivity": true,
+      "description": "",
       "env_scope": "per_server"
     }
   }

@@ -153,7 +153,8 @@ class ServerProfileStore:
             self.active_profile_name = data.get("active")
             for name, profile_data in profiles_data.items():
                 self._profiles[name] = ServerProfile.from_dict(profile_data)
-                print(f"Loaded active profile: {name}")
+                if name == self.active_profile_name:
+                    print(f"Active profile: {name}")
         except Exception as e:
             print(f"Error loading profiles: {e}")
             import traceback

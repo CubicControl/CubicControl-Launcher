@@ -18,7 +18,7 @@ const propertiesProfileLabel = document.getElementById('properties-profile-label
 const closeDrawerBtn = document.getElementById('close-drawer-btn');
 const addProfileBtn = document.getElementById('add-profile-btn');
 const logoutBtn = document.getElementById('logout-btn');
-const openToolsBtn = document.getElementById('open-tools-btn');
+const editProfileBtn = document.getElementById('edit-profile-btn') || document.getElementById('open-tools-btn');
 const commandForm = document.getElementById('command-form');
 const commandInput = document.getElementById('command-input');
 const dialogOverlay = document.getElementById('dialog-overlay');
@@ -561,7 +561,7 @@ function openProfileTools() {
   if (!name) return setStatus('Choose a profile first', true);
   const found = cachedProfiles.find((p) => p.name === name) || defaultProfile;
   fillFormFromProfile(found);
-  setDrawerMode(`Manage ${name}`, true, name);
+  setDrawerMode(`Edit ${name}`, true, name);
   loadProperties(name);
   toggleDrawer(true);
 }
@@ -582,6 +582,17 @@ async function activateProfile(nameOverride, forceRestart = false) {
   if (!targetName) return;
 
   const sameProfile = targetName.toLowerCase() === activeName.toLowerCase();
+
+  // Confirm switching to a different profile to avoid accidental restarts
+  if (!sameProfile && activeName) {
+    const { confirmed } = await showDialog({
+      title: 'Activate profile',
+      message: `Switch to profile "${targetName}"?`,
+      confirmText: 'Activate',
+      cancelText: 'Cancel',
+    });
+    if (!confirmed) return;
+  }
 
   // If same profile and not forcing, inform and do nothing
   if (sameProfile && !shouldForce) {
@@ -1199,7 +1210,7 @@ function init() {
   document.getElementById('save-props-btn').addEventListener('click', saveProperties);
   if (addProfileBtn) addProfileBtn.addEventListener('click', openNewProfileDrawer);
   if (logoutBtn) logoutBtn.addEventListener('click', logout);
-  if (openToolsBtn) openToolsBtn.addEventListener('click', openProfileTools);
+  if (editProfileBtn) editProfileBtn.addEventListener('click', openProfileTools);
   if (closeDrawerBtn) closeDrawerBtn.addEventListener('click', closeDrawer);
   if (commandForm) commandForm.addEventListener('submit', sendCommand);
   if (saveAuthKeysBtn) saveAuthKeysBtn.addEventListener('click', saveAuthKeys);

@@ -551,7 +551,7 @@ def _controller_running(name: str) -> bool:
 def _start_controller(profile: ServerProfile) -> bool:
     if _controller_running(profile.name):
         return False
-    controller = ServerController(profile)
+    controller = ServerController(profile, shutdown_callback=lambda reason="inactivity": cleanup_on_exit(reason))
     controllers[profile.name] = controller
     thread = controller.start_in_thread()
     controller_threads[profile.name] = thread

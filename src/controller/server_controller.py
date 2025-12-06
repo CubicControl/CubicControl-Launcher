@@ -1,12 +1,13 @@
 import datetime
 import logging
 import os
+import signal
 import subprocess
 import time
 from pathlib import Path
 from threading import Event, Thread
 from time import sleep
-from typing import Optional
+from typing import Callable, Optional
 
 import psutil
 from mcstatus import JavaServer
@@ -18,9 +19,16 @@ from src.interface.server_profiles import ServerProfile
 class ServerController:
     """Background watcher that monitors server activity and manages shutdown."""
 
-    def __init__(self, profile: ServerProfile, *, log_dir: Optional[Path] = None):
+    def __init__(
+        self,
+        profile: ServerProfile,
+        *,
+        log_dir: Optional[Path] = None,
+        shutdown_callback: Optional[Callable[[str], None]] = None,
+    ):
         self.profile = profile
         self.stop_event = Event()
+        self.shutdown_callback = shutdown_callback
 
         log_directory = log_dir or profile.controller_log_dir
         log_directory.mkdir(parents=True, exist_ok=True)
@@ -136,7 +144,7 @@ class ServerController:
 
             # Terminate the hosting process if configured
             if getattr(self.profile, "shutdown_app_after_inactivity", False):
-                self.logger.info("Inactivity limit reached – shutting down control panel process.")
+                self.logger.info("Inactivity limit reached - shutting down control panel process.")
                 self._schedule_app_termination()
 
             return True
@@ -183,7 +191,7 @@ class ServerController:
         Thread(target=self._terminate_host_application, args=(delay,), daemon=True).start()
 
     def _terminate_host_application(self, delay: float) -> None:
-        """Kill the current process tree to close the control panel and its console."""
+        """Close the control panel process, preferring graceful cleanup first."""
         if delay:
             sleep(delay)
 
@@ -191,13 +199,44 @@ class ServerController:
             current = psutil.Process(os.getpid())
             self.logger.info("Closing control panel (PID %s) due to inactivity.", current.pid)
 
-            # Attempt graceful termination first
+            # Prefer reusing the main app cleanup so Playit, Caddy, etc. are stopped cleanly
+            if self.shutdown_callback:
+                try:
+                    self.shutdown_callback("inactivity")
+                except Exception as exc:
+                    self.logger.warning("Shutdown callback raised an exception: %s", exc)
+                try:
+                    current.wait(timeout=5)
+                    return
+                except psutil.TimeoutExpired:
+                    self.logger.warning("Process still running after cleanup callback; sending signals.")
+
+            # Attempt graceful shutdown via signals so the main process can run cleanup handlers
+            signaled = False
+            for sig in (getattr(signal, "SIGTERM", None), getattr(signal, "SIGINT", None), getattr(signal, "SIGBREAK", None)):
+                if sig is None:
+                    continue
+                try:
+                    os.kill(current.pid, sig)
+                    signaled = True
+                    break
+                except Exception as exc:
+                    self.logger.warning("Failed to send signal %s to control panel: %s", sig, exc)
+
+            if signaled:
+                try:
+                    current.wait(timeout=10)
+                    return
+                except psutil.TimeoutExpired:
+                    self.logger.warning("Graceful shutdown timed out; forcing process termination.")
+
+            # Fall back to process termination
             current.terminate()
             try:
                 current.wait(timeout=5)
                 return
             except psutil.TimeoutExpired:
-                self.logger.warning("Graceful shutdown timed out; forcing process termination.")
+                self.logger.warning("Terminate() timed out; killing process tree.")
 
             # Fall back to killing the full process tree
             for child in current.children(recursive=True):
