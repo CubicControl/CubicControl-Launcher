@@ -135,12 +135,8 @@ class ServerController:
 
             # Sleep PC if configured
             if self.profile.pc_sleep_after_inactivity:
-                self.logger.info("Initiating system sleep...")
-                sleep(2)
-                try:
-                    os.system("rundll32.exe powrprof.dll,SetSuspendState 0,1,0")
-                except Exception as exc:
-                    self.logger.error(f"Failed to sleep system: {exc}")
+                self.logger.info("Queuing system sleep after control panel exits...")
+                self._schedule_sleep_after_exit()
 
             # Terminate the hosting process if configured
             if getattr(self.profile, "shutdown_app_after_inactivity", False):
@@ -189,6 +185,26 @@ class ServerController:
             return
         self._app_shutdown_scheduled = True
         Thread(target=self._terminate_host_application, args=(delay,), daemon=True).start()
+
+    def _schedule_sleep_after_exit(self, delay_seconds: float = 2.0) -> None:
+        """Spawn a helper that waits for this process to exit, then sleeps the PC."""
+        if getattr(self, "_sleep_scheduled", False):
+            return
+        self._sleep_scheduled = True
+        pid = os.getpid()
+        script = (
+            f"while (Get-Process -Id {pid} -ErrorAction SilentlyContinue) "
+            "{ Start-Sleep -Milliseconds 500 }; "
+            f"Start-Sleep -Seconds {delay_seconds}; "
+            "rundll32.exe powrprof.dll,SetSuspendState 0,1,0"
+        )
+        try:
+            subprocess.Popen(
+                ["powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", script],
+                creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+            )
+        except Exception as exc:
+            self.logger.error(f"Failed to schedule system sleep: {exc}")
 
     def _terminate_host_application(self, delay: float) -> None:
         """Close the control panel process, preferring graceful cleanup first."""

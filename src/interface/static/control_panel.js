@@ -411,8 +411,15 @@ function fillFormFromProfile(profile) {
 }
 
 async function refreshStatus() {
-  const res = await fetch('/api/status', { headers: authHeaders() });
-  const data = await res.json();
+  let data;
+  try {
+    const res = await fetch('/api/status', { headers: authHeaders() });
+    data = await res.json();
+  } catch (err) {
+    console.error('Failed to refresh status', err);
+    setStatus('Unable to refresh status', true);
+    return lastStatus || {};
+  }
   lastStatus = data;
   cachedProfiles = data.profiles || [];
   const previousSelection = selectedProfile || profileSelect.value;

@@ -150,6 +150,7 @@ def _is_newer_version(latest: str, installed: str) -> bool:
 
 
 def _get_installed_version(binary_path: Path) -> Optional[str]:
+    # Version probing is optional; avoid destabilizing running instances.
     try:
         _ensure_env_path(binary_path)
         result = subprocess.run(
@@ -167,7 +168,7 @@ def _get_installed_version(binary_path: Path) -> Optional[str]:
             return None
         return first_line.split()[0]
     except Exception as exc:
-        logger.warning("Failed to read installed Caddy version: %s", exc)
+        logger.info("Skipping Caddy version read: %s", exc)
         return None
 
 
@@ -224,15 +225,17 @@ def _prompt_hostname() -> str:
 
 def _verify_binary(candidate: Path) -> bool:
     try:
+        _ensure_env_path(candidate)
         subprocess.run(
             [str(candidate), "version"],
             capture_output=True,
             text=True,
             check=True,
+            cwd=str(candidate.parent),
         )
         return True
     except Exception as exc:
-        logger.warning("Caddy found but failed to run: %s", exc)
+        logger.info("Caddy version check failed (continuing with existing binary): %s", exc)
         return False
 
 
@@ -269,25 +272,43 @@ class CaddyManager:
         self._last_start_had_failure: bool = False
 
     def _discover_binary(self) -> Optional[Path]:
-        candidate = shutil.which("caddy")
-        if candidate:
-            return Path(candidate)
+        # Prefer bundled/downloaded copy; avoid external shims that may spawn extra processes.
+        if self._binary_path and Path(self._binary_path).exists():
+            return Path(self._binary_path)
         if self.local_caddy_path.exists():
             return self.local_caddy_path
+        candidate = shutil.which("caddy")
+        if candidate and not getattr(sys, "frozen", False):
+            # In dev, allow using PATH-based Caddy; in frozen builds always download local copy.
+            return Path(candidate)
         return None
 
     def is_available(self) -> bool:
-        candidate = self._discover_binary()
-        if candidate and _verify_binary(candidate):
-            self._binary_path = candidate
+        # If we have a known binary path that still exists, trust it.
+        if self._binary_path and Path(self._binary_path).exists():
             return True
+        # If already running, treat as available and set the path if possible.
+        running_pid = self._capture_running_pid()
+        if running_pid:
+            candidate = self._discover_binary()
+            if candidate:
+                self._binary_path = candidate
+            return True
+        # Prefer local bundled copy without strict version check to avoid repeated spawns.
+        if self.local_caddy_path.exists():
+            self._binary_path = self.local_caddy_path
+            return True
+        # In dev, allow PATH-based Caddy (best-effort).
+        if not getattr(sys, "frozen", False):
+            candidate = shutil.which("caddy")
+            if candidate:
+                self._binary_path = Path(candidate)
+                return True
         return False
 
     def ensure_binary(self) -> Path:
         if self.is_available():
-            binary = Path(self._binary_path)
-            self._check_for_updates(binary)
-            return binary
+            return Path(self._binary_path)
 
         logger.info("Caddy not found locally, downloading the latest release...")
         release = fetch_latest_release()
@@ -462,6 +483,7 @@ class CaddyManager:
             self._last_start_exit_code = None
             self._last_start_log_tail = []
             self._last_start_had_failure = False
+            logger.info("Caddy already running (PID %s); skipping start.", self._pid)
             return False
 
         binary_path = self.ensure_binary()
@@ -514,9 +536,11 @@ class CaddyManager:
 
     def stop(self) -> bool:
         if not self.is_running():
+            # Best-effort: try to kill by executable name/path even if we lost the PID
+            killed = self._terminate_additional_processes(kill_all=True)
             self._process = None
             self._pid = None
-            return False
+            return bool(killed)
 
         pid = self._pid
         proc = self._process
@@ -556,7 +580,31 @@ class CaddyManager:
         self._process = None
         self._pid = None
         logger.info("Caddy process STOPPED for PID %s", pid)
+        # Best-effort: terminate any other Caddy processes spawned from the same binary
+        self._terminate_additional_processes(kill_all=True)
         return True
+
+    def _terminate_additional_processes(self, kill_all: bool = False) -> int:
+        """Kill any stray Caddy processes that share the same executable path."""
+        terminated = 0
+        try:
+            target_path = str(Path(self._binary_path).resolve()) if self._binary_path else None
+            for proc in psutil.process_iter(["pid", "name", "exe"]):
+                try:
+                    exe = proc.info.get("exe")
+                    name = (proc.info.get("name") or "").lower()
+                    same_exe = exe and target_path and str(Path(exe).resolve()) == target_path
+                    is_caddy = "caddy" in name
+                    if same_exe or (kill_all and is_caddy):
+                        if self._pid and proc.pid == self._pid:
+                            continue
+                        proc.terminate()
+                        terminated += 1
+                except Exception:
+                    continue
+        except Exception:
+            pass
+        return terminated
 
     def status(self) -> dict:
         if not self._log_file_path:

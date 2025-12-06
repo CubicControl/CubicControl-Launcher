@@ -3073,6 +3073,10 @@
   ('src.config.settings',
    'B:\\Prog Projects\\MINREFACT\\ServerSide\\src\\config\\settings.py',
    'PYMODULE'),
+  ('src.config.task_scheduler_handler',
+   'B:\\Prog '
+   'Projects\\MINREFACT\\ServerSide\\src\\config\\task_scheduler_handler.py',
+   'PYMODULE'),
   ('src.controller',
    'B:\\Prog Projects\\MINREFACT\\ServerSide\\src\\controller\\__init__.py',
    'PYMODULE'),

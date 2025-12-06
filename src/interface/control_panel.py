@@ -28,11 +28,41 @@ from src.config.auth_handler import AuthHandler
 from src.config.caddy_handler import CaddyManager
 from src.config.config_file_handler import ConfigFileHandler
 from src.config.secret_store import SecretStore
+from src.config.task_scheduler_handler import TaskSchedulerHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
 
 APP_DIR = Path(__file__).resolve().parent
+BASE_DIR = APP_DIR.parent
+
+
+def _current_app_executable() -> Optional[Path]:
+    """Return the path to the running executable when frozen; otherwise None."""
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable)
+    return None
+
+
+def _close_browser_windows(title_substring: str = "CubicControl Server Manager") -> None:
+    """
+    Best-effort close any browser windows whose main title contains the panel title.
+    Only used on Windows; harmlessly skipped elsewhere.
+    """
+    if not sys.platform.startswith("win"):
+        return
+    try:
+        ps_command = (
+            "Get-Process | Where-Object { $_.MainWindowTitle -like '*" + title_substring + "*' } "
+            "| ForEach-Object { $_.CloseMainWindow(); Start-Sleep -Milliseconds 500; "
+            "if (-not $_.HasExited) { $_.Kill() } }"
+        )
+        subprocess.run(
+            ["powershell", "-NoProfile", "-WindowStyle", "Hidden", "-Command", ps_command],
+            creationflags=getattr(subprocess, "CREATE_NO_WINDOW", 0),
+        )
+    except Exception as exc:
+        logger.warning("Failed to close browser windows: %s", exc)
 
 warnings.filterwarnings(
     "ignore",
@@ -521,7 +551,7 @@ def _start_playit_process(path: Optional[str] = None) -> bool:
         env=env,
         creationflags=creationflags
     )
-    logger.info("Playit.exe STARTED with PID %s", playit_process.pid)
+    logger.info("Playit process STARTED with PID %s", playit_process.pid)
     return True
 
 
@@ -1544,11 +1574,6 @@ def wait_for_server(url, timeout=30):
         time.sleep(0.5)
     return False
 
-def open_browser_when_ready():
-    url = "http://localhost:38000"
-    if wait_for_server(url):
-        webbrowser.open(url)
-
 _shutdown_in_progress = False
 
 
@@ -1560,6 +1585,16 @@ def cleanup_on_exit(reason: str = "shutdown"):
     _shutdown_in_progress = True
 
     logger.info("Application shutting down (%s), cleaning up...", reason)
+    try:
+        socketio.emit("app_shutdown", {"reason": reason}, broadcast=True, namespace="/")
+        try:
+            socketio.sleep(0)
+        except Exception:
+            pass
+    except Exception:
+        pass
+    # Give the browser a brief moment to receive the shutdown event before tearing everything down
+    time.sleep(0.2)
     profile = store.active_profile
 
     try:
@@ -1628,8 +1663,19 @@ def main():
         except Exception:
             pass
         return
-    threading.Thread(target=open_browser_when_ready, daemon=True).start()
+    app_exe = _current_app_executable()
+    if app_exe:
+        try:
+            scheduler = TaskSchedulerHandler(
+                app_exe,
+            )
+            scheduler.ensure_task()
+        except Exception as exc:
+            logger.warning("Scheduler setup failed: %s", exc)
+    else:
+        logger.info("Skipping scheduler setup (development mode).")
     logger.info("Starting control panel UI")
+    print("Access control panel at: http://localhost:38000/", flush=True)
     socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)
 
 
