@@ -2,43 +2,27 @@ import os
 import platform
 import shutil
 import subprocess
+import sys
 import tarfile
 import tempfile
+import signal
+import time
 import zipfile
+import threading
+from datetime import datetime
 from pathlib import Path
-from time import sleep
+from typing import Optional
 
+import psutil
 import requests
 
+from src.logging_utils.logger import logger
+
 GITHUB_API_LATEST = "https://api.github.com/repos/caddyserver/caddy/releases/latest"
-data_folder = Path(__file__).parent.parent.parent / "data"
-local_caddy_path = data_folder / "caddy.exe"
+CADDY_PROXY_TARGET = "127.0.0.1:38000"
 
-def _is_caddy_available() -> bool:
-    # Check if "caddy" is on PATH
-    caddy_on_path = shutil.which("caddy")
 
-    # Fallback to local data folder if not on PATH
-    if not caddy_on_path:
-        if not local_caddy_path.exists():
-            return False
-        candidate_path = str(local_caddy_path)
-    else:
-        candidate_path = caddy_on_path
-
-    try:
-        subprocess.run(
-            [candidate_path, "version"],
-            capture_output=True,
-            text=True,
-            check=True
-        )
-        return True
-    except Exception as e:
-        print("Caddy found but failed to run:", e)
-        return False
-
-def _get_os_arch():
+def _get_os_arch() -> tuple[str, str]:
     system = platform.system().lower()
     machine = platform.machine().lower()
 
@@ -58,92 +42,44 @@ def _get_os_arch():
 
 
 def find_caddy_asset_name(assets, os_name, arch):
-    """
-    Pick the correct Caddy asset for the given OS and arch.
-    Only return .zip or .tar.gz files.
-    """
+    """Pick the correct Caddy asset for the given OS and arch."""
     for asset in assets:
         name = asset["name"].lower()
         if os_name in name and arch in name:
             if name.endswith(".zip") or name.endswith(".tar.gz"):
-                print("Selected asset:", name)
+                logger.info("Selected Caddy asset: %s", name)
                 return asset
     return None
 
 
-def download_latest_caddy(target_dir: Path) -> Path:
-    """
-    Download latest Caddy, extract it to target_dir, and return the path
-    to the caddy binary.
-    """
-    target_dir.mkdir(parents=True, exist_ok=True)
-
-    # 1. Get latest release metadata
-    resp = requests.get(GITHUB_API_LATEST, timeout=30)
-    resp.raise_for_status()
-    release = resp.json()
-
-    assets = release.get("assets", [])
-    os_name, arch = _get_os_arch()
-    asset = find_caddy_asset_name(assets, os_name, arch)
-
-    if not asset:
-        raise RuntimeError(
-            f"Could not find a Caddy release asset for {os_name}-{arch}"
-        )
-
-    download_url = asset["browser_download_url"]
-    print(f"Downloading Caddy from: {download_url}")
-
-    # 2. Download the archive
-    archive_path = download_archive(download_url)
-
-    # 3. Extract the archive
-    extracted_caddy = extract_caddy_from_archive(archive_path, target_dir)
-
-    # Remove the archive
-    archive_path.unlink(missing_ok=True)
-
-    if not extracted_caddy or not extracted_caddy.exists():
-        raise RuntimeError("Failed to find caddy binary in archive")
-
-    # On Unix, make it executable
-    if os_name != "windows":
-        extracted_caddy.chmod(extracted_caddy.stat().st_mode | 0o111)
-
-    print("Caddy installed at:", extracted_caddy)
-    print("Setting up Caddyfile...")
-    write_caddyfile(target_dir)
-    return extracted_caddy
-
-def download_archive(download_url):
-    ext = os.path.splitext(download_url)[1]  # Get extension from URL
-    with requests.get(download_url, stream=True, timeout=60) as r:
-        r.raise_for_status()
+def download_archive(download_url: str) -> Path:
+    ext = os.path.splitext(download_url)[1]
+    with requests.get(download_url, stream=True, timeout=60) as response:
+        response.raise_for_status()
         with tempfile.NamedTemporaryFile(delete=False, suffix=ext) as tmp_file:
-            for chunk in r.iter_content(chunk_size=8192):
+            for chunk in response.iter_content(chunk_size=8192):
                 if chunk:
                     tmp_file.write(chunk)
             archive_path = Path(tmp_file.name)
-            print("Downloaded archive to:", archive_path)
+            logger.info("Downloaded Caddy archive to: %s", archive_path)
     return archive_path
 
 
 def extract_caddy_from_archive(archive_path: Path, target_dir: Path) -> Path:
     extracted_caddy = None
     if archive_path.suffix == ".zip":
-        with zipfile.ZipFile(archive_path, "r") as zf:
-            for member in zf.infolist():
+        with zipfile.ZipFile(archive_path, "r") as archive:
+            for member in archive.infolist():
                 if member.filename.endswith("caddy") or member.filename.endswith("caddy.exe"):
-                    zf.extract(member, path=target_dir)
+                    archive.extract(member, path=target_dir)
                     extracted_caddy = target_dir / member.filename
                     break
     elif archive_path.suffixes[-2:] == [".tar", ".gz"] or archive_path.suffix == ".gz":
-        with tarfile.open(archive_path, "r:gz") as tf:
-            for member in tf.getmembers():
+        with tarfile.open(archive_path, "r:gz") as archive:
+            for member in archive.getmembers():
                 name = member.name
                 if name.endswith("caddy") or name.endswith("caddy.exe"):
-                    tf.extract(member, path=target_dir)
+                    archive.extract(member, path=target_dir)
                     extracted_caddy = target_dir / member.name
                     break
     else:
@@ -151,49 +87,412 @@ def extract_caddy_from_archive(archive_path: Path, target_dir: Path) -> Path:
     return extracted_caddy
 
 
-def run_caddy_external():
-    print("Running Caddy in external terminal...")
-    data_folder_path = Path(__file__).parent.parent.parent / "data"
-    caddyfile_path = data_folder_path / "Caddyfile"
+def download_latest_caddy(target_dir: Path) -> Path:
+    """
+    Download latest Caddy, extract it to target_dir, and return the path to the caddy binary.
+    """
+    target_dir.mkdir(parents=True, exist_ok=True)
 
-    print(f"Sending command: caddy run --config \"{caddyfile_path}\"")
+    response = requests.get(GITHUB_API_LATEST, timeout=30)
+    response.raise_for_status()
+    release = response.json()
 
+    assets = release.get("assets", [])
+    os_name, arch = _get_os_arch()
+    asset = find_caddy_asset_name(assets, os_name, arch)
+
+    if not asset:
+        raise RuntimeError(f"Could not find a Caddy release asset for {os_name}-{arch}")
+
+    download_url = asset["browser_download_url"]
+    logger.info("Downloading Caddy from: %s", download_url)
+
+    archive_path = download_archive(download_url)
+    extracted_caddy = extract_caddy_from_archive(archive_path, target_dir)
+    archive_path.unlink(missing_ok=True)
+
+    if not extracted_caddy or not extracted_caddy.exists():
+        raise RuntimeError("Failed to find caddy binary in archive")
+
+    extracted_caddy.chmod(extracted_caddy.stat().st_mode | 0o111)
+    logger.info("Caddy installed at: %s", extracted_caddy)
+    return extracted_caddy
+
+
+def _read_new_log_lines(log_path: Path, start_offset: int) -> tuple[list[str], int]:
     try:
-        subprocess.Popen(
-            ['cmd.exe', '/k', 'caddy', 'run', '--config', str(caddyfile_path)],
-            creationflags=subprocess.CREATE_NEW_CONSOLE,
-        )
-    except Exception as e:
-        print("Failed to run Caddy in external terminal:", e)
+        with open(log_path, "r", encoding="utf-8", errors="ignore") as log_file:
+            log_file.seek(start_offset)
+            data = log_file.read()
+            new_position = log_file.tell()
+            if not data:
+                return [], new_position
+            return data.splitlines(), new_position
+    except Exception:
+        return [], start_offset
 
-def setup_caddy_env(caddy_path: Path):
-    caddy_dir = str(caddy_path)
+
+def _ensure_env_path(caddy_path: Path) -> None:
+    caddy_dir = str(caddy_path.parent)
     current_path = os.environ.get("PATH", "")
-    if caddy_dir not in current_path:
+    if caddy_dir and caddy_dir not in current_path:
         os.environ["PATH"] = f"{caddy_dir};{current_path}"
 
 
-def write_caddyfile(data_folder: Path):
-    caddyfile_path = data_folder / "Caddyfile"
-    caddyfile_content = """
-jmgaming.chickenkiller.com {
-    reverse_proxy 127.0.0.1:38000
-}
-    """
-    with open(caddyfile_path, "w") as f:
-        f.write(caddyfile_content)
-    print("Caddyfile written to:", caddyfile_path)
+def _validate_hostname(hostname: str) -> bool:
+    if not hostname:
+        return False
+    hostname = hostname.strip().lower()
+    if len(hostname) < 4 or len(hostname) > 253:
+        return False
+    allowed = "abcdefghijklmnopqrstuvwxyz0123456789-."
+    if any(ch not in allowed for ch in hostname):
+        return False
+    if ".." in hostname or hostname.startswith("-") or hostname.endswith("-"):
+        return False
+    parts = hostname.split(".")
+    if len(parts) < 2 or any(len(p) == 0 for p in parts):
+        return False
+    if any(len(p) > 63 for p in parts):
+        return False
+    return True
 
+
+def _prompt_hostname() -> str:
+    prompt = (
+        "CADDY SETUP\n"
+        "Enter your domain name for Caddy to use (e.g., mc.example.com): "
+    )
+    while True:
+        hostname = input(prompt).strip()
+        if _validate_hostname(hostname):
+            return hostname
+        print("Invalid hostname. Please enter a valid domain (letters, numbers, dots, and dashes).")
+
+
+def _verify_binary(candidate: Path) -> bool:
+    try:
+        subprocess.run(
+            [str(candidate), "version"],
+            capture_output=True,
+            text=True,
+            check=True,
+        )
+        return True
+    except Exception as exc:
+        logger.warning("Caddy found but failed to run: %s", exc)
+        return False
+
+
+class CaddyManager:
+    """Manage installation and lifecycle of the bundled Caddy reverse proxy."""
+
+    def __init__(self, data_dir: Optional[Path] = None):
+        if data_dir is None:
+            if getattr(sys, "frozen", False):
+                base = Path(sys.executable).parent
+            else:
+                base = Path(__file__).resolve().parents[2]
+            data_dir = base / "data"
+
+        self.data_dir = Path(data_dir)
+        self.data_dir.mkdir(parents=True, exist_ok=True)
+        self.caddyfile_path = self.data_dir / "Caddyfile"
+        self.local_caddy_path = self.data_dir / "caddy.exe"
+        if getattr(sys, "frozen", False):
+            self._log_dir = Path(sys.executable).parent / "logs"
+        else:
+            self._log_dir = Path(__file__).resolve().parents[2] / "logs"
+            self._log_dir.mkdir(parents=True, exist_ok=True)
+            self._log_file_path: Optional[Path] = None
+            self._log_file_handle: Optional[object] = None
+            self._log_thread: Optional[threading.Thread] = None
+            self._process: Optional[subprocess.Popen] = None
+            self._pid: Optional[int] = None
+            self._binary_path: Optional[Path] = None
+            self._hostname: Optional[str] = None
+            self._last_start_errors: list[str] = []
+            self._last_start_exit_code: Optional[int] = None
+            self._last_start_log_tail: list[str] = []
+            self._last_start_had_failure: bool = False
+
+    def _discover_binary(self) -> Optional[Path]:
+        candidate = shutil.which("caddy")
+        if candidate:
+            return Path(candidate)
+        if self.local_caddy_path.exists():
+            return self.local_caddy_path
+        return None
+
+    def is_available(self) -> bool:
+        candidate = self._discover_binary()
+        if candidate and _verify_binary(candidate):
+            self._binary_path = candidate
+            return True
+        return False
+
+    def ensure_binary(self) -> Path:
+        if self.is_available():
+            return Path(self._binary_path)
+
+        logger.info("Caddy not found locally, downloading the latest release...")
+        caddy_binary = download_latest_caddy(self.data_dir)
+        self._binary_path = caddy_binary
+        # Only write the Caddyfile on first install (or when missing)
+        self._ensure_caddyfile()
+        return caddy_binary
+
+    def _ensure_caddyfile(self) -> None:
+        if self.caddyfile_path.exists():
+            return
+
+        hostname = _prompt_hostname()
+        self._hostname = hostname
+        caddyfile_content = f"""
+{hostname} {{
+    reverse_proxy {CADDY_PROXY_TARGET}
+}}
+"""
+        with open(self.caddyfile_path, "w", encoding="utf-8") as file:
+            file.write(caddyfile_content.strip() + "\n")
+        logger.info("Caddyfile written to: %s", self.caddyfile_path)
+
+    def _capture_running_pid(self) -> Optional[int]:
+        if self._process and self._process.poll() is None:
+            self._pid = self._process.pid
+            return self._pid
+
+        if self._pid:
+            try:
+                proc = psutil.Process(self._pid)
+                if proc.is_running():
+                    return self._pid
+            except Exception:
+                self._pid = None
+
+        # Best effort: find any running Caddy process
+        try:
+            for proc in psutil.process_iter(["name"]):
+                name = proc.info.get("name") or ""
+                if "caddy" in name.lower():
+                    self._pid = proc.pid
+                    return self._pid
+        except Exception:
+            pass
+
+        return None
+
+    def _resolve_log_path(self) -> Path:
+        today = datetime.now().strftime("%Y%m%d")
+        self._log_file_path = self._log_dir / f"caddy_{today}.log"
+        return self._log_file_path
+
+    def _prepare_log_file(self) -> tuple[Path, int]:
+        if self._log_file_handle:
+            try:
+                self._log_file_handle.close()
+            except Exception:
+                pass
+            self._log_file_handle = None
+        self._log_dir.mkdir(parents=True, exist_ok=True)
+        self._resolve_log_path()
+        start_offset = 0
+        if self._log_file_path.exists():
+            start_offset = self._log_file_path.stat().st_size
+        self._log_file_handle = open(self._log_file_path, "a", encoding="utf-8", buffering=1)
+        separator = "=" * 80
+        self._log_file_handle.write(f"\n{separator}\nCADDY START {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}\n{separator}\n")
+        self._log_file_handle.flush()
+        return self._log_file_path, start_offset
+
+    def _probe_startup(
+        self,
+        log_path: Path,
+        start_offset: int,
+        timeout_seconds: float,
+    ) -> None:
+        position = start_offset
+        buffer: list[str] = []
+        exit_code: Optional[int] = None
+        start_time = time.monotonic()
+        failure_markers = (
+            "error",
+            "failed",
+            "authorization failed",
+            "failed authorizations",
+            "could not get certificate",
+            "rateLimited",
+        )
+
+        while time.monotonic() - start_time < timeout_seconds:
+            if self._process and self._process.poll() is not None:
+                exit_code = self._process.returncode
+                break
+
+            new_lines, position = _read_new_log_lines(log_path, position)
+            if new_lines:
+                buffer.extend(new_lines)
+                if any(any(marker.lower() in line.lower() for marker in failure_markers) for line in new_lines):
+                    break
+            time.sleep(0.2)
+
+        # Final read to catch any last lines before reporting
+        new_lines, position = _read_new_log_lines(log_path, position)
+        if new_lines:
+            buffer.extend(new_lines)
+
+        self._last_start_log_tail = buffer[-20:]
+        self._last_start_errors = [
+            line for line in buffer
+            if any(marker.lower() in line.lower() for marker in failure_markers)
+        ][-5:]
+        self._last_start_exit_code = exit_code
+        self._last_start_had_failure = bool(self._last_start_errors or (exit_code not in (None, 0)))
+
+    def is_running(self) -> bool:
+        return bool(self._capture_running_pid())
+
+    def _start_log_thread(self) -> None:
+        if not self._process:
+            return
+
+        def _pump():
+            if not self._process or not self._process.stdout:
+                return
+            for raw in iter(self._process.stdout.readline, b""):
+                if raw == b"":
+                    break
+                line = raw.decode("utf-8", errors="replace").rstrip("\r\n")
+                timestamped = f"[{datetime.now().strftime('%Y-%m-%d %H:%M:%S')}] {line}"
+                try:
+                    if self._log_file_handle:
+                        self._log_file_handle.write(timestamped + "\n")
+                        self._log_file_handle.flush()
+                except Exception:
+                    pass
+
+        self._log_thread = threading.Thread(target=_pump, daemon=True)
+        self._log_thread.start()
+
+    def start(self, probe_for_errors: bool = False, probe_timeout: float = 45.0) -> bool:
+        if self.is_running():
+            self._last_start_errors = []
+            self._last_start_exit_code = None
+            self._last_start_log_tail = []
+            self._last_start_had_failure = False
+            return False
+
+        binary_path = self.ensure_binary()
+        self._ensure_caddyfile()
+        _ensure_env_path(binary_path)
+
+        log_path, start_offset = self._prepare_log_file()
+        creationflags = getattr(subprocess, "CREATE_NEW_PROCESS_GROUP", 0) | getattr(subprocess, "CREATE_NO_WINDOW", 0)
+        command = [str(binary_path), "run", "--config", str(self.caddyfile_path)]
+        try:
+            self._process = subprocess.Popen(
+                command,
+                creationflags=creationflags,
+                cwd=str(binary_path.parent),
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+            )
+            self._pid = self._process.pid
+            self._last_start_errors = []
+            self._last_start_exit_code = None
+            self._last_start_log_tail = []
+            self._last_start_had_failure = False
+
+            self._start_log_thread()
+
+            if probe_for_errors:
+                self._probe_startup(log_path, start_offset, probe_timeout)
+
+            logger.info("Caddy STARTED with PID %s", self._pid)
+            return True
+        except Exception as exc:
+            logger.error("Failed to start Caddy: %s", exc)
+            self._process = None
+            self._pid = None
+            if self._log_file_handle:
+                try:
+                    self._log_file_handle.close()
+                except Exception:
+                    pass
+                self._log_file_handle = None
+            raise
+
+    def ensure_started(self) -> bool:
+        try:
+            started = self.start()
+            return started or self.is_running()
+        except Exception as exc:
+            logger.warning("Unable to start Caddy automatically: %s", exc)
+            return False
+
+    def stop(self) -> bool:
+        if not self.is_running():
+            self._process = None
+            self._pid = None
+            return False
+
+        pid = self._pid
+        proc = self._process
+        if proc:
+            try:
+                proc.send_signal(getattr(subprocess, "CTRL_BREAK_EVENT", signal.SIGTERM))
+            except Exception:
+                try:
+                    proc.terminate()
+                except Exception:
+                    pass
+
+            try:
+                proc.wait(timeout=5)
+            except subprocess.TimeoutExpired:
+                try:
+                    proc.kill()
+                except Exception:
+                    pass
+            if self._log_thread:
+                self._log_thread.join(timeout=2)
+            self._log_thread = None
+        else:
+            try:
+                psutil.Process(pid).terminate()
+            except Exception:
+                pass
+
+        if self._log_file_handle:
+            try:
+                self._log_file_handle.close()
+            except Exception:
+                pass
+            self._log_file_handle = None
+        self._log_thread = None
+
+        self._process = None
+        self._pid = None
+        logger.info("Caddy process STOPPED for PID %s", pid)
+        return True
+
+    def status(self) -> dict:
+        if not self._log_file_path:
+            self._resolve_log_path()
+        return {
+            "running": self.is_running(),
+            "pid": self._pid,
+            "binary_path": str(self._binary_path) if self._binary_path else "",
+            "available": self.is_available(),
+            "caddyfile": str(self.caddyfile_path),
+            "log_path": str(self._log_file_path),
+            "last_start_errors": self._last_start_errors,
+            "last_start_exit_code": self._last_start_exit_code,
+            "last_start_log_tail": self._last_start_log_tail,
+            "last_start_had_failure": self._last_start_had_failure,
+        }
 
 
 if __name__ == "__main__":
-    if not _is_caddy_available():
-        print("Caddy not found, downloading...")
-        caddy_binary = download_latest_caddy(Path(data_folder))
-        print("Caddy setup complete. Ready to use.")
-
-    # Always ensure Caddy directory is in PATH
-    setup_caddy_env(data_folder)
-
-    # Run Caddy in an external terminal
-    run_caddy_external()
+    manager = CaddyManager()
+    manager.ensure_started()

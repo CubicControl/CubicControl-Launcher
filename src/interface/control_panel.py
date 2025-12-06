@@ -1,4 +1,3 @@
-import os
 import atexit
 import logging
 import os
@@ -9,23 +8,24 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import warnings
+import webbrowser
 from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
 
+import flask.cli
 import psutil
-import time
 import requests
-import webbrowser
-from mcstatus import JavaServer
-from mcrcon import MCRcon
-
 from flask import Flask, jsonify, render_template, request, redirect, session, url_for
 from flask_socketio import SocketIO, emit, join_room
+from mcrcon import MCRcon
+from mcstatus import JavaServer
 
 from src.config import settings
 from src.config.auth_handler import AuthHandler
+from src.config.caddy_handler import CaddyManager
 from src.config.config_file_handler import ConfigFileHandler
 from src.config.secret_store import SecretStore
 from src.controller.server_controller import ServerController
@@ -39,7 +39,7 @@ warnings.filterwarnings(
     message=r"Werkzeug appears to be used in a production deployment",
 )
 
-show_server_banner = lambda *args, **kwargs: None  # hide Flask banner
+flask.cli.show_server_banner = lambda *args, **kwargs: None  # hide Flask banner
 
 for noisy in ("werkzeug", "engineio", "socketio", "flask_socketio"):
     logging.getLogger(noisy).setLevel(logging.ERROR)
@@ -229,7 +229,7 @@ else:
     here = os.path.dirname(os.path.abspath(__file__))
     template_folder = os.path.join(here, 'templates')
     static_folder = os.path.join(here, 'static')
-    print(f"Running in development mode. Templates: {template_folder}, Static: {static_folder}")
+
 
 app = Flask(
     __name__,
@@ -243,6 +243,8 @@ app.secret_key = secrets.token_hex(32)
 # Initialize auth handler
 auth_handler = AuthHandler()
 secret_store = SecretStore()
+caddy_manager = CaddyManager()
+caddy_available_on_boot = caddy_manager.is_available()
 
 
 def _sync_auth_keys_from_store() -> None:
@@ -535,7 +537,7 @@ def _stop_playit_process() -> bool:
     except subprocess.TimeoutExpired:
         playit_process.kill()
     finally:
-        logger.info("Playit process STOPPED with PID %s", playit_process.pid)
+        logger.info("Playit process STOPPED for PID %s", playit_process.pid)
         playit_process = None
     playit_process = None
     return True
@@ -579,6 +581,33 @@ def _stop_services(profile: Optional[ServerProfile], *, stop_server: bool = Fals
     _stop_controller(profile.name)
     if stop_server:
         _stop_server_process(profile)
+
+
+def _is_caddy_running() -> bool:
+    return caddy_manager.is_running()
+
+
+def _ensure_caddy_running(probe_for_errors: bool = False, probe_timeout: float = 3.0) -> bool:
+    """Ensure Caddy is installed and running before other services."""
+    if _is_caddy_running():
+        # Clear stale error markers if we are already up
+        caddy_manager._last_start_errors = []
+        caddy_manager._last_start_exit_code = None
+        caddy_manager._last_start_log_tail = []
+        caddy_manager._last_start_had_failure = False
+        return True
+    try:
+        started = caddy_manager.start(probe_for_errors=probe_for_errors, probe_timeout=probe_timeout)
+        return started or _is_caddy_running()
+    except Exception as exc:
+        logger.warning("Unable to start Caddy automatically: %s", exc)
+        return False
+
+
+def _stop_caddy() -> bool:
+    if not _is_caddy_running():
+        return False
+    return caddy_manager.stop()
 
 
 def _ensure_playit_running() -> None:
@@ -815,7 +844,6 @@ def _kill_by_window_title(title: str) -> bool:
     """Find windows by title and kill their process trees."""
     import pygetwindow as gw
     import win32process
-    import psutil
     killed = False
     try:
         windows = gw.getWindowsWithTitle(title)
@@ -1093,6 +1121,7 @@ def index():
 @app.route("/api/status")
 def api_status():
     active_profile = store.active_profile
+    caddy_status = caddy_manager.status()
     return jsonify(
         {
             "message": "ServerSide control panel",
@@ -1104,6 +1133,8 @@ def api_status():
             "playit_running": _is_playit_running(),
             "playit_configured": _is_playit_configured(),
             "playit_path": _playit_path(),
+            "caddy_running": caddy_status.get("running"),
+            "caddy_available": caddy_status.get("available") or caddy_available_on_boot,
         }
     )
 
@@ -1267,6 +1298,18 @@ def start_server():
         return jsonify({"error": str(exc)}), 500
 
 
+@app.route("/api/start/caddy", methods=["POST"])
+def start_caddy():
+    try:
+        started = caddy_manager.start()
+    except Exception as exc:
+        return jsonify({"error": str(exc)}), 500
+
+    message = "Caddy started" if started else "Caddy already running"
+    status = caddy_manager.status()
+    return jsonify({"message": message, "running": status.get("running"), "pid": status.get("pid")})
+
+
 @app.route("/api/start/playit", methods=["POST"])
 def start_playit():
     path = _playit_path()
@@ -1296,6 +1339,17 @@ def stop_controller():
     if _stop_controller(profile.name):
         return jsonify({"message": "Controller stopped"})
     return jsonify({"error": "Controller is not running"}), 400
+
+
+@app.route("/api/stop/caddy", methods=["POST"])
+def stop_caddy():
+    if not _is_caddy_running():
+        return jsonify({"error": "Caddy is already stopped"}), 400
+
+    if _stop_caddy():
+        return jsonify({"message": "Caddy stopped"})
+
+    return jsonify({"error": "Failed to stop Caddy"}), 500
 
 
 @app.route("/api/stop/playit", methods=["POST"])
@@ -1441,10 +1495,42 @@ def test_socket():
         return jsonify({"error": str(e)}), 500
 
 
-def initialize_services():
-    """Initialize services on startup"""
+def initialize_services(probe_caddy_errors: bool = False, probe_timeout: float = 45.0) -> tuple[bool, Dict[str, object]]:
+    """Initialize services on startup. Caddy starts first, then other services."""
+    _ensure_caddy_running(probe_for_errors=probe_caddy_errors, probe_timeout=probe_timeout)
+    status = caddy_manager.status()
+    if not status.get("running") or status.get("last_start_had_failure") or status.get("last_start_errors"):
+        return False, status
+
     _ensure_playit_running()
     _ensure_services_running(store.active_profile)
+    return True, status
+
+
+def _log_startup_abort(status: Dict[str, object]) -> None:
+    """Log a single abort message with the best available snippet."""
+    _log_caddy_startup_diagnostics(status)
+    log_path = status.get("log_path") or "logs/caddy.log"
+    logger.error("Startup aborted because Caddy did not start cleanly. Check %s for details.", log_path)
+
+
+def _log_caddy_startup_diagnostics(status: Dict[str, object]) -> None:
+    """Emit a concise console message when Caddy emits errors on startup."""
+    log_path = status.get("log_path") or "logs/caddy.log"
+    error_lines = status.get("last_start_errors") or []
+    log_tail = status.get("last_start_log_tail") or []
+    exit_code = status.get("last_start_exit_code")
+    running = status.get("running")
+    had_failure = status.get("last_start_had_failure")
+
+    if error_lines or had_failure:
+        snippet_source = log_tail if log_tail else error_lines
+        snippet = "\n".join(snippet_source[-5:])
+        logger.error("Caddy reported startup errors. Check %s for details:\n%s", log_path, snippet)
+    elif exit_code is not None and not running:
+        logger.error("Caddy exited during startup (code %s). Check %s for details.", exit_code, log_path)
+    elif not running:
+        logger.error("Caddy is not running after startup. Check %s for details.", log_path)
 
 def wait_for_server(url, timeout=30):
     start = time.time()
@@ -1486,6 +1572,11 @@ def cleanup_on_exit(reason: str = "shutdown"):
     except Exception as exc:
         logger.warning("Failed to stop Playit.exe during shutdown: %s", exc)
 
+    try:
+        _stop_caddy()
+    except Exception as exc:
+        logger.warning("Failed to stop Caddy during shutdown: %s", exc)
+
     _release_single_instance_lock()
 
 
@@ -1525,7 +1616,18 @@ atexit.register(cleanup_on_exit)
 
 def main():
     """Entry point for running the control panel."""
-    initialize_services()
+    logger.info("Starting CubicControl")
+    logger.info("Caddy is starting, please wait...")
+    services_started, caddy_status = initialize_services(probe_caddy_errors=True, probe_timeout=3.0)
+    if not services_started:
+        _log_startup_abort(caddy_status)
+        try:
+            # Ensure the prompt appears on its own line after any error logs
+            print("\nPress a key to exit...", flush=True)
+            input()
+        except Exception:
+            pass
+        return
     threading.Thread(target=open_browser_when_ready, daemon=True).start()
     logger.info("Starting control panel UI")
     socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)

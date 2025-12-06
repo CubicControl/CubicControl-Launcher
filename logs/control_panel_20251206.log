@@ -1,0 +1,461 @@
+2025-12-06 00:37:23,480 - control_panel - INFO - Playit.exe STARTED with PID 20384
+2025-12-06 00:37:23,488 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 00:37:23,576 - control_panel - INFO - Caddy STARTED with PID 27416
+2025-12-06 00:37:23,576 - control_panel - INFO - Starting control panel UI
+2025-12-06 00:37:56,060 - control_panel - INFO - User logged in successfully
+2025-12-06 00:37:58,812 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 00:38:03,710 - control_panel - INFO - Caddy process STOPPED with PID 27416
+2025-12-06 00:38:08,984 - control_panel - INFO - Caddy process STOPPED with PID 16688
+2025-12-06 00:38:18,560 - control_panel - INFO - Caddy STARTED with PID 15288
+2025-12-06 00:38:38,442 - control_panel - INFO - Caddy STARTED with PID 27580
+2025-12-06 00:39:57,471 - control_panel - INFO - Caddy STARTED with PID 8184
+2025-12-06 00:40:01,268 - control_panel - INFO - Caddy process STOPPED with PID 8184
+2025-12-06 00:40:23,618 - control_panel - INFO - Caddy process STOPPED with PID 27576
+2025-12-06 00:40:32,698 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 00:40:32,698 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 00:40:34,712 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 00:40:36,757 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 00:40:36,764 - control_panel - INFO - Playit process STOPPED with PID 20384
+2025-12-06 00:43:59,825 - control_panel - INFO - Playit.exe STARTED with PID 2684
+2025-12-06 00:43:59,827 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 00:43:59,900 - control_panel - INFO - Caddy STARTED with PID 13016
+2025-12-06 00:43:59,901 - control_panel - INFO - Starting control panel UI
+2025-12-06 00:44:08,263 - control_panel - INFO - User logged in successfully
+2025-12-06 00:44:10,729 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 00:44:26,473 - control_panel - INFO - Caddy process STOPPED with PID 13016
+2025-12-06 00:44:29,474 - control_panel - INFO - Caddy process STOPPED with PID 14396
+2025-12-06 00:44:33,873 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 00:44:33,874 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 00:44:35,880 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 00:44:37,923 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 00:44:37,935 - control_panel - INFO - Playit process STOPPED with PID 2684
+2025-12-06 01:51:30,207 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 01:51:33,284 - control_panel - INFO - Caddy STARTED with PID 12120
+2025-12-06 01:51:33,296 - control_panel - INFO - Playit.exe STARTED with PID 4140
+2025-12-06 01:51:33,299 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 01:51:33,349 - control_panel - INFO - Starting control panel UI
+2025-12-06 01:51:46,385 - control_panel - INFO - User logged in successfully
+2025-12-06 01:51:48,926 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 01:52:18,590 - control_panel - INFO - Caddy process STOPPED with PID 12120
+2025-12-06 01:52:31,440 - control_panel - INFO - Caddy STARTED with PID 14216
+2025-12-06 01:52:47,026 - control_panel - INFO - Caddy process STOPPED with PID 14216
+2025-12-06 01:53:39,931 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 01:53:39,931 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 01:53:41,944 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 01:53:43,988 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 01:53:43,994 - control_panel - INFO - Playit process STOPPED with PID 4140
+2025-12-06 01:53:54,929 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 01:53:58,009 - control_panel - INFO - Caddy STARTED with PID 2676
+2025-12-06 01:53:58,025 - control_panel - INFO - Playit.exe STARTED with PID 4256
+2025-12-06 01:53:58,028 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 01:53:58,091 - control_panel - INFO - Starting control panel UI
+2025-12-06 01:53:59,988 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 01:54:20,717 - control_panel - INFO - User logged in successfully
+2025-12-06 01:54:23,360 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 01:54:27,336 - control_panel - INFO - Playit process STOPPED with PID 4256
+2025-12-06 01:54:29,828 - control_panel - INFO - Caddy process STOPPED with PID 2676
+2025-12-06 01:54:34,743 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 01:54:49,014 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 01:54:49,014 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 01:54:51,062 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 01:57:27,092 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 01:57:30,167 - control_panel - INFO - Caddy STARTED with PID 12924
+2025-12-06 01:57:30,175 - control_panel - INFO - Playit.exe STARTED with PID 21208
+2025-12-06 01:57:30,177 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 01:57:30,226 - control_panel - INFO - Starting control panel UI
+2025-12-06 01:57:58,523 - control_panel - INFO - User logged in successfully
+2025-12-06 01:58:00,979 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 01:58:04,362 - control_panel - INFO - Caddy process STOPPED with PID 12924
+2025-12-06 01:58:08,338 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 01:58:08,338 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 01:58:22,745 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 01:58:25,825 - control_panel - INFO - Caddy STARTED with PID 27564
+2025-12-06 01:58:25,833 - control_panel - INFO - Playit.exe STARTED with PID 27076
+2025-12-06 01:58:25,835 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 01:58:25,887 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:00:56,736 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:00:56,736 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:00:58,741 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:01:00,782 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:01:00,794 - control_panel - INFO - Playit process STOPPED with PID 27076
+2025-12-06 02:01:00,799 - control_panel - INFO - Caddy process STOPPED with PID 27564
+2025-12-06 02:03:54,987 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:03:55,254 - control_panel - INFO - Caddy STARTED with PID 24712
+2025-12-06 02:03:55,262 - control_panel - INFO - Playit.exe STARTED with PID 24100
+2025-12-06 02:03:55,264 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:03:55,313 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:04:39,263 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:04:39,263 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:05:03,317 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:05:05,407 - control_panel - INFO - Caddy STARTED with PID 28488
+2025-12-06 02:05:05,420 - control_panel - INFO - Playit.exe STARTED with PID 8756
+2025-12-06 02:05:05,422 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:05:05,485 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+{"level":"info","ts":1764986703.472923,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+{"level":"info","ts":1764986703.472923,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+{"level":"info","ts":1764986704.7779396,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+{"level":"error","ts":1764986705.2819085,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+{"level":"error","ts":1764986705.2824085,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455980747916","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 02:05:05,486 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:10:21,461 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:10:21,461 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:17:36,732 - control_panel - INFO - 
+2025-12-06 02:17:36,732 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:17:36,732 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:17:38,412 - control_panel - INFO - Caddy STARTED with PID 10224
+2025-12-06 02:17:38,479 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:17:36] {"level":"info","ts":1764987456.8738687,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:17:36] {"level":"info","ts":1764987456.8738687,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:17:37] {"level":"info","ts":1764987457.7899816,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 02:17:38] {"level":"error","ts":1764987458.3182192,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 02:17:38] {"level":"error","ts":1764987458.3182192,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455983889596","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 02:17:38,481 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details.
+2025-12-06 02:17:38,481 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:17:36] {"level":"info","ts":1764987456.8738687,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:17:36] {"level":"info","ts":1764987456.8738687,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:17:37] {"level":"info","ts":1764987457.7899816,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 02:17:38] {"level":"error","ts":1764987458.3182192,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 02:17:38] {"level":"error","ts":1764987458.3182192,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455983889596","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 02:17:52,158 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 02:17:54,201 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:17:54,212 - control_panel - INFO - Caddy process STOPPED for PID 10224
+2025-12-06 02:21:58,610 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:21:58,611 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:21:59,492 - control_panel - INFO - Caddy STARTED with PID 27360
+2025-12-06 02:21:59,541 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:21:58] {"level":"info","ts":1764987718.771459,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:21:58] {"level":"info","ts":1764987718.771459,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:21:58] {"level":"info","ts":1764987718.771459,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:21:59] {"level":"error","ts":1764987719.4339743,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:21:59] {"level":"error","ts":1764987719.4339743,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.665047,"max_duration":2592000}
+2025-12-06 02:21:59,541 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:21:58] {"level":"info","ts":1764987718.771459,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:21:58] {"level":"info","ts":1764987718.771459,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:21:58] {"level":"info","ts":1764987718.771459,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:21:59] {"level":"error","ts":1764987719.4339743,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:21:59] {"level":"error","ts":1764987719.4339743,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.665047,"max_duration":2592000}
+2025-12-06 02:22:08,073 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 02:22:10,127 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:22:10,142 - control_panel - INFO - Caddy process STOPPED for PID 27360
+2025-12-06 02:22:19,354 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:22:19,354 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:22:20,234 - control_panel - INFO - Caddy STARTED with PID 21864
+2025-12-06 02:22:20,279 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:22:19] {"level":"info","ts":1764987739.513709,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:22:19] {"level":"info","ts":1764987739.513709,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:22:19] {"level":"info","ts":1764987739.513709,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:22:20] {"level":"error","ts":1764987740.208263,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:50 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:22:20] {"level":"error","ts":1764987740.208263,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:50 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.6965539,"max_duration":2592000}
+2025-12-06 02:22:20,279 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details.
+2025-12-06 02:22:20,279 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:22:19] {"level":"info","ts":1764987739.513709,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:22:19] {"level":"info","ts":1764987739.513709,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:22:19] {"level":"info","ts":1764987739.513709,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:22:20] {"level":"error","ts":1764987740.208263,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:50 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:22:20] {"level":"error","ts":1764987740.208263,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:28:50 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.6965539,"max_duration":2592000}
+2025-12-06 02:22:30,750 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:22:30,750 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:22:58,520 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:22:58,521 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:22:58,635 - control_panel - INFO - Playit.exe STARTED with PID 24080
+2025-12-06 02:22:58,639 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:22:58,641 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:23:07,662 - control_panel - INFO - User logged in successfully
+2025-12-06 02:23:10,153 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 02:23:13,336 - control_panel - INFO - Caddy process STOPPED for PID 21864
+2025-12-06 02:23:22,269 - control_panel - INFO - Playit process STOPPED for PID 24080
+2025-12-06 02:23:28,738 - control_panel - INFO - Starting Minecraft server for profile 'Vanilla'
+2025-12-06 02:23:28,768 - control_panel - INFO - Server STARTED with PID 26688
+2025-12-06 02:23:41,640 - control_panel - INFO - Sent RCON stop command to profile 'Vanilla'
+2025-12-06 02:23:42,481 - control_panel - INFO - Server STOPPED gracefully for profile 'Vanilla'
+2025-12-06 02:23:51,226 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:23:51,226 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:28:57,186 - control_panel - INFO - Using templates: B:\Prog Projects\MINREFACT\ServerSide\src\interface\templates, static: B:\Prog Projects\MINREFACT\ServerSide\src\interface\static
+2025-12-06 02:28:57,277 - control_panel - INFO - 
+2025-12-06 02:28:57,277 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:28:57,277 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:29:00,362 - control_panel - INFO - Caddy STARTED with PID 17024
+2025-12-06 02:29:00,416 - control_panel - INFO - Playit.exe STARTED with PID 7824
+2025-12-06 02:29:00,417 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:29:00,418 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:30:31,013 - control_panel - INFO - User logged in successfully
+2025-12-06 02:30:33,193 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 02:30:39,719 - control_panel - INFO - Caddy process STOPPED for PID 17024
+2025-12-06 02:30:41,750 - control_panel - INFO - Playit process STOPPED for PID 7824
+2025-12-06 02:30:44,920 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:30:56,654 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:30:56,654 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:30:58,686 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:31:12,738 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:31:12,738 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:31:15,818 - control_panel - INFO - Caddy STARTED with PID 17824
+2025-12-06 02:31:15,887 - control_panel - INFO - Playit.exe STARTED with PID 17852
+2025-12-06 02:31:15,889 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:31:15,889 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:31:16,560 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 02:31:25,372 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:31:25,372 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:31:27,372 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:31:29,408 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:31:29,420 - control_panel - INFO - Playit process STOPPED for PID 17852
+2025-12-06 02:31:29,425 - control_panel - INFO - Caddy process STOPPED for PID 17824
+2025-12-06 02:31:41,577 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:31:41,577 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:31:43,273 - control_panel - INFO - Caddy STARTED with PID 19648
+2025-12-06 02:31:43,323 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:31:41] {"level":"info","ts":1764988301.7528512,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:31:41] {"level":"info","ts":1764988301.7528512,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:31:42] {"level":"info","ts":1764988302.7037823,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 02:31:43] {"level":"error","ts":1764988303.209963,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"http-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 02:31:43] {"level":"error","ts":1764988303.209963,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455987054396","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 02:31:43,328 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details.
+2025-12-06 02:32:18,991 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 02:32:21,033 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:32:21,047 - control_panel - INFO - Caddy process STOPPED for PID 19648
+2025-12-06 02:38:02,773 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:38:02,773 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:38:03,860 - control_panel - INFO - Caddy STARTED with PID 16156
+2025-12-06 02:38:03,907 - control_panel - ERROR - Caddy reported startup errors. Startup aborted. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:38:02] {"level":"info","ts":1764988682.9355392,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:38:02] {"level":"info","ts":1764988682.9355392,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:38:02] {"level":"info","ts":1764988682.9355392,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:38:03] {"level":"error","ts":1764988683.68489,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:40:47 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:38:03] {"level":"error","ts":1764988683.68489,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:40:47 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.7503508,"max_duration":2592000}
+2025-12-06 02:38:23,995 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:38:23,995 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:38:26,649 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:38:26,649 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:38:26,723 - control_panel - INFO - Playit.exe STARTED with PID 1260
+2025-12-06 02:38:26,725 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:38:26,726 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:38:34,984 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:38:34,984 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:39:18,767 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:39:18,767 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:39:18,846 - control_panel - INFO - Playit.exe STARTED with PID 22808
+2025-12-06 02:39:18,848 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:39:18,848 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:39:30,804 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:39:30,804 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:39:32,813 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:39:34,850 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:39:34,859 - control_panel - INFO - Playit process STOPPED for PID 22808
+2025-12-06 02:39:34,859 - control_panel - INFO - Caddy process STOPPED for PID 16156
+2025-12-06 02:39:48,107 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:39:48,107 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:39:49,385 - control_panel - INFO - Caddy STARTED with PID 11884
+2025-12-06 02:39:49,478 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:39:48] {"level":"info","ts":1764988788.255789,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:39:48] {"level":"info","ts":1764988788.255789,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:39:48] {"level":"info","ts":1764988788.255789,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:39:49] {"level":"error","ts":1764988789.2498543,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:40:48 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:39:49] {"level":"error","ts":1764988789.2498543,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:40:48 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.9950673,"max_duration":2592000}
+2025-12-06 02:39:49,478 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details.
+2025-12-06 02:40:23,114 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:40:23,114 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:40:59,977 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:40:59,977 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:41:00,048 - control_panel - INFO - Playit.exe STARTED with PID 23692
+2025-12-06 02:41:00,050 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:41:00,050 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:41:10,570 - control_panel - INFO - User logged in successfully
+2025-12-06 02:41:13,064 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 02:41:13,121 - control_panel - INFO - Caddy process STOPPED for PID 11884
+2025-12-06 02:41:14,969 - control_panel - INFO - Playit process STOPPED for PID 23692
+2025-12-06 02:41:21,262 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:41:21,263 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:41:23,265 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:41:25,307 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:42:11,915 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:42:11,915 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:42:13,602 - control_panel - INFO - Caddy STARTED with PID 29800
+2025-12-06 02:42:13,679 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:42:12] {"level":"info","ts":1764988932.0664923,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:42:12] {"level":"info","ts":1764988932.0669935,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:42:12] {"level":"info","ts":1764988932.9679534,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"tls-alpn-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 02:42:13] {"level":"error","ts":1764988933.5184658,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"tls-alpn-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 02:42:13] {"level":"error","ts":1764988933.5184658,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455989366886","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 02:42:13,680 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details.
+2025-12-06 02:42:38,137 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:42:38,137 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:45:49,193 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:45:49,193 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:45:49,259 - control_panel - INFO - Playit.exe STARTED with PID 28852
+2025-12-06 02:45:49,261 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:45:49,261 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:46:23,797 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:46:23,797 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:46:25,801 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:46:27,844 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:46:27,858 - control_panel - INFO - Playit process STOPPED for PID 28852
+2025-12-06 02:46:27,859 - control_panel - INFO - Caddy process STOPPED for PID 29800
+2025-12-06 02:46:48,886 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:46:48,886 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:46:49,962 - control_panel - INFO - Caddy STARTED with PID 5340
+2025-12-06 02:46:50,034 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\2025-12-06_caddy.log for details:
+[2025-12-06 02:46:49] {"level":"info","ts":1764989209.0293634,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:46:49] {"level":"info","ts":1764989209.0293634,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:46:49] {"level":"info","ts":1764989209.0293634,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:46:49] {"level":"error","ts":1764989209.762934,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:52:56 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:46:49] {"level":"error","ts":1764989209.7634335,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:52:56 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.73457,"max_duration":2592000}
+2025-12-06 02:46:50,035 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\2025-12-06_caddy.log for details.
+2025-12-06 02:47:02,454 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:47:02,454 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:47:17,181 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:47:17,181 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:47:17,242 - control_panel - INFO - Playit.exe STARTED with PID 8984
+2025-12-06 02:47:17,243 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:47:17,244 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:47:25,665 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:47:25,666 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:47:46,680 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:47:46,680 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:47:46,756 - control_panel - INFO - Playit.exe STARTED with PID 30544
+2025-12-06 02:47:46,758 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:47:46,759 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:48:12,967 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:48:12,967 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:48:14,977 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:48:17,023 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:48:17,034 - control_panel - INFO - Playit process STOPPED for PID 30544
+2025-12-06 02:48:17,034 - control_panel - INFO - Caddy process STOPPED for PID 5340
+2025-12-06 02:48:22,433 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:48:22,433 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:48:25,325 - control_panel - INFO - Caddy STARTED with PID 18156
+2025-12-06 02:48:25,397 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details:
+[2025-12-06 02:48:24] {"level":"info","ts":1764989304.5769398,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:48:24] {"level":"info","ts":1764989304.5769398,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:48:24] {"level":"info","ts":1764989304.5769398,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:48:25] {"level":"error","ts":1764989305.3232024,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:52:51 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:48:25] {"level":"error","ts":1764989305.3232024,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 02:52:51 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.7472644,"max_duration":2592000}
+2025-12-06 02:48:25,397 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy.log for details.
+2025-12-06 02:48:54,482 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:48:54,482 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:49:01,819 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:49:01,820 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:49:01,890 - control_panel - INFO - Playit.exe STARTED with PID 24996
+2025-12-06 02:49:01,892 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:49:01,892 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:49:14,429 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:49:14,429 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:49:16,437 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:49:18,479 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:49:18,486 - control_panel - INFO - Playit process STOPPED for PID 24996
+2025-12-06 02:49:18,486 - control_panel - INFO - Caddy process STOPPED for PID 18156
+2025-12-06 02:54:24,909 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:54:24,910 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:54:26,595 - control_panel - INFO - Caddy STARTED with PID 20020
+2025-12-06 02:54:26,641 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details:
+[2025-12-06 02:54:25] {"level":"info","ts":1764989665.0685856,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:54:25] {"level":"info","ts":1764989665.0685856,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:54:25] {"level":"info","ts":1764989665.9712696,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"tls-alpn-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 02:54:26] {"level":"error","ts":1764989666.4915404,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"tls-alpn-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 02:54:26] {"level":"error","ts":1764989666.4915404,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455991953486","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 02:54:26,644 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details.
+2025-12-06 02:54:44,506 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 02:54:46,548 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:54:46,564 - control_panel - INFO - Caddy process STOPPED for PID 20020
+2025-12-06 02:54:49,511 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:54:49,512 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:54:52,597 - control_panel - INFO - Caddy STARTED with PID 9304
+2025-12-06 02:54:52,650 - control_panel - INFO - Playit.exe STARTED with PID 17652
+2025-12-06 02:54:52,652 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:54:52,652 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:55:59,655 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:55:59,655 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:56:01,667 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:56:03,705 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:56:03,719 - control_panel - INFO - Playit process STOPPED for PID 17652
+2025-12-06 02:56:03,725 - control_panel - INFO - Caddy process STOPPED for PID 9304
+2025-12-06 02:58:24,444 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:58:24,444 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:58:25,523 - control_panel - INFO - Caddy STARTED with PID 12804
+2025-12-06 02:58:25,574 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details:
+[2025-12-06 02:58:24] {"level":"info","ts":1764989904.590097,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:58:24] {"level":"info","ts":1764989904.590097,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 02:58:24] {"level":"info","ts":1764989904.590097,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 02:58:25] {"level":"error","ts":1764989905.3228416,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 03:04:51 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 02:58:25] {"level":"error","ts":1764989905.3228416,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 03:04:51 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.7337457,"max_duration":2592000}
+2025-12-06 02:58:25,574 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details.
+2025-12-06 02:58:29,596 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:58:29,596 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:58:50,504 - control_panel - INFO - Starting CubicControl
+2025-12-06 02:58:50,504 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 02:58:53,591 - control_panel - INFO - Caddy STARTED with PID 26576
+2025-12-06 02:58:53,682 - control_panel - INFO - Playit.exe STARTED with PID 30552
+2025-12-06 02:58:53,683 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 02:58:53,684 - control_panel - INFO - Starting control panel UI
+2025-12-06 02:59:39,699 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 02:59:39,699 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 02:59:41,711 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 02:59:43,747 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 02:59:43,761 - control_panel - INFO - Playit process STOPPED for PID 30552
+2025-12-06 02:59:43,767 - control_panel - INFO - Caddy process STOPPED for PID 26576
+2025-12-06 03:08:57,665 - control_panel - INFO - Starting CubicControl
+2025-12-06 03:08:57,665 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 03:08:59,346 - control_panel - INFO - Caddy STARTED with PID 29920
+2025-12-06 03:08:59,407 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details:
+[2025-12-06 03:08:57] {"level":"info","ts":1764990537.8339553,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 03:08:57] {"level":"info","ts":1764990537.8339553,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 03:08:58] {"level":"info","ts":1764990538.7900746,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkille.com","challenge_type":"tls-alpn-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 03:08:59] {"level":"error","ts":1764990539.311255,"msg":"challenge failed","identifier":"jmgaming.chickenkille.com","challenge_type":"tls-alpn-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 03:08:59] {"level":"error","ts":1764990539.3117537,"msg":"validating authorization","identifier":"jmgaming.chickenkille.com","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkille.com - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkille.com - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455995581296","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 03:08:59,412 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details.
+2025-12-06 03:09:10,326 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 03:09:12,360 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 03:09:12,375 - control_panel - INFO - Caddy process STOPPED for PID 29920
+2025-12-06 03:09:28,618 - control_panel - INFO - Starting CubicControl
+2025-12-06 03:09:28,618 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 03:09:29,491 - control_panel - INFO - Caddy STARTED with PID 30488
+2025-12-06 03:09:29,545 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details:
+[2025-12-06 03:09:28] {"level":"info","ts":1764990568.7473977,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 03:09:28] {"level":"info","ts":1764990568.7473977,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 03:09:28] {"level":"info","ts":1764990568.7473977,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 03:09:29] {"level":"error","ts":1764990569.4101408,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 03:16:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 03:09:29] {"level":"error","ts":1764990569.4101408,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 03:16:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.6637429,"max_duration":2592000}
+2025-12-06 03:09:29,545 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details.
+2025-12-06 03:09:33,296 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 03:09:35,338 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 03:09:35,349 - control_panel - INFO - Caddy process STOPPED for PID 30488
+2025-12-06 03:12:06,951 - control_panel - INFO - Starting CubicControl
+2025-12-06 03:12:06,951 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 03:12:07,820 - control_panel - INFO - Caddy STARTED with PID 24168
+2025-12-06 03:12:07,868 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details:
+[2025-12-06 03:12:07] {"level":"info","ts":1764990727.084816,"logger":"http","msg":"waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 03:12:07] {"level":"info","ts":1764990727.084816,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkille.com"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 03:12:07] {"level":"info","ts":1764990727.084816,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 03:12:07] {"level":"error","ts":1764990727.797883,"logger":"tls.obtain","msg":"could not get certificate from issuer","identifier":"jmgaming.chickenkille.com","issuer":"acme-v02.api.letsencrypt.org-directory","error":"HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 03:16:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account"}
+[2025-12-06 03:12:07] {"level":"error","ts":1764990727.797883,"logger":"tls.obtain","msg":"will retry","error":"[jmgaming.chickenkille.com] Obtain: [jmgaming.chickenkille.com] creating new order: attempt 1: https://acme-v02.api.letsencrypt.org/acme/new-order: HTTP 429 urn:ietf:params:acme:error:rateLimited - too many failed authorizations (5) for \"jmgaming.chickenkille.com\" in the last 1h0m0s, retry after 2025-12-06 03:16:52 UTC: see https://letsencrypt.org/docs/rate-limits/#authorization-failures-per-hostname-per-account (ca=https://acme-v02.api.letsencrypt.org/directory)","attempt":1,"retrying_in":60,"elapsed":0.7140684,"max_duration":2592000}
+2025-12-06 03:12:07,868 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details.
+2025-12-06 03:12:15,912 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 03:12:17,954 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 03:12:17,970 - control_panel - INFO - Caddy process STOPPED for PID 24168
+2025-12-06 03:12:35,097 - control_panel - INFO - Starting CubicControl
+2025-12-06 03:12:35,097 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 03:12:51,679 - control_panel - INFO - Caddyfile written to: B:\Prog Projects\MINREFACT\ServerSide\data\Caddyfile
+2025-12-06 03:12:53,292 - control_panel - INFO - Caddy STARTED with PID 14376
+2025-12-06 03:12:53,349 - control_panel - ERROR - Caddy reported startup errors. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details:
+[2025-12-06 03:12:51] {"level":"info","ts":1764990771.7558265,"logger":"http","msg":"done waiting on internal rate limiter","identifiers":["jmgaming.chickenkiller.net"],"ca":"https://acme-v02.api.letsencrypt.org/directory","account":""}
+[2025-12-06 03:12:51] {"level":"info","ts":1764990771.7558265,"logger":"http","msg":"using ACME account","account_id":"https://acme-v02.api.letsencrypt.org/acme/acct/2854311316","account_contact":[]}
+[2025-12-06 03:12:52] {"level":"info","ts":1764990772.662373,"msg":"trying to solve challenge","identifier":"jmgaming.chickenkiller.net","challenge_type":"tls-alpn-01","ca":"https://acme-v02.api.letsencrypt.org/directory"}
+[2025-12-06 03:12:53] {"level":"error","ts":1764990773.1896355,"msg":"challenge failed","identifier":"jmgaming.chickenkiller.net","challenge_type":"tls-alpn-01","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkiller.net - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkiller.net - check that a DNS record exists for this domain","instance":"","subproblems":null},"stacktrace":"github.com/mholt/acmez/v3.(*Client).pollAuthorization\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:557\ngithub.com/mholt/acmez/v3.(*Client).solveChallenges\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:378\ngithub.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:136\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+[2025-12-06 03:12:53] {"level":"error","ts":1764990773.1901357,"msg":"validating authorization","identifier":"jmgaming.chickenkiller.net","problem":{"type":"urn:ietf:params:acme:error:dns","title":"","detail":"DNS problem: NXDOMAIN looking up A for jmgaming.chickenkiller.net - check that a DNS record exists for this domain; DNS problem: NXDOMAIN looking up AAAA for jmgaming.chickenkiller.net - check that a DNS record exists for this domain","instance":"","subproblems":null},"order":"https://acme-v02.api.letsencrypt.org/acme/order/2854311316/455996488146","attempt":1,"max_attempts":3,"stacktrace":"github.com/mholt/acmez/v3.(*Client).ObtainCertificate\n\tgithub.com/mholt/acmez/v3@v3.1.2/client.go:152\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).doIssue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:489\ngithub.com/caddyserver/certmagic.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/certmagic@v0.24.0/acmeissuer.go:382\ngithub.com/caddyserver/caddy/v2/modules/caddytls.(*ACMEIssuer).Issue\n\tgithub.com/caddyserver/caddy/v2@v2.10.2/modules/caddytls/acmeissuer.go:288\ngithub.com/caddyserver/certmagic.(*Config).obtainCert.func2\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:626\ngithub.com/caddyserver/certmagic.doWithRetry\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:104\ngithub.com/caddyserver/certmagic.(*Config).obtainCert\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:700\ngithub.com/caddyserver/certmagic.(*Config).ObtainCertAsync\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:505\ngithub.com/caddyserver/certmagic.(*Config).manageOne.func1\n\tgithub.com/caddyserver/certmagic@v0.24.0/config.go:415\ngithub.com/caddyserver/certmagic.(*jobManager).worker\n\tgithub.com/caddyserver/certmagic@v0.24.0/async.go:73"}
+2025-12-06 03:12:53,352 - control_panel - ERROR - Startup aborted because Caddy did not start cleanly. Check B:\Prog Projects\MINREFACT\ServerSide\logs\caddy_20251206.log for details.
+2025-12-06 03:13:01,178 - control_panel - INFO - Application shutting down (shutdown), cleaning up...
+2025-12-06 03:13:03,222 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it
+2025-12-06 03:13:03,239 - control_panel - INFO - Caddy process STOPPED for PID 14376
+2025-12-06 03:13:10,080 - control_panel - INFO - Starting CubicControl
+2025-12-06 03:13:10,080 - control_panel - INFO - Caddy is starting, please wait...
+2025-12-06 03:13:21,052 - control_panel - INFO - Caddyfile written to: B:\Prog Projects\MINREFACT\ServerSide\data\Caddyfile
+2025-12-06 03:13:24,071 - control_panel - INFO - Caddy STARTED with PID 28884
+2025-12-06 03:13:24,126 - control_panel - INFO - Playit.exe STARTED with PID 22496
+2025-12-06 03:13:24,128 - control_panel - INFO - Controller STARTED for profile 'Vanilla'
+2025-12-06 03:13:24,128 - control_panel - INFO - Starting control panel UI
+2025-12-06 03:13:46,030 - control_panel - INFO - User logged in successfully
+2025-12-06 03:13:48,492 - control_panel - INFO - Client connected to follow logs for profile: Vanilla
+2025-12-06 03:14:04,961 - control_panel - INFO - Caddy process STOPPED for PID 28884
+2025-12-06 03:14:44,287 - control_panel - INFO - Playit process STOPPED for PID 22496
+2025-12-06 03:14:55,513 - control_panel - INFO - Console close event received (0); shutting down.
+2025-12-06 03:14:55,513 - control_panel - INFO - Application shutting down (console event 0), cleaning up...
+2025-12-06 03:14:57,529 - control_panel - INFO - Controller STOPPED for profile 'Vanilla'
+2025-12-06 03:14:59,569 - control_panel - WARNING - Failed to send RCON stop command: [WinError 10061] No connection could be made because the target machine actively refused it

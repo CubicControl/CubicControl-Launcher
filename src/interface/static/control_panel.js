@@ -9,6 +9,7 @@ const logsEl = document.getElementById('logs');
 const propsBox = document.getElementById('properties');
 const controllerChip = document.getElementById('controller-status');
 const serverChip = document.getElementById('server-status');
+const caddyChip = document.getElementById('caddy-status');
 const playitChip = document.getElementById('playit-status');
 const drawer = document.getElementById('profile-drawer');
 const drawerTitle = document.getElementById('drawer-title');
@@ -295,6 +296,18 @@ function updateServerChip(state) {
   }
 }
 
+function updateCaddyChip(available, running) {
+  if (!caddyChip) return;
+  const valueSpan = caddyChip.querySelector('.status-value');
+  const value = available ? (running ? 'Running' : 'Stopped') : 'Unavailable';
+  if (valueSpan) {
+    valueSpan.textContent = value;
+  }
+  caddyChip.classList.toggle('status-on', Boolean(available && running));
+  caddyChip.classList.toggle('status-off', !available || !running);
+  caddyChip.classList.toggle('status-starting', Boolean(available && !running));
+}
+
 function updatePlayitChip(configured, running) {
   if (!playitChip) return;
   const value = configured ? (running ? 'Running' : 'Stopped') : 'Not configured';
@@ -417,6 +430,7 @@ async function refreshStatus() {
   });
   activeProfileEl.textContent = data.active_profile || 'None';
   setChip(controllerChip, Boolean(data.controller_running));
+  updateCaddyChip(Boolean(data.caddy_available), Boolean(data.caddy_running));
   updatePlayitChip(Boolean(data.playit_configured), Boolean(data.playit_running));
 
   let serverState = data.server_running ? 'running' : 'stopped';
@@ -458,6 +472,13 @@ async function refreshStatus() {
   if (startPlayitBtn && stopPlayitBtn) {
     startPlayitBtn.disabled = !data.playit_configured || data.playit_running;
     stopPlayitBtn.disabled = !data.playit_running;
+  }
+
+  const startCaddyBtn = document.getElementById('start-caddy-btn');
+  const stopCaddyBtn = document.getElementById('stop-caddy-btn');
+  if (startCaddyBtn && stopCaddyBtn) {
+    startCaddyBtn.disabled = Boolean(data.caddy_running);
+    stopCaddyBtn.disabled = !data.caddy_running;
   }
 
   const startControllerBtn = document.getElementById('start-controller-btn');
@@ -883,6 +904,22 @@ async function stopController() {
   await refreshStatus();
 }
 
+async function startCaddy() {
+  const res = await fetch('/api/start/caddy', { method: 'POST', headers: authHeaders() });
+  const body = await res.json();
+  if (res.ok) setStatus(body.message || 'Caddy started');
+  else setStatus(body.error || 'Failed to start Caddy', true);
+  await refreshStatus();
+}
+
+async function stopCaddy() {
+  const res = await fetch('/api/stop/caddy', { method: 'POST', headers: authHeaders() });
+  const body = await res.json();
+  if (res.ok) setStatus(body.message || 'Caddy stopped');
+  else setStatus(body.error || 'Failed to stop Caddy', true);
+  await refreshStatus();
+}
+
 async function promptForPlayitPath() {
   if (!dialogOverlay) {
     setStatus('Unable to open dialog – missing modal markup', true);
@@ -1142,6 +1179,10 @@ function init() {
   document.getElementById('force-stop-server-btn').addEventListener('click', forceStopServer);
   document.getElementById('start-controller-btn').addEventListener('click', startController);
   document.getElementById('stop-controller-btn').addEventListener('click', stopController);
+  const startCaddyBtn = document.getElementById('start-caddy-btn');
+  const stopCaddyBtn = document.getElementById('stop-caddy-btn');
+  if (startCaddyBtn) startCaddyBtn.addEventListener('click', startCaddy);
+  if (stopCaddyBtn) stopCaddyBtn.addEventListener('click', stopCaddy);
   const startPlayitBtn = document.getElementById('start-playit-btn');
   const stopPlayitBtn = document.getElementById('stop-playit-btn');
   const playitSettingsBtn = document.getElementById('playit-settings-btn');
