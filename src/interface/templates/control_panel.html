@@ -52,27 +52,25 @@
       backdrop-filter: blur(8px);
       background: linear-gradient(120deg, rgba(14, 25, 43, 0.92), rgba(14, 21, 37, 0.92));
       border-bottom: 1px solid var(--border);
-      padding: 1rem 1.5rem;
+      padding: 0.5rem 1.5rem;
       display: flex;
       align-items: center;
       justify-content: space-between;
       gap: 1rem;
     }
-
     .brand {
       display: flex;
       align-items: center;
-      gap: 0.75rem;
+      gap: 0.65rem;
+      min-height: 72px;
     }
-    .brand h1 {
+    .brand img {
+      height: 100px;
+      width: auto;
+      display: block;
       margin: 0;
-      font-size: clamp(1.15rem, 1.3vw, 1.35rem);
-      letter-spacing: 0.01em;
-    }
-    .brand p {
-      margin: 0.15rem 0 0;
-      color: var(--muted);
-      font-size: 0.95rem;
+      border-radius: 8px;
+      object-fit: contain;
     }
 
     .top-actions {
@@ -294,12 +292,27 @@
       gap: 0.65rem;
       align-items: center;
     }
+
     @media (max-width: 640px) {
       .select-row { grid-template-columns: 1fr; }
-      .topbar { flex-direction: column; align-items: flex-start; }
-      .top-actions { width: 100%; justify-items: start; }
-      .top-buttons { width: 100%; justify-content: flex-start; }
+      .topbar {
+        flex-direction: row;
+        flex-wrap: wrap;
+      }
+      .brand {
+        flex: 1;
+        min-width: 0;
+      }
+      .top-actions {
+        width: auto;
+        justify-items: end;
+      }
+      .top-buttons {
+        width: auto;
+        justify-content: flex-end;
+      }
     }
+
 
     button {
       border: none;
@@ -509,15 +522,8 @@
 <body>
 <header class="topbar">
   <div class="brand">
-    <svg width="34" height="34" viewBox="0 0 28 28" aria-hidden="true">
-      <rect x="2" y="8" width="24" height="18" rx="3" fill="#7c5e3c" stroke="#111" stroke-width="1"/>
-      <rect x="2" y="2" width="24" height="8" rx="2" fill="#6fcf4b" stroke="#111" stroke-width="1"/>
-      <rect x="2" y="8" width="24" height="2" fill="#a3e072" stroke="#111" stroke-width="0.5"/>
-    </svg>
-    <div>
-      <h1>CubicControl Panel</h1>
-      <p>Manage servers, controller, and Playit from one place.</p>
-    </div>
+    <img src="{{ url_for('static', filename='CubicControlLogo.jpg') }}"
+         alt="CubicControl Logo" />
   </div>
   <div class="top-actions">
     <div class="top-buttons">

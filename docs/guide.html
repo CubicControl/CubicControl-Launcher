@@ -1,0 +1,950 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>CubicControl – Simple User Guide</title>
+  <style>
+    :root {
+      --bg: #050814;
+      --panel: #0b1120;
+      --card: #0f172a;
+      --accent: #60a5fa;
+      --accent-soft: rgba(96,165,250,0.16);
+      --accent-2: #34d399;
+      --accent-3: #f97373;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #1f2937;
+      --shadow: 0 22px 50px rgba(0,0,0,0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(96,165,250,0.12), transparent 26%),
+        radial-gradient(circle at 80% 10%, rgba(52,211,153,0.12), transparent 22%),
+        radial-gradient(circle at 25% 75%, rgba(248,113,113,0.10), transparent 24%),
+        var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: grid;
+      grid-template-columns: 260px 1fr;
+    }
+
+    nav {
+      background: linear-gradient(175deg, #020617, #020617);
+      border-right: 1px solid var(--border);
+      padding: 26px 18px 32px;
+      position: sticky;
+      top: 0;
+      height: 100vh;
+      box-shadow: var(--shadow);
+    }
+
+    nav h1 {
+      margin: 0 0 6px;
+      font-size: 1.4rem;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+    }
+
+    nav p {
+      margin: 0 0 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .nav-label {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      color: var(--muted);
+      margin: 18px 0 6px;
+    }
+
+    nav a {
+      display: block;
+      padding: 9px 12px;
+      margin-bottom: 4px;
+      border-radius: 10px;
+      text-decoration: none;
+      color: var(--text);
+      border: 1px solid transparent;
+      transition: 0.18s ease;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    nav a:hover {
+      background: rgba(15,23,42,0.9);
+      border-color: rgba(96,165,250,0.55);
+    }
+
+    main {
+      padding: 28px 32px 48px;
+      max-width: 980px;
+    }
+
+    .content-section {
+      display: none;
+    }
+
+    .content-section.active {
+      display: block;
+    }
+
+    section {
+      margin-bottom: 24px;
+      padding: 22px 20px 20px;
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      background: radial-gradient(circle at top left, rgba(96,165,250,0.12), transparent 50%), var(--card);
+      box-shadow: var(--shadow);
+    }
+
+    h2 {
+      margin: 0 0 8px;
+      color: var(--accent);
+      letter-spacing: 0.01em;
+      font-size: 1.3rem;
+    }
+
+    h3 {
+      margin: 14px 0 6px;
+      color: var(--accent-2);
+      font-size: 1.05rem;
+    }
+
+    p {
+      margin: 0 0 8px;
+      font-size: 0.98rem;
+      line-height: 1.5;
+    }
+
+    ul, ol {
+      margin: 6px 0 10px 20px;
+      font-size: 0.95rem;
+    }
+
+    li {
+      margin-bottom: 5px;
+    }
+
+    code {
+      background: #020617;
+      padding: 2px 6px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      color: #dbeafe;
+      font-size: 0.92em;
+    }
+
+    .pill-row {
+      margin-bottom: 18px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 12px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(96,165,250,0.45);
+      color: #e5e7eb;
+      font-weight: 500;
+      font-size: 0.9rem;
+      white-space: nowrap;
+    }
+
+    .pill span {
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.09em;
+      color: var(--muted);
+    }
+
+    .muted {
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .card-lite {
+      padding: 12px 14px;
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: rgba(15,23,42,0.9);
+      margin-bottom: 10px;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    .tag {
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      background: rgba(96,165,250,0.12);
+      border: 1px solid rgba(96,165,250,0.4);
+      color: #bfdbfe;
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 12px;
+    }
+
+    .step-list li {
+      margin-bottom: 8px;
+      padding-left: 2px;
+    }
+
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(15,23,42,0.9);
+      padding: 10px 12px;
+      border-radius: 10px;
+      margin-top: 8px;
+      font-size: 0.9rem;
+    }
+
+    .callout-warning {
+      border-left-color: var(--accent-3);
+    }
+
+    .status-dot {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: var(--accent-2);
+      margin-right: 6px;
+    }
+
+    details {
+      margin-top: 10px;
+      background: rgba(15,23,42,0.96);
+      border-radius: 14px;
+      border: 1px dashed var(--border);
+    }
+
+    details > summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 12px 14px;
+      font-weight: 500;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    details > summary::marker,
+    details > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .summary-label {
+      text-transform: uppercase;
+      font-size: 0.72rem;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+      margin-right: 10px;
+    }
+
+    .summary-title {
+      color: var(--text);
+    }
+
+    .summary-chevron {
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    details[open] .summary-chevron {
+      transform: rotate(90deg);
+    }
+
+    details .inner {
+      padding: 0 14px 14px;
+      border-top: 1px solid var(--border);
+      font-size: 0.9rem;
+    }
+
+    a[href^="#"] {
+      scroll-margin-top: 16px;
+    }
+
+    @media (max-width: 900px) {
+      body {
+        display: block;
+      }
+      nav {
+        position: static;
+        height: auto;
+        border-right: none;
+        border-bottom: 1px solid var(--border);
+      }
+      main {
+        padding: 18px 16px 32px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Source: :contentReference[oaicite:0]{index=0} -->
+
+  <nav>
+    <h1>CubicControl</h1>
+    <p>Easy panel for managing your Minecraft server.</p>
+
+    <div class="nav-label">Start here</div>
+    <a href="#" data-target="overview">Overview</a>
+    <a href="#" data-target="before-you-start">Before you start</a>
+    <a href="#" data-target="first-run">First run</a>
+    <a href="#" data-target="quick-setup">Quick setup</a>
+
+    <div class="nav-label">Daily use</div>
+    <a href="#" data-target="using-panel">Using the panel</a>
+    <a href="#" data-target="inactivity">Auto stop & inactivity</a>
+    <a href="#" data-target="remote-access">Remote access</a>
+
+    <div class="nav-label">Help</div>
+    <a href="#" data-target="troubleshooting">Troubleshooting</a>
+    <a href="#" data-target="reset">Resetting things</a>
+    <a href="#" data-target="technical">Technical details (advanced)</a>
+  </nav>
+
+  <main>
+    <div class="pill-row">
+      <div class="pill"><span>Panel</span> http://localhost:38000/</div>
+    </div>
+
+    <!-- OVERVIEW -->
+    <section id="overview" class="content-section active">
+      <h2>Overview</h2>
+      <p>
+        CubicControl is a small program that gives you a simple web page to:
+      </p>
+      <ul>
+        <li><strong>Start and stop</strong> your Minecraft server.</li>
+        <li><strong>See live server output</strong> (what the console is doing).</li>
+        <li><strong>Run commands</strong> on the server from your browser.</li>
+        <li>Optionally <strong>auto-stop</strong> the server when no one is online.</li>
+        <li>Optionally use <strong>Playit</strong> to make your server reachable from the internet.</li>
+      </ul>
+      <br>
+
+      <div class="card-header">
+        <strong>Who is this for?</strong>
+        <span class="tag">Non-technical</span>
+      </div>
+      <p>
+        This guide is written for people who just want their server to work, without learning all the
+        technical details.
+      </p>
+      <p class="muted">
+        If you like technical explanations, scroll to
+        <a href="#technical" style="color:#93c5fd;">Technical details</a> at the bottom.
+      </p>
+      <br>
+
+      <div class="grid-1">
+        <div class="card-lite">
+          <div class="card-header">
+            <strong>What you need</strong>
+            <span class="tag">Checklist</span>
+          </div>
+          <ul>
+            <li>A web browser on the same PC (Chrome, Edge, etc.).</li>
+            <li>A domain name (free options at <a href="https://freedns.afraid.org/" style="color:#93c5fd;">freedns.afraid.org</a>).</li>
+            <li>Ports <strong>80</strong> and <strong>443</strong> open to the host machine for Caddy; port <strong>9</strong> open for Wake-on-LAN (if you use WOL).</li>
+            <li>PlayitGG installed (for easy tunneling if you need it).</li>
+            <li>A working Minecraft server folder (Java edition).</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- BEFORE YOU START -->
+    <section id="before-you-start" class="content-section">
+      <h2>Before you start</h2>
+      <ol class="step-list">
+        <li>
+          <strong>Run your Minecraft server once and accept EULA.</strong><br>
+          This makes sure that all the necessary files are created. It's recommended to create a run.bat script to start your server for the control panel to be able to read the logs in real time. (i.e. <code>java -Xmx2G -Xms1G -jar server.jar nogui</code>)
+        </li>
+        <li>
+          <strong>PlayitGG is already installed (if you plan to use it).</strong><br>
+            Download and set up Playit from <a href="https://playit.gg/" style="color:#93c5fd;">playit.gg</a> if you want to use it for easy internet access.
+        </li>
+        <li>
+          <strong>Acquire a domain name (for remote access).</strong><br>
+            You can get a free domain from <a href="https://freedns.afraid.org/" style="color:#93c5fd;">freedns.afraid.org</a>.
+          Sign up, add a free subdomain pointing to your public IP address, and note it down for later.
+        </li>
+        <li>
+          <strong>Allow the app in Windows firewall (if asked).</strong><br>
+          If Windows asks to allow network access when you run CubicControl or your server,
+          click <strong>Allow</strong>. This is needed so the panel can talk to the server.
+        </li>
+      </ol>
+
+      <div class="callout callout-warning">
+        <strong>Tip:</strong> If you ever move CubicControl to a new folder, move the
+        <code>.exe</code>, <code>data</code> and <code>logs</code> folders together.
+      </div>
+    </section>
+
+    <!-- FIRST RUN -->
+    <section id="first-run" class="content-section">
+      <h2>First run – setting up the panel</h2>
+
+      <ol class="step-list">
+        <li>
+          <strong>Start CubicControl.</strong><br>
+          Double-click <code>CubicControl.exe</code>. A Windows terminal window will open and stay running.
+        </li>
+        <li>
+          <strong>Domain name setup.</strong><br>
+            The first time you run the panel, you’ll be asked to enter your domain name. This is the one you set up earlier with <a href="https://freedns.afraid.org/" style="color:#93c5fd;">freedns.afraid.org</a> (for example: <code>myserver.chickenkiller.com</code>).
+        </li>
+        <li>
+          <strong>Open the panel in your browser.</strong><br>
+          In your browser, type: <code>http://localhost:38000/</code> and press Enter.
+        </li>
+        <li>
+          <strong>Create a panel password.</strong><br>
+          The first time, you’ll be asked to set a password to log in to the panel.
+          Use something you can remember (at least 4 characters).
+        </li>
+        <li>
+          <strong>Set your keys (AUTH_KEY and ADMIN_AUTH_KEY).</strong><br>
+          The panel will show a pop-up asking for two keys:
+          <ul>
+            <li><strong>AUTH_KEY</strong> – used for normal remote access.</li>
+            <li><strong>ADMIN_AUTH_KEY</strong> – used for admin-level access.</li>
+          </ul>
+          You can make these up (for example: long random strings) and save them in a safe place.
+        </li>
+      </ol>
+      <div class="callout">
+        <strong>Don’t worry:</strong> If you forget these keys later, you can reset them.
+        See <a href="#reset" style="color:#93c5fd;">Resetting things</a>.
+      </div>
+      <br>
+      <i>When running CubicControl.exe for the first time, it will automatically create a new task in Windows Task Scheduler
+        which will restart CubicControl after the computer wakes from sleep. This task is named "CubicControl" and can be
+        removed from Task Scheduler if you do not want this behavior.</i>
+    </section>
+
+    <!-- QUICK SETUP -->
+    <section id="quick-setup" class="content-section">
+      <h2>Quick setup – adding your server</h2>
+      <p>Once the panel is ready, follow these steps to connect your Minecraft server:</p>
+
+      <ol class="step-list">
+        <li>
+          <strong>Log into the panel.</strong><br>
+          Go to <code>http://localhost:38000/</code> and log in with the password you created.
+        </li>
+        <li>
+          <strong>Check that your server folder is ready.</strong><br>
+          Inside your Minecraft server folder you should have:
+          <ul>
+            <li><code>server.properties</code></li>
+            <li>A file you normally double-click to start the server, such as <code>run.bat</code> or another script.</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Create a server profile in CubicControl.</strong><br>
+          In the panel, go to the profiles area and create a new profile. You will need:
+          <ul>
+            <li><strong>Server folder</strong> – the folder where your server lives.</li>
+            <li><strong>Start script</strong> – usually <code>run.bat</code> or similar.</li>
+            <li><strong>Inactivity time</strong> – how long to wait with no players before stopping the server (optional).</li>
+          </ul>
+        </li>
+        <li>
+          <strong>Save and activate the profile.</strong><br>
+          After saving, click to activate this profile. This tells CubicControl which server to work with.
+        </li>
+        <li>
+          <strong>Start the controller, then the server.</strong><br>
+          On the main panel page:
+          <ul>
+            <li>Start the <strong>Controller</strong> (the watcher that looks at player activity).</li>
+            <li>Start the <strong>Server</strong> (this runs your normal start script).</li>
+          </ul>
+        </li>
+      </ol>
+
+      <div class="callout">
+        <strong>You’re done!</strong> From now on, the server will be managed automatically by the Controller in the background and shutdown when no players are online for the set time.
+        You can always start and stop the server manually from the panel too.
+      </div>
+    </section>
+
+    <!-- USING THE PANEL -->
+    <section id="using-panel" class="content-section">
+      <h2>Using the panel – what you see</h2>
+
+      <div class="grid-2">
+        <div class="card-lite">
+          <div class="card-header">
+            <strong>Server box</strong>
+            <span class="tag">Main controls</span>
+          </div>
+          <ul>
+            <li><span class="status-dot"></span><strong>Status:</strong> shows if the server is running or stopped.</li>
+            <li><strong>Start / Stop / Force Stop</strong> buttons to control your server.</li>
+            <li>Uses your normal start script (for example <code>run.bat</code>).</li>
+          </ul>
+        </div>
+
+        <div class="card-lite">
+          <div class="card-header">
+            <strong>Controller box</strong>
+            <span class="tag">Auto-stop</span>
+          </div>
+          <ul>
+            <li>Watches if players are online.</li>
+            <li>Can automatically stop the server if it’s empty for too long.</li>
+            <li>It can also close CubicControl or put the PC to sleep (if enabled).</li>
+          </ul>
+        </div>
+
+        <div class="card-lite">
+          <div class="card-header">
+            <strong>Playit box (optional)</strong>
+            <span class="tag">Minecraft Server Access</span>
+          </div>
+          <ul>
+            <li>Lets people join your server from the internet without port forwarding.</li>
+            <li>First, tell CubicControl where <code>playit.exe</code> is on your PC.</li>
+            <li>Then you can start and stop the tunnel from the panel.</li>
+          </ul>
+        </div>
+
+        <div class="card-lite">
+          <div class="card-header">
+            <strong>Caddy</strong>
+            <span class="tag">General internet access</span>
+          </div>
+          <ul>
+            <li>Caddy is the service that makes your panel available remotely and gives access to your server via your domain name.</li>
+            <li>It also allows the API to be accessible by the CubicControl Client web application.</li>
+          </ul>
+        </div>
+
+        <div class="card-lite">
+          <div class="card-header">
+            <strong>Logs & commands</strong>
+            <span class="tag">Console</span>
+          </div>
+          <ul>
+            <li>Shows live server output while it’s running.</li>
+            <li>Lets you type commands and send them to the server.</li>
+            <li>Useful for simple admin tasks without opening a separate console window.</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- INACTIVITY -->
+    <section id="inactivity" class="content-section">
+      <h2>Auto-stop & inactivity</h2>
+      <p>
+        CubicControl can <strong>automatically stop your server</strong> when nobody is online for a while.
+      </p>
+      <ul>
+        <li>You choose how long the server can be empty before stopping.</li>
+        <li>When that time passes, CubicControl will send a normal <code>stop</code> command to your server.</li>
+        <li>You can also choose extra actions:
+          <ul>
+            <li>Put the PC to sleep.</li>
+            <li>Close the CubicControl app.</li>
+          </ul>
+        </li>
+      </ul>
+
+      <div class="callout">
+        <strong>Good to know:</strong> If your internet briefly drops, the controller may think the server is empty.
+        Setting a slightly longer inactivity time can help avoid accidental stops.
+      </div>
+    </section>
+
+    <!-- REMOTE ACCESS -->
+    <section id="remote-access" class="content-section">
+      <h2>Remote access (optional)</h2>
+      <div class="card-lite">
+        <div class="card-header">
+          <strong>Remote web panel (full UI)</strong>
+          <span class="tag">Browser</span>
+        </div>
+        <ul>
+          <li>Use the domain you set during Caddy setup, e.g. <code>https://myserver.domain.com/</code>.</li>
+          <li>Make sure ports <strong>80</strong> and <strong>443</strong> are open to the host machine.</li>
+          <li>Log in with your panel password (same as local) and manage everything normally.</li>
+        </ul>
+      </div>
+
+      <div class="card-lite">
+        <div class="card-header">
+          <strong>Remote API (quick actions)</strong>
+          <span class="tag">Tokens</span>
+        </div>
+        <p>You can control the server with simple web requests (useful for scripts or tools):</p>
+        <ul>
+          <li>Send <code>Authorization: Bearer &lt;AUTH_KEY&gt;</code> or <code>Bearer &lt;ADMIN_AUTH_KEY&gt;</code>.</li>
+          <li>Actions available:
+            <ul>
+              <li>Check if the server is running.</li>
+              <li>Start / Stop / Restart the server.</li>
+            </ul>
+          </li>
+        </ul>
+        <p class="muted">
+          Exact endpoint paths are in
+          <a href="#technical" style="color:#93c5fd;">Technical details</a>.
+        </p>
+      </div>
+    </section>
+
+    <!-- TROUBLESHOOTING -->
+    <section id="troubleshooting" class="content-section">
+      <h2>Troubleshooting</h2>
+
+      <h3>Server won’t start</h3>
+      <ul>
+        <li>Check that your <strong>server folder path</strong> in the profile is correct.</li>
+        <li>Make sure your start script (for example <code>run.bat</code>) really exists in that folder.</li>
+        <li>Confirm you can still start the server manually by double-clicking the script.</li>
+      </ul>
+
+      <h3>Panel says it can’t connect to the server</h3>
+      <ul>
+        <li>Make sure the server is actually running (either from CubicControl or manually).</li>
+        <li>If you recently moved the server folder, update the path in the profile.</li>
+        <li>Restart CubicControl and try again.</li>
+      </ul>
+
+      <h3>Login problems</h3>
+      <ul>
+        <li>If your password is not accepted, carefully check for Caps Lock and spelling.</li>
+        <li>If it still doesn’t work, you can reset the password (see
+          <a href="#reset" style="color:#93c5fd;">Resetting things</a>).
+        </li>
+      </ul>
+
+      <h3>Playit doesn’t start</h3>
+      <ul>
+        <li>Check that you picked the correct file path for <code>playit.exe</code>.</li>
+        <li>Try running <code>playit.exe</code> manually once to confirm it works.</li>
+      </ul>
+
+      <h3>Other issues</h3>
+      <ul>
+        <li>Open Task Manager and check that only one instance of <code>CubicControl.exe</code> is running.</li>
+        <li>If CubicControl.exe is already closed, check for any leftover Caddy.exe or Playit.exe processes and end them.</li>
+      </ul>
+    </section>
+
+    <!-- RESET -->
+    <section id="reset" class="content-section">
+      <h2>Resetting things (passwords, keys, profiles)</h2>
+      <p>
+        If something goes wrong, you can reset parts of CubicControl.  
+        These steps are slightly more advanced – follow them slowly and carefully.
+      </p>
+
+      <h3>Reset the panel password</h3>
+      <ol class="step-list">
+        <li>Fully close CubicControl.</li>
+        <li>In the CubicControl folder, open the <code>data</code> folder.</li>
+        <li>Delete the file <code>auth.json</code>.</li>
+        <li>Start <code>CubicControl.exe</code> again.</li>
+        <li>You will be asked to create a new password.</li>
+      </ol>
+
+      <h3>Reset your AUTH_KEY / ADMIN_AUTH_KEY</h3>
+      <p>There are two ways to do this:</p>
+      <ul>
+        <li><strong>From inside the panel:</strong> use the keys pop-up / settings to change them while logged in.</li>
+        <li><strong>Manual reset (advanced):</strong> see the full instructions in the
+          <a href="#technical" style="color:#93c5fd;">Technical details</a> section.
+        </li>
+      </ul>
+
+      <h3>Fixing a broken profile</h3>
+      <ul>
+        <li>If a profile is mis-configured, try editing or deleting it from the panel first.</li>
+        <li>If the panel can’t load it at all, you can manually edit or remove it – see the
+          <a href="#technical" style="color:#93c5fd;">Technical details</a>.
+        </li>
+      </ul>
+    </section>
+
+    <!-- TECHNICAL DETAILS -->
+    <section id="technical" class="content-section">
+      <h2>Technical details (for advanced users)</h2>
+      <p class="muted">
+        You don’t need any of this to use CubicControl day-to-day.  
+        This section is here for power users and debugging.
+      </p>
+
+      <details>
+        <summary>
+          <span>
+            <span class="summary-label">Section</span>
+            <span class="summary-title">How CubicControl is built</span>
+          </span>
+          <span class="summary-chevron">▶</span>
+        </summary>
+        <div class="inner">
+          <ul>
+            <li>The UI is served by a Flask + Socket.IO application.</li>
+            <li>Caddy is used as a reverse proxy:
+              <ul>
+                <li>Binary: <code>data/caddy.exe</code> (downloaded automatically).</li>
+                <li>Config: <code>data/Caddyfile</code>.</li>
+                <li>Logs: <code>logs/caddy_*.log</code>.</li>
+              </ul>
+            </li>
+            <li>Profiles are stored in <code>data/server_profiles.json</code>.</li>
+            <li>The app enforces RCON and Query configuration in <code>server.properties</code>:
+              <ul>
+                <li>RCON port: <code>27001</code></li>
+                <li>Query port: <code>27002</code></li>
+                <li>RCON is forced on when a profile is active.</li>
+              </ul>
+            </li>
+            <li>A single-instance lock prevents multiple copies of the panel from running at once.</li>
+            <li>In .exe mode, a Windows Scheduled Task named <code>CubicControl</code> is created to relaunch after wake (about 30 seconds delay).</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span>
+            <span class="summary-label">Section</span>
+            <span class="summary-title">Auth, keys & sessions</span>
+          </span>
+          <span class="summary-chevron">▶</span>
+        </summary>
+        <div class="inner">
+          <ul>
+            <li>Panel login credentials:
+              <ul>
+                <li>Stored in <code>data/auth.json</code> as a salted, hashed password.</li>
+                <li>Deleting this file resets the login and forces a new password to be created.</li>
+              </ul>
+            </li>
+            <li>API keys:
+              <ul>
+                <li><strong>AUTH_KEY</strong> and <strong>ADMIN_AUTH_KEY</strong> are stored encrypted in <code>data/auth_keys.bin</code>.</li>
+                <li>The encryption key is kept in <code>data/auth_keys.key</code>.</li>
+                <li>At runtime, keys are exported to environment variables for the app.</li>
+              </ul>
+            </li>
+            <li>Resetting keys:
+              <ul>
+                <li>Use the panel API: <code>POST /api/auth-keys</code> while logged in as an admin.</li>
+                <li>Or delete <code>data/auth_keys.bin</code> and <code>data/auth_keys.key</code>, restart, and re-enter the keys via the modal.</li>
+              </ul>
+            </li>
+            <li>If keys are missing or the modal is not completed, protected endpoints respond with HTTP <code>428 Precondition Required</code>.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span>
+            <span class="summary-label">Section</span>
+            <span class="summary-title">Profiles & enforced settings</span>
+          </span>
+          <span class="summary-chevron">▶</span>
+        </summary>
+        <div class="inner">
+          <ul>
+            <li>Each profile in <code>data/server_profiles.json</code> includes:
+              <ul>
+                <li>Name & description.</li>
+                <li><code>server_path</code> (absolute path).</li>
+                <li><code>run_script</code> (e.g. <code>run.bat</code>).</li>
+                <li><code>inactivity_limit</code> and <code>polling_interval</code> (seconds).</li>
+                <li>Per-profile flags: whether to sleep PC / close panel on inactivity.</li>
+                <li>An auto-generated <code>rcon_password</code>.</li>
+              </ul>
+            </li>
+            <li>When a profile is activated:
+              <ul>
+                <li><code>server.properties</code> is updated with enforced RCON/Query settings.</li>
+                <li>Environment variables for the controller and RCON are applied.</li>
+                <li>The inactivity controller process is started for that profile.</li>
+              </ul>
+            </li>
+            <li>Server Properties editor:
+              <ul>
+                <li>Updates <code>server.properties</code> directly.</li>
+                <li>RCON and Query fields are protected/overwritten by CubicControl to maintain correct values.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span>
+            <span class="summary-label">Section</span>
+            <span class="summary-title">Inactivity controller & logging</span>
+          </span>
+          <span class="summary-chevron">▶</span>
+        </summary>
+        <div class="inner">
+          <ul>
+            <li>The controller polls the server every <code>polling_interval</code> seconds.</li>
+            <li>Checks player activity via Query or RCON, depending on configuration.</li>
+            <li>If empty/unreachable for more than <code>inactivity_limit</code> seconds:
+              <ul>
+                <li>Sends <code>stop</code> via RCON.</li>
+                <li>Optionally calls Windows sleep.</li>
+                <li>Optionally terminates the CubicControl process.</li>
+              </ul>
+            </li>
+            <li>Controller logs:
+              <ul>
+                <li>Location: <code>&lt;server_path&gt;/ControllerLogs/&lt;date&gt;_MinecraftControllerLogs.log</code>.</li>
+              </ul>
+            </li>
+            <li>Server logs:
+              <ul>
+                <li>Location: <code>&lt;server_path&gt;/logs/latest.log</code> (vanilla/standard).</li>
+              </ul>
+            </li>
+            <li>Panel logs:
+              <ul>
+                <li>Location: <code>logs/control_panel_*.log</code>.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span>
+            <span class="summary-label">Section</span>
+            <span class="summary-title">Remote API endpoints</span>
+          </span>
+          <span class="summary-chevron">▶</span>
+        </summary>
+        <div class="inner">
+          <p>All token-based endpoints accept one of:</p>
+          <ul>
+            <li><code>Authorization: Bearer &lt;AUTH_KEY&gt;</code></li>
+            <li><code>Authorization: Bearer &lt;ADMIN_AUTH_KEY&gt;</code></li>
+          </ul>
+
+          <p>Lightweight control endpoints:</p>
+          <ul>
+            <li><code>/status</code> – basic status.</li>
+            <li><code>/start</code> – start server via active profile.</li>
+            <li><code>/stop</code> – stop server.</li>
+            <li><code>/restart</code> – restart server.</li>
+          </ul>
+
+          <p>Namespaced equivalents (same behaviour):</p>
+          <ul>
+            <li><code>/api/server/status</code></li>
+            <li><code>/api/server/start</code></li>
+            <li><code>/api/server/stop</code></li>
+            <li><code>/api/server/restart</code></li>
+          </ul>
+
+          <p>Other <code>/api/...</code> endpoints:</p>
+          <ul>
+            <li>By default, require a panel session (logged-in user).</li>
+            <li>If <strong>ADMIN_AUTH_KEY</strong> is configured, they will also accept bearer tokens.</li>
+          </ul>
+        </div>
+      </details>
+
+      <details>
+        <summary>
+          <span>
+            <span class="summary-label">Section</span>
+            <span class="summary-title">Key files & folders (summary)</span>
+          </span>
+          <span class="summary-chevron">▶</span>
+        </summary>
+        <div class="inner">
+          <ul>
+            <li><code>data/auth.json</code> – hashed panel password.</li>
+            <li><code>data/auth_keys.bin</code> – encrypted AUTH_KEY and ADMIN_AUTH_KEY.</li>
+            <li><code>data/auth_keys.key</code> – encryption key for <code>auth_keys.bin</code>.</li>
+            <li><code>data/server_profiles.json</code> – server profiles and active profile flag.</li>
+            <li><code>data/PlayitConfig.ini</code> – stored path to <code>playit.exe</code>.</li>
+            <li><code>data/Caddyfile</code> – Caddy configuration.</li>
+            <li><code>data/caddy.exe</code> – downloaded Caddy binary.</li>
+            <li><code>logs/control_panel_*.log</code> – CubicControl logs.</li>
+            <li><code>logs/caddy_*.log</code> – Caddy logs.</li>
+            <li>Per profile (under <code>&lt;server_path&gt;</code>):
+              <ul>
+                <li><code>ControllerLogs/</code> – controller activity.</li>
+                <li><code>logs/latest.log</code> – Minecraft log.</li>
+                <li><code>server.properties</code> – enforced RCON/Query configuration.</li>
+                <li><code>run.bat</code> (or equivalent) – server start script.</li>
+              </ul>
+            </li>
+          </ul>
+        </div>
+      </details>
+    </section>
+  </main>
+  <script>
+    const navLinks = Array.from(document.querySelectorAll('nav a[data-target]'));
+    const sections = Array.from(document.querySelectorAll('.content-section'));
+
+    function showSection(id) {
+      sections.forEach(sec => sec.classList.toggle('active', sec.id === id));
+      navLinks.forEach(link => link.classList.toggle('active', link.dataset.target === id));
+    }
+
+    navLinks.forEach(link => {
+      link.addEventListener('click', (e) => {
+        e.preventDefault();
+        const target = link.dataset.target;
+        if (target) {
+          showSection(target);
+          history.replaceState(null, '', '#' + target);
+        }
+      });
+    });
+
+    // Open section from URL hash if present
+    const initial = (location.hash || '').replace('#', '');
+    if (initial && sections.some(sec => sec.id === initial)) {
+      showSection(initial);
+    } else {
+      showSection('overview');
+    }
+  </script>
+</body>
+</html>
