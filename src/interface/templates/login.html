@@ -353,6 +353,7 @@
           showAlert('Welcome! Please create a password to secure your control panel.', 'info');
         }
       } catch (error) {
+        console.error('Auth status check failed', error);
         showAlert('Failed to connect to server. Please try again.');
       }
     }
@@ -416,6 +417,7 @@
           document.getElementById('login-password').focus();
         }
       } catch (error) {
+        console.error('Login request failed', error);
         showAlert('Login failed. Please try again.');
         btn.disabled = false;
         btn.innerHTML = '<span>Login</span>';
@@ -466,6 +468,7 @@
           btn.innerHTML = '<span>Create Password</span>';
         }
       } catch (error) {
+        console.error('Password setup failed', error);
         showAlert('Setup failed. Please try again.');
         btn.disabled = false;
         btn.innerHTML = '<span>Create Password</span>';

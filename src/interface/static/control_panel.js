@@ -101,10 +101,10 @@ function showDialog(options = {}) {
   if (!dialogOverlay || !dialogConfirmBtn || !dialogCancelBtn) {
     // Fallback to native prompts when modal markup is unavailable
     if (options.input) {
-      const value = window.prompt(options.message || options.title || '', options.defaultValue || '');
+      const value = globalThis.prompt(options.message || options.title || '', options.defaultValue || '');
       return Promise.resolve({ confirmed: Boolean(value !== null), value: value ? value.trim() : null });
     }
-    const confirmed = window.confirm(options.message || options.title || '');
+    const confirmed = globalThis.confirm(options.message || options.title || '');
     return Promise.resolve({ confirmed });
   }
   const {
@@ -191,6 +191,7 @@ async function ensureAuthKeysConfigured(forcePrompt = false) {
     }
     setStatus(body.error || 'Unable to verify auth keys', true);
   } catch (err) {
+    console.error('Failed to verify auth keys', err);
     setStatus('Unable to verify auth keys', true);
   }
   if (forcePrompt || !authKeysConfigured) openAuthKeyModal();
@@ -230,6 +231,7 @@ async function saveAuthKeys(event) {
       setStatus(body.error || 'Failed to save authentication keys', true);
     }
   } catch (err) {
+    console.error('Failed to save authentication keys', err);
     setStatus('Failed to save authentication keys', true);
   } finally {
     if (saveAuthKeysBtn) {
@@ -272,12 +274,12 @@ function setChip(chipEl, isOn) {
 function updateServerChip(state) {
   if (!serverChip) return;
   const stateText = state || 'stopped';
-  const pretty =
-    stateText === 'starting'
-      ? 'Starting...'
-      : stateText === 'stopping'
-        ? 'Stopping...'
-        : stateText.charAt(0).toUpperCase() + stateText.slice(1);
+  let pretty = stateText.charAt(0).toUpperCase() + stateText.slice(1);
+  if (stateText === 'starting') {
+    pretty = 'Starting...';
+  } else if (stateText === 'stopping') {
+    pretty = 'Stopping...';
+  }
 
   const valueSpan = serverChip.querySelector('.status-value');
   if (valueSpan) {
@@ -332,7 +334,7 @@ function toggleDrawer(open) {
   drawer.setAttribute('aria-hidden', open ? 'false' : 'true');
   drawer.toggleAttribute('inert', !open);
   if (!open) {
-    drawer.removeAttribute('data-profile-name');
+    delete drawer.dataset.profileName;
   }
   if (open) {
     setTimeout(() => {
@@ -380,6 +382,7 @@ async function fetchServerState() {
     const body = await res.json();
     return body.state || null;
   } catch (err) {
+    console.error('Failed to fetch server state', err);
     return null;
   }
 }
@@ -451,6 +454,7 @@ async function refreshStatus() {
       updateServerChip(serverState);
     }
   } catch (error) {
+    console.error('Failed to read server state', error);
     updateServerChip(serverState);
   }
 
@@ -625,7 +629,6 @@ async function activateProfile(nameOverride, forceRestart = false) {
     });
 
     // Try to parse JSON error gracefully
-    let err = null;
     let body = null;
     try { body = await res.json(); } catch (_) { /* no body */ }
 
@@ -635,9 +638,10 @@ async function activateProfile(nameOverride, forceRestart = false) {
       connectLogs(targetName);
       await refreshStatus();
     } else {
-      setStatus((body && body.error) || 'Failed to activate/restart profile', true);
+      setStatus(body?.error || 'Failed to activate/restart profile', true);
     }
   } catch (error) {
+    console.error('Failed to activate/restart profile', error);
     setStatus('Unable to activate/restart profile', true);
   } finally {
     showLoading(false);
@@ -870,7 +874,7 @@ async function pollServerReadiness(retries = 20) {
         return;
       }
     } catch (err) {
-      // ignore and retry
+      console.warn('Server readiness poll failed, retrying', err);
     }
   }
 }
@@ -888,7 +892,7 @@ async function pollServerShutdown(retries = 15) {
         return;
       }
     } catch (err) {
-      // ignore and retry
+      console.warn('Server shutdown poll failed, retrying', err);
     }
   }
 }
@@ -948,7 +952,7 @@ async function promptForPlayitPath() {
   await refreshStatus();
 
   // Use the current path from the backend (lastStatus.playit_path) or fallback to empty
-  const defaultPath = (lastStatus && lastStatus.playit_path) || '';
+  const defaultPath = lastStatus?.playit_path || '';
 
   const { confirmed, value } = await showInputDialog({
     title: 'Configure PlayitGG',
@@ -982,7 +986,7 @@ async function promptForPlayitPath() {
     localStorage.setItem('playitPath', path);
     await refreshStatus();
     // Only start Playit if it's not already running
-    if (!lastStatus || !lastStatus.playit_running) {
+    if (!lastStatus?.playit_running) {
       await startPlayit();
     }
     return true;
@@ -999,7 +1003,7 @@ async function startPlayit() {
     lastStatus = await refreshStatus();
   }
 
-  if (!lastStatus || !lastStatus.playit_configured) {
+  if (!lastStatus?.playit_configured) {
     setStatus('Path to Playit.exe not configured', true);
     const configured = await promptForPlayitPath();
     if (!configured) return;
@@ -1007,7 +1011,7 @@ async function startPlayit() {
     lastStatus = await refreshStatus();
   }
 
-  if (lastStatus && lastStatus.playit_running) {
+  if (lastStatus?.playit_running) {
     setStatus('PlayitGG is already running', true);
     return;
   }
@@ -1152,7 +1156,7 @@ async function logout() {
     });
 
     if (res.ok) {
-      window.location.href = '/login';
+      globalThis.location.href = '/login';
     } else {
       setStatus('Failed to logout', true);
     }

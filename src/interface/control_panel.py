@@ -33,6 +33,8 @@ from src.logging_utils.logger import logger
 
 APP_DIR = Path(__file__).resolve().parent
 BASE_DIR = APP_DIR.parent
+NO_ACTIVE_PROFILE_MSG = "No active profile"
+PROFILE_NOT_FOUND_MSG = "Profile not found"
 
 
 def _current_app_executable() -> Optional[Path]:
@@ -43,10 +45,6 @@ def _current_app_executable() -> Optional[Path]:
 
 
 def _close_browser_windows(title_substring: str = "CubicControl Server Manager") -> None:
-    """
-    Best-effort close any browser windows whose main title contains the panel title.
-    Only used on Windows; harmlessly skipped elsewhere.
-    """
     if not sys.platform.startswith("win"):
         return
     try:
@@ -76,73 +74,100 @@ _single_instance_lock = None
 _instance_socket = None
 
 
+def _check_existing_lock(lock_path: Path) -> None:
+    """Check if existing lock file is valid and process is alive."""
+    if not lock_path.exists():
+        return
+
+    try:
+        existing_pid = int(lock_path.read_text().strip() or "0")
+        if existing_pid and psutil.pid_exists(existing_pid):
+            raise RuntimeError("Another control panel instance is already running.")
+    except ValueError:
+        pass  # Corrupted PID
+    except RuntimeError:
+        raise
+
+    # Stale lock; remove before acquiring
+    try:
+        lock_path.unlink()
+    except Exception:
+        pass
+
+
+def _acquire_file_lock(handle) -> None:
+    """Acquire OS-specific file lock."""
+    if os.name == "nt":
+        import msvcrt
+        try:
+            msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
+        except OSError as exc:
+            raise RuntimeError("Another control panel instance is already running.") from exc
+    else:
+        import fcntl
+        fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+
+
+def _acquire_instance_socket() -> socket.socket:
+    """Create and bind exclusive socket as secondary instance guard."""
+    global _instance_socket
+    _instance_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+
+    if os.name == "nt":
+        _instance_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
+        _instance_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+
+    _instance_socket.bind(("127.0.0.1", 38999))
+    _instance_socket.listen(1)
+    return _instance_socket
+
+
+def _write_lock_pid(handle) -> None:
+    """Write current PID to lock file."""
+    handle.seek(0)
+    handle.truncate()
+    handle.write(str(os.getpid()))
+    handle.flush()
+
+
+def _cleanup_lock_resources(handle) -> None:
+    """Clean up lock resources on failure."""
+    global _instance_socket
+    try:
+        handle.close()
+    except Exception:
+        pass
+
+    if _instance_socket:
+        try:
+            _instance_socket.close()
+        except Exception:
+            pass
+        _instance_socket = None
+
+
 def _acquire_single_instance_lock() -> Path:
     """
     Prevent multiple instances by locking a temp file.
     Works for both frozen executables and normal Python runs.
     """
-    global _single_instance_lock, _instance_socket
+    global _single_instance_lock
 
     lock_path = Path(tempfile.gettempdir()) / "minrefact_control_panel.lock"
     lock_path.parent.mkdir(parents=True, exist_ok=True)
 
-    # If a previous lock exists, check whether the recorded PID is still alive.
-    if lock_path.exists():
-        try:
-            existing_pid = int(lock_path.read_text().strip() or "0")
-            if existing_pid and psutil.pid_exists(existing_pid):
-                raise RuntimeError("Another control panel instance is already running.")
-        except ValueError:
-            # Corrupted PID; fall through to lock attempt
-            pass
-        except RuntimeError:
-            raise
-        # Stale lock; remove before acquiring
-        try:
-            lock_path.unlink()
-        except Exception:
-            pass
+    _check_existing_lock(lock_path)
 
     handle = open(lock_path, "a+")
 
     try:
-        if os.name == "nt":
-            import msvcrt
-            try:
-                msvcrt.locking(handle.fileno(), msvcrt.LK_NBLCK, 1)
-            except OSError as exc:
-                raise RuntimeError("Another control panel instance is already running.") from exc
-        else:
-            import fcntl
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
-
-        # Use a small localhost port as a second guard. Exclusive bind blocks duplicates
-        # even if the file lock is stale or ignored.
-        _instance_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        if os.name == "nt":
-            _instance_socket.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 0)
-            # SO_EXCLUSIVEADDRUSE prevents socket reuse on Windows
-            _instance_socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
-        _instance_socket.bind(("127.0.0.1", 38999))
-        _instance_socket.listen(1)
-
-        handle.seek(0)
-        handle.truncate()
-        handle.write(str(os.getpid()))
-        handle.flush()
+        _acquire_file_lock(handle)
+        _acquire_instance_socket()
+        _write_lock_pid(handle)
         _single_instance_lock = handle
         return lock_path
     except Exception:
-        try:
-            handle.close()
-        except Exception:
-            pass
-        if _instance_socket:
-            try:
-                _instance_socket.close()
-            except Exception:
-                pass
-            _instance_socket = None
+        _cleanup_lock_resources(handle)
         raise
 
 
@@ -335,45 +360,69 @@ def _authorized_for_public_api() -> bool:
     return any(provided == f"Bearer {token}" for token in tokens if token)
 
 
+def _is_auth_route(path: str) -> bool:
+    return path in {"/auth/login", "/auth/setup", "/auth/status", "/login"}
+
+
+def _is_static_request(path: str) -> bool:
+    return path.startswith("/static/")
+
+
+def _unauthenticated_response(path: str):
+    if path.startswith("/api/") or path.startswith("/socket.io"):
+        return jsonify({'error': 'Unauthorized - Please login'}), 401
+    return redirect(url_for('login'))
+
+
+def _enforce_key_setup(path: str):
+    if path in KEY_SETUP_SAFE_PATHS or path.startswith("/static/"):
+        return None
+    if path.startswith("/api/") or path.startswith("/socket.io"):
+        return jsonify({'error': 'AUTH_KEYS_REQUIRED'}), 428
+    return redirect(url_for('index'))
+
+
+def _validate_api_bearer():
+    expected, _ = secret_store.get_keys()
+    if not expected:
+        return None
+    provided = request.headers.get('Authorization', '')
+    if provided and provided != f'Bearer {expected}':
+        return jsonify({'error': 'Unauthorized'}), 403
+    return None
+
+
+def _public_api_authorization(path: str):
+    if path not in PUBLIC_REMOTE_PATHS:
+        return None
+    if _authorized_for_public_api():
+        return None
+    return jsonify({'error': 'Unauthorized'}), 403
+
+
 @app.before_request
 def _check_authentication():
     """Check if user is authenticated before allowing access to protected routes."""
-    # Allow access to auth-related routes
-    if request.path in ['/auth/login', '/auth/setup', '/auth/status', '/login']:
+    path = request.path
+    if _is_auth_route(path) or _is_static_request(path):
         return None
 
-    # Allow access to static files
-    if request.path.startswith('/static/'):
-        return None
+    public_api_denied = _public_api_authorization(path)
+    if public_api_denied:
+        return public_api_denied
 
-    # Allow token-only access to the lightweight remote API
-    if request.path in PUBLIC_REMOTE_PATHS:
-        if _authorized_for_public_api():
-            return None
-        return jsonify({'error': 'Unauthorized'}), 403
-
-    # Check if user is logged in
     if not session.get('authenticated'):
-        # For API/AJAX requests, return 401
-        if request.path.startswith('/api/') or request.path.startswith('/socket.io'):
-            return jsonify({'error': 'Unauthorized - Please login'}), 401
-        # For page requests, redirect to login
-        return redirect(url_for('login'))
+        return _unauthenticated_response(path)
 
-    if session.get("authenticated") and not secret_store.has_keys():
-        # Block access to everything except the key setup endpoints until keys are configured
-        if request.path not in KEY_SETUP_SAFE_PATHS and not request.path.startswith("/static/"):
-            if request.path.startswith("/api/") or request.path.startswith("/socket.io"):
-                return jsonify({'error': 'AUTH_KEYS_REQUIRED'}), 428
-            return redirect(url_for('index'))
+    if not secret_store.has_keys():
+        gate = _enforce_key_setup(path)
+        if gate:
+            return gate
 
-    # Additional API auth check if ADMIN_AUTH_KEY is set (for external API access)
-    if request.path.startswith('/api/'):
-        expected, _ = secret_store.get_keys()
-        if expected:
-            provided = request.headers.get('Authorization', '')
-            if provided and provided != f'Bearer {expected}':
-                return jsonify({'error': 'Unauthorized'}), 403
+    if path.startswith('/api/'):
+        bearer_issue = _validate_api_bearer()
+        if bearer_issue:
+            return bearer_issue
 
     return None
 
@@ -503,7 +552,7 @@ def _apply_profile_environment(profile: ServerProfile) -> None:
         os.environ["AUTHKEY_SERVER_WEBSITE"] = auth_key
 
 
-def _is_api_running(profile: Optional[ServerProfile]) -> bool:
+def _is_api_running() -> bool:
     """The remote API now lives inside this control panel process and is always on."""
     return True
 
@@ -1155,7 +1204,7 @@ def api_status():
             "message": "ServerSide control panel",
             "active_profile": store.active_profile_name,
             "profiles": [p.to_dict() for p in store.list_profiles()],
-            "api_running": _is_api_running(active_profile),
+            "api_running": _is_api_running(),
             "controller_running": _controller_running(store.active_profile_name or ""),
             "server_running": _is_server_running(store.active_profile_name or "") if store.active_profile_name else False,
             "playit_running": _is_playit_running(),
@@ -1220,7 +1269,7 @@ def manage_profiles():
 @app.route("/api/profiles/<name>", methods=["PUT"])
 def update_profile(name: str):
     if not store.get_profile(name):
-        return jsonify({"error": "Profile not found"}), 404
+        return jsonify({"error": PROFILE_NOT_FOUND_MSG}), 404
 
     payload = request.get_json(force=True)
     payload = payload or {}
@@ -1240,7 +1289,7 @@ def update_profile(name: str):
 def profile_detail(name: str):
     profile = store.get_profile(name)
     if not profile:
-        return jsonify({"error": "Profile not found"}), 404
+        return jsonify({"error": PROFILE_NOT_FOUND_MSG}), 404
 
     if request.method == "GET":
         return jsonify(profile.to_dict())
@@ -1299,7 +1348,7 @@ def active_profile():
 def start_controller():
     profile = store.active_profile
     if not profile:
-        return jsonify({"error": "No active profile"}), 400
+        return jsonify({"error": NO_ACTIVE_PROFILE_MSG}), 400
 
     if _controller_running(profile.name):
         return jsonify({"message": "Controller already running", "profile": profile.name})
@@ -1313,7 +1362,7 @@ def start_server():
     """Start the Minecraft server for the active profile."""
     profile = store.active_profile
     if not profile:
-        return jsonify({"error": "No active profile"}), 400
+        return jsonify({"error": NO_ACTIVE_PROFILE_MSG}), 400
 
     state = _server_state(profile)
     if state.get("state") in {"starting", "running"}:
@@ -1362,7 +1411,7 @@ def start_playit():
 def stop_controller():
     profile = store.active_profile
     if not profile:
-        return jsonify({"error": "No active profile"}), 400
+        return jsonify({"error": NO_ACTIVE_PROFILE_MSG}), 400
 
     if _stop_controller(profile.name):
         return jsonify({"message": "Controller stopped"})
@@ -1399,7 +1448,7 @@ def stop_server():
     """Stop the Minecraft server for the active profile."""
     profile = store.active_profile
     if not profile:
-        return jsonify({"error": "No active profile"}), 400
+        return jsonify({"error": NO_ACTIVE_PROFILE_MSG}), 400
 
     state = _server_state(profile)
     if state.get("state") in {"stopped", "inactive"}:
@@ -1420,7 +1469,7 @@ def force_stop_server():
     """Force stop the Minecraft server immediately without graceful shutdown."""
     profile = store.active_profile
     if not profile:
-        return jsonify({"error": "No active profile"}), 400
+        return jsonify({"error": NO_ACTIVE_PROFILE_MSG}), 400
 
     def _force_stop_async():
         try:
@@ -1436,7 +1485,7 @@ def force_stop_server():
 def send_command():
     profile = store.active_profile
     if not profile:
-        return jsonify({"error": "No active profile"}), 400
+        return jsonify({"error": NO_ACTIVE_PROFILE_MSG}), 400
 
     payload = request.get_json(force=True) or {}
     command = str(payload.get("command", "")).strip()
