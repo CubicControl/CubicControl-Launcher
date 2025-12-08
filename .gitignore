@@ -8,3 +8,10 @@
 /dataSources.local.xml
 /dist
 /logs
+/build
+/venv
+/__pycache__
+/data
+control_panel.spec
+/tests
+SonarQubeReport.txt
