@@ -1,4 +1,4 @@
-<img src="CubicControlLogo.png" alt="CubicControl Logo" width="200"/>
+<img src="src/interface/static/CubicControlLogo.png" alt="CubicControl Logo" width="200"/>
 
 CubicControl is a Windows-only control panel that makes running and sharing Minecraft servers with friends easy. It provides a single UI for common tasks: starting/stopping servers, monitoring activity, managing profiles, tunneling with PlayitGG, and auto-sleeping your PC on inactivity.
 
