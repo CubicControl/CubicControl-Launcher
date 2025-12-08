@@ -10,7 +10,7 @@
 /logs
 /build
 /venv
-/__pycache__
+__pycache__/
 /data
 control_panel.spec
 /tests
