@@ -16,3 +16,5 @@ control_panel.spec
 /tests
 SonarQubeReport.txt
 build.ps1
+CubicControlICO.ico
+.idea/
