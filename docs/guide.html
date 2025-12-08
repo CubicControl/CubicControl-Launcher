@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>CubicControl – Simple User Guide</title>
+  <title>CubicControl – User Guide</title>
   <style>
     :root {
       --bg: #050814;
@@ -82,6 +82,13 @@
       background: rgba(15,23,42,0.9);
       border-color: rgba(96,165,250,0.55);
     }
+	
+	nav img {
+	  max-width: 100%;     /* never exceed the nav’s width */
+	  height: auto;        /* keep proportions */
+	  display: block;      /* avoids inline spacing issues */
+	  margin: 0 auto 16px; /* optional: center and add bottom spacing */
+	}
 
     main {
       padding: 28px 32px 48px;
@@ -308,7 +315,7 @@
   <!-- Source: :contentReference[oaicite:0]{index=0} -->
 
   <nav>
-    <h1>CubicControl</h1>
+	<img src="../src/interface/static/CubicControlLogo.jpg" alt="Cubic Control Logo">
     <p>Easy panel for managing your Minecraft server.</p>
 
     <div class="nav-label">Start here</div>

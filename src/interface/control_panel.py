@@ -7,10 +7,8 @@ import socket
 import subprocess
 import sys
 import tempfile
-import threading
 import time
 import warnings
-import webbrowser
 from pathlib import Path
 from threading import Thread
 from typing import Dict, List, Optional
@@ -1142,7 +1140,7 @@ def set_auth_keys():
 def index():
     admin_key, auth_key = secret_store.get_keys()
     return render_template(
-        "control_panel.html",
+        "control_panel.jinja2",
         admin_auth_key=admin_key,
         auth_key=auth_key,
     )
