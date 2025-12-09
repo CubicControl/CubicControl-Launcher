@@ -407,9 +407,12 @@ def _check_authentication():
     if _is_auth_route(path) or _is_static_request(path):
         return None
 
-    public_api_denied = _public_api_authorization(path)
-    if public_api_denied:
-        return public_api_denied
+    # Allow lightweight remote endpoints to use bearer auth without requiring a session cookie.
+    if path in PUBLIC_REMOTE_PATHS:
+        if _authorized_for_public_api():
+            return None
+        if not session.get('authenticated'):
+            return jsonify({'error': 'Unauthorized'}), 403
 
     if not session.get('authenticated'):
         return _unauthenticated_response(path)

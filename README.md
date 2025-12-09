@@ -38,7 +38,7 @@ PlayitGG is required to share your server over the internet. In the UI, set the 
 3. Enable Wake On Lan in your Windows network adapter settings.
 4. Install Java if not already installed.
 5. Download the latest CubicControl.exe release [HERE](https://github.com/romaingrude/CubicControl-Launcher/releases)
-6. Run CubicControl.exe
+6. **⚠️ Run `CubicControl.exe` in Administrator mode the first time to allow it to set up the scheduled task.**
 7. Access to panel on `http://localhost:38000/`
 8. Create a password when prompted
 9. Create a server profile (vanilla or modpack)

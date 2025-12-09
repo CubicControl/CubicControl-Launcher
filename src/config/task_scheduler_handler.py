@@ -21,7 +21,7 @@ DEFAULT_SCHEDULER_XML = """<?xml version="1.0" encoding="UTF-16"?>
   <Principals>
     <Principal id="Author">
       <LogonType>InteractiveToken</LogonType>
-      <RunLevel>LeastPrivilege</RunLevel>
+      <RunLevel>HighestAvailable</RunLevel>
     </Principal>
   </Principals>
   <Settings>
