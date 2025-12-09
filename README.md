@@ -37,14 +37,15 @@ PlayitGG is required to share your server over the internet. In the UI, set the 
 2. Ensure your PC is connected via wired ethernet.
 3. Enable Wake On Lan in your Windows network adapter settings.
 4. Install Java if not already installed.
-5. Download the latest CubicControl.exe release [HERE](https://github.com/romaingrude/CubicControl-Launcher/releases)
-6. **⚠️ Run `CubicControl.exe` in Administrator mode the first time to allow it to set up the scheduled task.**
-7. Access to panel on `http://localhost:38000/`
-8. Create a password when prompted
-9. Create a server profile (vanilla or modpack)
-10. Activte the profile and start the server from the UI
-11. (Optional) Configure PlayitGG for remote internet access to your Minecraft server
-12. (Optional) Set up remote web access with [CubicControl-ClientSide](https://github.com/cubiccontrol/CubicControl-ClientSide.git)
+5. Set up port forwarding on your router to forward ports **80** and **443** to your hosting PC's local IP address (required for Caddy to provide remote access).
+6. Download the latest CubicControl.exe release [HERE](https://github.com/romaingrude/CubicControl-Launcher/releases)
+7. **⚠️ Run `CubicControl.exe` in Administrator mode the first time to allow it to set up the scheduled task.**
+8. Access to panel on `http://localhost:38000/`
+9. Create a password when prompted
+10. Create a server profile (vanilla or modpack)
+11. Activte the profile and start the server from the UI
+12. (Optional) Configure PlayitGG for remote internet access to your Minecraft server
+13. (Optional) Set up remote web access with [CubicControl-ClientSide](https://github.com/cubiccontrol/CubicControl-ClientSide.git)
 
 At this point, your server should be running and accessible on your local network. If you set up PlayitGG, it should also be accessible over the internet.
 The server is now fully autonomous and will handle inactivity/sleep as configured. After inactivity, the server and panel will stop, and your PC will sleep. Waking the PC will automatically start the panel again.
