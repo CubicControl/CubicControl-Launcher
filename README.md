@@ -6,6 +6,11 @@
 
 CubicControl is a Windows-only control panel that makes running and sharing Minecraft servers with friends easy. It provides a single UI for common tasks: starting/stopping servers, monitoring activity, managing profiles, tunneling with PlayitGG, and auto-sleeping your PC on inactivity.
 
+> ⚠️ **Disclaimer**
+>
+> **I am not a professional developer.** CubicControl started as a personal project that I decided to share in case others find it useful or enjoyable. While I have done my best to ensure the code is functional and free of major bugs, there may be inconsistencies or coding issues present.  
+> **This is an ongoing project, and improvements or fixes will continue over time.**
+
 ## Key Features
 - Manage multiple server profiles (vanilla or modpacks) with per-profile config.
 - Start/stop server and controller processes, view live logs, and send commands.
