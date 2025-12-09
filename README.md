@@ -44,7 +44,7 @@ PlayitGG is required to share your server over the internet. In the UI, set the 
 9. Create a server profile (vanilla or modpack)
 10. Activte the profile and start the server from the UI
 11. (Optional) Configure PlayitGG for remote internet access to your Minecraft server
-12. (Optional) Set up remote web access with [CubicControl Flask frontend](https://google.com)
+12. (Optional) Set up remote web access with [CubicControl-ClientSide](https://github.com/cubiccontrol/CubicControl-ClientSide.git)
 
 At this point, your server should be running and accessible on your local network. If you set up PlayitGG, it should also be accessible over the internet.
 The server is now fully autonomous and will handle inactivity/sleep as configured. After inactivity, the server and panel will stop, and your PC will sleep. Waking the PC will automatically start the panel again.
