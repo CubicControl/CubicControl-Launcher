@@ -786,8 +786,7 @@ def _emit_public_status(profile: Optional[ServerProfile]) -> None:
     try:
         socketio.emit("status_update", _public_status_payload(profile))
     except Exception as exc:  # pragma: no cover - defensive
-        logger.warning("Unable to emit status update: %s", exc)
-
+        logger.debug("SocketIO emit during shutdown failed: %s", exc)
 
 def _log_room(profile_name: str) -> str:
     return f"log-stream::{profile_name}"
@@ -1200,7 +1199,6 @@ def index():
 
 @app.route("/api/status")
 def api_status():
-    active_profile = store.active_profile
     caddy_status = caddy_manager.status()
     return jsonify(
         {
@@ -1639,9 +1637,9 @@ def cleanup_on_exit(reason: str = "shutdown"):
         socketio.emit("app_shutdown", {"reason": reason}, broadcast=True, namespace="/")
         try:
             socketio.sleep(0)
-        except Exception:
-            pass
-    except Exception:
+        except Exception as exc:
+            logger.warning("SocketIO sleep during shutdown failed: %s", exc)
+    except Exception as ex:
         pass
     # Give the browser a brief moment to receive the shutdown event before tearing everything down
     time.sleep(0.2)
@@ -1678,8 +1676,8 @@ def _register_signal_handlers():
             continue
         try:
             signal.signal(sig, _handle_exit_signal)
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Failed to register signal handler for %s: %s", sig, exc)
 
     # Windows console close (clicking the X in cmd)
     try:
@@ -1691,8 +1689,8 @@ def _register_signal_handlers():
             return True
 
         win32api.SetConsoleCtrlHandler(_console_ctrl_handler, True)
-    except Exception:
-        pass
+    except Exception as exc:
+        logger.warning("Failed to set console ctrl handler: %s", exc)
 
 
 _register_signal_handlers()
@@ -1700,7 +1698,10 @@ atexit.register(cleanup_on_exit)
 
 
 def main():
-    """Entry point for running the control panel."""
+    # First check that app is running as admin if task scheduler task is missing
+    if not TaskSchedulerHandler.check_admin_required_for_first_setup():
+        return
+
     logger.info("Starting CubicControl")
     logger.info("Caddy is starting, please wait...")
     services_started, caddy_status = initialize_services(probe_caddy_errors=True, probe_timeout=3.0)
@@ -1710,8 +1711,8 @@ def main():
             # Ensure the prompt appears on its own line after any error logs
             print("\nPress a key to exit...", flush=True)
             input()
-        except Exception:
-            pass
+        except Exception as exc:
+            logger.warning("Input prompt failed: %s", exc)
         return
     app_exe = _current_app_executable()
     if app_exe:

@@ -1,3 +1,4 @@
+import ctypes
 import subprocess
 import sys
 import tempfile
@@ -56,11 +57,15 @@ def _is_windows() -> bool:
     return sys.platform.startswith("win")
 
 
+def _is_admin() -> bool:
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+    except Exception as exc:
+        logger.warning("Admin check failed: %s", exc)
+        return False
+
+
 class TaskSchedulerHandler:
-    """
-    Manage the Windows Scheduled Task that re-launches CubicControl after resume.
-    Uses the XML template at data/CubicControlScheduler.xml and fills in the current executable path.
-    """
 
     TASK_NAME = "CubicControl"
 
@@ -94,12 +99,13 @@ class TaskSchedulerHandler:
                 if "Task To Run" in line:
                     _, value = line.split(":", 1)
                     return value.strip().strip('"')
-        except Exception:
+        except Exception as ex:
+            logger.warning("Unable to get current scheduled task command: %s", ex)
             return None
         return None
 
     def _render_xml(self) -> Path:
-        """Fill the template placeholder with the current executable path and return a temp XML path."""
+        # Fill the template placeholder with the current executable path and return a temp XML path.
         content = DEFAULT_SCHEDULER_XML
         rendered = content.replace("__SCRIPT_DIR__", str(self.app_path))
 
@@ -124,15 +130,10 @@ class TaskSchedulerHandler:
             if xml_path:
                 try:
                     xml_path.unlink(missing_ok=True)
-                except Exception:
-                    pass
+                except Exception as exc:
+                    logger.debug("Failed to delete temp XML file '%s': %s", xml_path, exc)
 
     def ensure_task(self) -> None:
-        """
-        Ensure the scheduled task exists and points at the current executable.
-        - Skips when not on Windows.
-        - Re-creates the task when missing or when the target command differs.
-        """
         if not _is_windows():
             logger.info("Skipping scheduler setup: not running on Windows.")
             return
@@ -144,3 +145,36 @@ class TaskSchedulerHandler:
         needs_install = current_command != desired_command
         if needs_install:
             self._install_task()
+
+    @staticmethod
+    def check_admin_required_for_first_setup() -> bool:
+        if not _is_windows():
+            return True
+
+        # Quick check if task exists without needing an instance
+        try:
+            subprocess.run(
+                ["schtasks", "/Query", "/TN", TaskSchedulerHandler.TASK_NAME],
+                capture_output=True,
+                text=True,
+                check=True,
+            )
+            # Task exists, no admin check needed
+            return True
+        except subprocess.CalledProcessError:
+            # Task doesn't exist - check if we're admin
+            if not _is_admin():
+                logger.warning(
+                    "Administrator privileges are required to create the CubicControl scheduled task on first setup. "
+                    "Please run the application as an administrator."
+                )
+                try:
+                    print("\nClose the terminal or press a key to exit...", flush=True)
+                    input()
+                except Exception as exc:
+                    logger.debug("Input interrupted: %s", exc)
+                return False
+            return True
+        except Exception as exc:
+            logger.warning("Unable to check scheduled task: %s", exc)
+            return True

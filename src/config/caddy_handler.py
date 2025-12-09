@@ -1,14 +1,14 @@
 import os
 import platform
 import shutil
+import signal
 import subprocess
 import sys
 import tarfile
 import tempfile
-import signal
+import threading
 import time
 import zipfile
-import threading
 from datetime import datetime
 from pathlib import Path
 from typing import Optional
@@ -42,7 +42,7 @@ def _get_os_arch() -> tuple[str, str]:
 
 
 def find_caddy_asset_name(assets, os_name, arch):
-    """Pick the correct Caddy asset for the given OS and arch."""
+    # Pick the correct Caddy asset for the given OS and arch.
     for asset in assets:
         name = asset["name"].lower()
         if os_name in name and arch in name:
@@ -94,9 +94,7 @@ def extract_caddy_from_archive(archive_path: Path, target_dir: Path) -> Path:
 
 
 def download_latest_caddy(target_dir: Path, release_data: Optional[dict] = None) -> Path:
-    """
-    Download latest Caddy, extract it to target_dir, and return the path to the caddy binary.
-    """
+    # Download latest Caddy, extract it to target_dir, and return the path to the caddy binary.
     target_dir.mkdir(parents=True, exist_ok=True)
 
     release = release_data or fetch_latest_release()
@@ -240,7 +238,7 @@ def _verify_binary(candidate: Path) -> bool:
 
 
 def _is_warmup_proxy_error(line: str) -> bool:
-    """Return True when the log line is just the upstream being down during startup."""
+        # Return True when the log line is just the upstream being down during startup.
     lower = line.lower()
     warmup_markers = (
         "reverseproxy.statuserror",
@@ -615,7 +613,7 @@ class CaddyManager:
         return True
 
     def _terminate_additional_processes(self, kill_all: bool = False) -> int:
-        """Kill any stray Caddy processes that share the same executable path."""
+        # Kill any stray Caddy processes that share the same executable path.
         terminated = 0
         try:
             target_path = str(Path(self._binary_path).resolve()) if self._binary_path else None
