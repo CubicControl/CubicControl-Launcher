@@ -26,7 +26,7 @@ You can deploy the lightweight Flask frontend to a free Render account so friend
 - Windows 10/11.
 - A wired ethernet connection (for Wake On Lan functionality).
 - Java installed for the Minecraft server itself.
-- A domain name for remote access to the panel.
+- A domain name for remote access to the panel. You can get a free one from https://freedns.afraid.org/ in Subdomains section.
 - (Optional) PlayitGG installed; provide the full path to `playit.exe` in the UI when prompted.
 
 ## PlayitGG
