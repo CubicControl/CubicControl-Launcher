@@ -212,7 +212,7 @@ def _validate_hostname(hostname: str) -> bool:
 def _prompt_hostname() -> str:
     prompt = (
         "CADDY SETUP\n"
-        "Enter your domain name for Caddy to use (e.g., mc.example.com): "
+        "Enter your hostname address for Caddy to use (e.g., mc.example.com): "
     )
     while True:
         hostname = input(prompt).strip()
