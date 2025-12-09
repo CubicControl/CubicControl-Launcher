@@ -37,7 +37,7 @@ PlayitGG is required to share your server over the internet. In the UI, set the 
 2. Ensure your PC is connected via wired ethernet.
 3. Enable Wake On Lan in your Windows network adapter settings.
 4. Install Java if not already installed.
-5. Set up port forwarding on your router to forward ports **80** and **443** to your hosting PC's local IP address (required for Caddy to provide remote access).
+5. Set up port forwarding on your router to forward TCP ports **80** and **443** to your hosting PC's local IP address (required for Caddy to provide remote access), and UDP port **9** to allow remote Wake On Lan.
 6. Download the latest CubicControl.exe release [HERE](https://github.com/romaingrude/CubicControl-Launcher/releases)
 7. **⚠️ Run `CubicControl.exe` in Administrator mode the first time to allow it to set up the scheduled task.**
 8. Access to panel on `http://localhost:38000/`
