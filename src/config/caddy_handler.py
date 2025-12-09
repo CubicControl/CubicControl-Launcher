@@ -239,6 +239,26 @@ def _verify_binary(candidate: Path) -> bool:
         return False
 
 
+def _is_warmup_proxy_error(line: str) -> bool:
+    """Return True when the log line is just the upstream being down during startup."""
+    lower = line.lower()
+    warmup_markers = (
+        "reverseproxy.statuserror",
+        "dial tcp",
+        "connectex",
+        "connection refused",
+        "\"status\":502",
+    )
+    target_markers = (
+        CADDY_PROXY_TARGET.lower(),
+        "127.0.0.1:38000",
+        "localhost:38000",
+    )
+    if not any(marker in lower for marker in warmup_markers):
+        return False
+    return any(target in lower for target in target_markers)
+
+
 class CaddyManager:
     """Manage installation and lifecycle of the bundled Caddy reverse proxy."""
 
@@ -416,6 +436,7 @@ class CaddyManager:
     ) -> None:
         position = start_offset
         buffer: list[str] = []
+        failure_lines: list[str] = []
         exit_code: Optional[int] = None
         start_time = time.monotonic()
         failure_markers = (
@@ -435,7 +456,13 @@ class CaddyManager:
             new_lines, position = _read_new_log_lines(log_path, position)
             if new_lines:
                 buffer.extend(new_lines)
-                if any(any(marker.lower() in line.lower() for marker in failure_markers) for line in new_lines):
+                for line in new_lines:
+                    lower = line.lower()
+                    if any(marker in lower for marker in failure_markers):
+                        if _is_warmup_proxy_error(lower):
+                            continue
+                        failure_lines.append(line)
+                if failure_lines:
                     break
             time.sleep(0.2)
 
@@ -443,12 +470,15 @@ class CaddyManager:
         new_lines, position = _read_new_log_lines(log_path, position)
         if new_lines:
             buffer.extend(new_lines)
+            for line in new_lines:
+                lower = line.lower()
+                if any(marker in lower for marker in failure_markers):
+                    if _is_warmup_proxy_error(lower):
+                        continue
+                    failure_lines.append(line)
 
         self._last_start_log_tail = buffer[-20:]
-        self._last_start_errors = [
-            line for line in buffer
-            if any(marker.lower() in line.lower() for marker in failure_markers)
-        ][-5:]
+        self._last_start_errors = failure_lines[-5:]
         self._last_start_exit_code = exit_code
         self._last_start_had_failure = bool(self._last_start_errors or (exit_code not in (None, 0)))
 
