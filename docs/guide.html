@@ -934,6 +934,20 @@
       navLinks.forEach(link => link.classList.toggle('active', link.dataset.target === id));
     }
 
+    function activateSectionFromHash(options = { scroll: false }) {
+      const target = (location.hash || '').replace('#', '');
+      const targetExists = target && sections.some(sec => sec.id === target);
+      if (targetExists) {
+        showSection(target);
+        if (options.scroll) {
+          const el = document.getElementById(target);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+        return true;
+      }
+      return false;
+    }
+
     navLinks.forEach(link => {
       link.addEventListener('click', (e) => {
         e.preventDefault();
@@ -941,15 +955,16 @@
         if (target) {
           showSection(target);
           history.replaceState(null, '', '#' + target);
+          const el = document.getElementById(target);
+          if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
       });
     });
 
+    window.addEventListener('hashchange', () => activateSectionFromHash({ scroll: true }));
+
     // Open section from URL hash if present
-    const initial = (location.hash || '').replace('#', '');
-    if (initial && sections.some(sec => sec.id === initial)) {
-      showSection(initial);
-    } else {
+    if (!activateSectionFromHash({ scroll: true })) {
       showSection('overview');
     }
   </script>
