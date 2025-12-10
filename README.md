@@ -32,6 +32,9 @@ This keeps the local control panel private while exposing only the actions you w
 **CubicControl-Launcher works hand-in-hand with:**  
 ➡️ **[CubicControl-ClientSide](https://github.com/CubicControl/CubicControl-ClientSide)**
 
+**Full Installation Guide here:**  
+➡️ https://cubiccontrol.github.io/
+
 ## Requirements
 - Windows 10/11.
 - A wired ethernet connection (for Wake On Lan functionality).
