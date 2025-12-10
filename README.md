@@ -11,6 +11,12 @@ allowing remote waking, starting, and monitoring of your Minecraft server from a
 
 It provides a single UI for common tasks: starting/stopping servers, monitoring activity, managing profiles, tunneling with PlayitGG, and auto-sleeping your PC on inactivity.
 
+<p align="center">
+  <a href="https://cubiccontrol.github.io/">
+    <img src="https://img.shields.io/badge/Full%20Guide-brightgreen?style=for-the-badge"/>
+  </a>
+</p>
+
 > ⚠️ **Disclaimer**
 >
 > **I am not a professional developer.** CubicControl started as a personal project that I decided to share in case others find it useful or enjoyable.  
