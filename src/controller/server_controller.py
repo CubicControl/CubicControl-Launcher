@@ -221,48 +221,43 @@ class ServerController:
                     self.shutdown_callback("inactivity")
                 except Exception as exc:
                     self.logger.warning("Shutdown callback raised an exception: %s", exc)
-                try:
-                    current.wait(timeout=5)
-                    return
-                except psutil.TimeoutExpired:
-                    self.logger.warning("Process still running after cleanup callback; sending signals.")
 
-            # Attempt graceful shutdown via signals so the main process can run cleanup handlers
-            signaled = False
-            for sig in (getattr(signal, "SIGTERM", None), getattr(signal, "SIGINT", None), getattr(signal, "SIGBREAK", None)):
-                if sig is None:
-                    continue
-                try:
-                    os.kill(current.pid, sig)
-                    signaled = True
-                    break
-                except Exception as exc:
-                    self.logger.warning("Failed to send signal %s to control panel: %s", sig, exc)
+            # Give the cleanup callback a brief window to finish shutting down
+            # Playit, Caddy, and the Minecraft server before forcing the exit.
+            self._wait_for_child_processes(current)
 
-            if signaled:
-                try:
-                    current.wait(timeout=10)
-                    return
-                except psutil.TimeoutExpired:
-                    self.logger.warning("Graceful shutdown timed out; forcing process termination.")
-
-            # Fall back to process termination
-            current.terminate()
-            try:
-                current.wait(timeout=5)
-                return
-            except psutil.TimeoutExpired:
-                self.logger.warning("Terminate() timed out; killing process tree.")
-
-            # Fall back to killing the full process tree
-            for child in current.children(recursive=True):
-                try:
-                    child.kill()
-                except Exception as exc:
-                    self.logger.warning("Failed to kill child PID %s: %s", child.pid, exc)
-            current.kill()
+            # Whether or not the callback succeeded, exit the process so the sleep
+            # helper (if configured) can proceed. Using os._exit avoids hanging if
+            # other threads refuse to stop.
+            self.logger.info("Exiting control panel process now due to inactivity.")
         except Exception as exc:
             self.logger.error(f"Failed to terminate control panel process: {exc}")
         finally:
             # os._exit ensures the process exits even if threads are still running
             os._exit(0)
+
+    def _wait_for_child_processes(self, current: psutil.Process, grace_seconds: float = 5.0) -> None:
+        """Wait briefly for any child processes to stop after cleanup."""
+        try:
+            children = current.children(recursive=True)
+        except Exception as exc:
+            self.logger.debug("Unable to enumerate child processes: %s", exc)
+            return
+
+        if not children:
+            return
+
+        deadline = time.time() + grace_seconds
+        self.logger.info(
+            "Waiting up to %.1fs for %d child process(es) to exit after cleanup...",
+            grace_seconds,
+            len(children),
+        )
+
+        while time.time() < deadline:
+            try:
+                if not any(child.is_running() for child in children):
+                    return
+            except Exception:
+                return
+            sleep(0.2)
