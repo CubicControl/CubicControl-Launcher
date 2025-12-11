@@ -1,7 +1,6 @@
 import datetime
 import logging
 import os
-import signal
 import subprocess
 import time
 from pathlib import Path
@@ -10,8 +9,8 @@ from time import sleep
 from typing import Callable, Optional
 
 import psutil
-from mcstatus import JavaServer
 from mcrcon import MCRcon
+from mcstatus import JavaServer
 
 from src.interface.server_profiles import ServerProfile
 
@@ -213,7 +212,7 @@ class ServerController:
 
         try:
             current = psutil.Process(os.getpid())
-            self.logger.info("Closing control panel (PID %s) due to inactivity.", current.pid)
+            self.logger.info("Closing CubicControl due to inactivity.", current.pid)
 
             # Prefer reusing the main app cleanup so Playit, Caddy, etc. are stopped cleanly
             if self.shutdown_callback:
@@ -226,12 +225,8 @@ class ServerController:
             # Playit, Caddy, and the Minecraft server before forcing the exit.
             self._wait_for_child_processes(current)
 
-            # Whether or not the callback succeeded, exit the process so the sleep
-            # helper (if configured) can proceed. Using os._exit avoids hanging if
-            # other threads refuse to stop.
-            self.logger.info("Exiting control panel process now due to inactivity.")
         except Exception as exc:
-            self.logger.error(f"Failed to terminate control panel process: {exc}")
+            self.logger.error(f"Failed to terminate CubicControl process: {exc}")
         finally:
             # os._exit ensures the process exits even if threads are still running
             os._exit(0)
