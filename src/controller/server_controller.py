@@ -212,7 +212,7 @@ class ServerController:
 
         try:
             current = psutil.Process(os.getpid())
-            self.logger.info("Closing CubicControl due to inactivity.", current.pid)
+            self.logger.info("Closing CubicControl due to inactivity. PID: %s", current.pid)
 
             # Prefer reusing the main app cleanup so Playit, Caddy, etc. are stopped cleanly
             if self.shutdown_callback:
