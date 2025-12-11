@@ -30,6 +30,7 @@ from src.config.task_scheduler_handler import TaskSchedulerHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
+from shlex import quote as shlex_quote
 
 APP_DIR = Path(__file__).resolve().parent
 BASE_DIR = APP_DIR.parent
@@ -838,8 +839,6 @@ def _start_server_process(profile: ServerProfile) -> bool:
         logger.error(f"Run script not found: {run_script_path}")
         raise FileNotFoundError(f"Run script not found: {run_script_path}")
 
-    logger.info(f"Starting Minecraft server for profile '{profile.name}'")
-
     # Start the server process
     proc = subprocess.Popen(
         [str(run_script_path)],
@@ -855,7 +854,23 @@ def _start_server_process(profile: ServerProfile) -> bool:
     server_log_buffers.pop(profile.name, None)
     thread = socketio.start_background_task(_stream_server_output, profile.name, proc)
     server_log_threads[profile.name] = thread
-    logger.info(f"Server STARTED with PID {proc.pid}")
+
+    logger.info(f"Minecraft server STARTING for profile '{profile.name}' (PID {proc.pid})")
+
+    # Check that the server started successfully
+    time.sleep(2)
+    if proc.poll() is not None:
+        # Read from the log buffer that's being populated by the stream thread
+        output = "\n".join(server_log_buffers.get(profile.name, []))
+        if not output:
+            output = "(no output captured)"
+
+        logger.error(f"Server process for profile '{profile.name}' exited prematurely. Output:\n{output}")
+        server_processes.pop(profile.name, None)
+        server_log_threads.pop(profile.name, None)
+        raise RuntimeError(f"Server process exited prematurely for profile '{profile.name}'.")
+
+    logger.info(f"Minecraft server STARTED successfully for profile '{profile.name}' (PID {proc.pid})")
     return True
 
 
@@ -878,14 +893,16 @@ def _stop_server_process(profile: ServerProfile) -> bool:
     if proc:
         try:
             proc.wait(timeout=15)
-            logger.info(f"Server STOPPED gracefully for profile '{profile.name}'")
+            logger.info(f"Minecraft server STOPPED for profile '{profile.name}' (PID {proc.pid})")
         except subprocess.TimeoutExpired:
-            logger.warning("Server did not stop gracefully, terminating process")
+            logger.warning(f"Server did not stop gracefully (PID {proc.pid}), terminating process")
             proc.terminate()
             try:
                 proc.wait(timeout=5)
+                logger.info(f"Minecraft server STOPPED (terminated) for profile '{profile.name}' (PID {proc.pid})")
             except subprocess.TimeoutExpired:
                 proc.kill()
+                logger.info(f"Minecraft server STOPPED (killed) for profile '{profile.name}' (PID {proc.pid})")
 
         server_processes.pop(profile.name, None)
         server_log_threads.pop(profile.name, None)

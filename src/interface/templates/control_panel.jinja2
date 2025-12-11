@@ -218,30 +218,30 @@
     }
 
     .status-chip.status-on {
-      border-color: rgba(52, 211, 153, 0.5);
-      background: rgba(52, 211, 153, 0.1);
+        border-color: rgba(52, 211, 153, 0.6);
+        background: rgba(52, 211, 153, 0.15);
     }
     .status-chip.status-on .status-indicator {
-      background: var(--success);
-      box-shadow: 0 0 12px rgba(52, 211, 153, 0.5);
+        background: var(--success);
+        box-shadow: 0 0 12px rgba(52, 211, 153, 0.35);
     }
     .status-chip.status-starting {
-      border-color: rgba(251, 191, 36, 0.6);
-      background: rgba(251, 191, 36, 0.1);
+        border-color: rgba(251, 191, 36, 0.6);
+        background: rgba(251, 191, 36, 0.1);
     }
     .status-chip.status-starting .status-indicator {
-      background: var(--warning);
-      box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
+        background: var(--warning);
+        box-shadow: 0 0 12px rgba(251, 191, 36, 0.5);
     }
     .status-chip.status-stopping,
     .status-chip.status-off {
-      border-color: rgba(248, 113, 113, 0.35);
-      background: rgba(248, 113, 113, 0.06);
+        border-color: rgba(248, 113, 113, 0.6);
+        background: rgba(248, 113, 113, 0.06);
     }
     .status-chip.status-stopping .status-indicator,
     .status-chip.status-off .status-indicator {
-      background: var(--danger);
-      box-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
+        background: var(--danger);
+        box-shadow: 0 0 10px rgba(248, 113, 113, 0.35);
     }
 
     .action-row {
@@ -522,7 +522,9 @@
 <header class="topbar">
   <div class="brand">
     <img src="{{ url_for('static', filename='CubicControlLogo.jpg') }}"
-         alt="CubicControl Logo" />
+         alt="CubicControl Logo" style="
+			filter: drop-shadow(0 8px 20px rgba(0,0,0,0.6));
+		  "/>
   </div>
   <div class="top-actions">
     <div class="top-buttons">
@@ -655,7 +657,7 @@
             <p class="eyebrow">Profiles</p>
             <h3>Profile manager</h3>
           </div>
-          <span class="muted">Stored in <code>server_profiles.json</code></span>
+          <span class="muted">Stored in <code>data/server_profiles.json</code></span>
         </div>
 
         <label for="profile-select">Select profile</label>
