@@ -322,13 +322,9 @@ socketio = SocketIO(
 )
 
 PUBLIC_REMOTE_PATHS = {
-    "/status",
     "/api/server/status",
-    "/start",
     "/api/server/start",
-    "/stop",
     "/api/server/stop",
-    "/restart",
     "/api/server/restart",
 }
 
@@ -371,7 +367,7 @@ def _is_static_request(path: str) -> bool:
 
 def _unauthenticated_response(path: str):
     if path.startswith("/api/") or path.startswith("/socket.io"):
-        return jsonify({'error': 'Unauthorized - Please login'}), 401
+        return jsonify({'error': 'Unauthorized'}), 401
     return redirect(url_for('login'))
 
 
@@ -991,7 +987,6 @@ def _active_profile_or_error():
     return profile, None
 
 
-@app.route("/status", methods=["GET"])
 @app.route("/api/server/status", methods=["GET"])
 def public_status():
     profile = store.active_profile
@@ -999,7 +994,6 @@ def public_status():
     return message, status_code
 
 
-@app.route("/start", methods=["POST"])
 @app.route("/api/server/start", methods=["POST"])
 def public_start():
     global public_is_restarting, public_is_stopping, public_is_stopping_since
@@ -1024,7 +1018,6 @@ def public_start():
         return "Error starting server", 500
 
 
-@app.route("/stop", methods=["POST"])
 @app.route("/api/server/stop", methods=["POST"])
 def public_stop():
     global public_is_stopping, public_is_stopping_since
@@ -1055,7 +1048,6 @@ def public_stop():
     return "Server is stopping...", 200
 
 
-@app.route("/restart", methods=["POST"])
 @app.route("/api/server/restart", methods=["POST"])
 def public_restart():
     global public_is_restarting, public_is_stopping, public_is_stopping_since
