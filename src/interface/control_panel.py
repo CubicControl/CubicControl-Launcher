@@ -31,7 +31,6 @@ from src.config.task_scheduler_handler import TaskSchedulerHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
-from shlex import quote as shlex_quote
 
 APP_DIR = Path(__file__).resolve().parent
 BASE_DIR = APP_DIR.parent
@@ -322,22 +321,16 @@ _sync_auth_keys_from_store()
 class _BackgroundAPIServer:
     """Run a dedicated public API Flask app on its own port in the background."""
 
-    def __init__(self, api_app: Flask, host: str, port: int):
+    def __init__(self, api_app: Flask, host="0.0.0.0", port=38001):
         self._api_app = api_app
-        self._host = host
-        self._port = port
         self._server = make_server(host, port, api_app)
         self._context = api_app.app_context()
         self._context.push()
         self._stop_event = Event()
         self._thread = Thread(target=self._run, name="public-api-server", daemon=True)
 
-    @property
-    def port(self) -> int:
-        return self._port
-
     def start(self) -> None:
-        logger.info("Starting lightweight public API service on port %s (pid: %s)", self._port, os.getpid())
+        logger.info("Starting lightweight public API service on port 38001 (PID: %s)", os.getpid())
         self._thread.start()
 
     def _run(self) -> None:
@@ -374,13 +367,9 @@ socketio = SocketIO(
 )
 
 PUBLIC_REMOTE_PATHS = {
-    "/status",
     "/api/server/status",
-    "/start",
     "/api/server/start",
-    "/stop",
     "/api/server/stop",
-    "/restart",
     "/api/server/restart",
 }
 
@@ -406,22 +395,20 @@ STATUS_RESPONSES = {
 
 
 def _authorized_for_public_api() -> bool:
-    """Allow bearer token access for lightweight remote control endpoints."""
-    admin_key, auth_key = secret_store.get_keys()
-    provided = request.headers.get("Authorization", "")
-    if not auth_key and not admin_key:
+    bearer = request.headers.get("Authorization", "")
+    if not bearer.startswith("Bearer "):
         return False
+    token = bearer[7:].strip()
+    return token == settings.AUTH_KEY and settings.AUTH_KEY != ""
 
-    if auth_key and provided == f"Bearer {auth_key}":
-        return True
+def _authorized_as_admin() -> bool:
+    bearer = request.headers.get("Authorization", "")
+    if not bearer.startswith("Bearer "):
+        return False
+    token = bearer[7:].strip()
+    return token == settings.ADMIN_AUTH_KEY and settings.ADMIN_AUTH_KEY != ""
 
-    # For panel-bound requests on the main app, allow ADMIN key to satisfy the
-    # bearer check. The standalone public API service still enforces AUTH_KEY
-    # only via its own before_request hook.
-    if admin_key and provided == f"Bearer {admin_key}":
-        return True
 
-    return False
 
 
 @public_api_app.before_request
@@ -478,30 +465,32 @@ def _public_api_authorization(path: str):
 
 @app.before_request
 def _check_authentication():
-    """Check if user is authenticated before allowing access to protected routes."""
     path = request.path
-    if _is_auth_route(path) or _is_static_request(path):
+
+    # Skip authentication for safe routes
+    if path in KEY_SETUP_SAFE_PATHS or _is_static_request(path):
         return None
 
-    # Allow lightweight remote endpoints to use bearer auth without requiring a session cookie.
-    if path in PUBLIC_REMOTE_PATHS:
-        if _authorized_for_public_api():
-            return None
-        if not session.get('authenticated'):
-            return jsonify({'error': 'Unauthorized'}), 403
+    # Check if auth keys are configured
+    admin_key, auth_key = secret_store.get_keys()
+    if not (admin_key and auth_key):
+        return _enforce_key_setup(path)
 
+    # Public API routes (use AUTH_KEY)
+    if path in PUBLIC_REMOTE_PATHS:
+        if not _authorized_for_public_api():
+            return jsonify({'error': 'Unauthorized'}), 403
+        return None
+
+    # Admin API routes (use ADMIN_AUTH_KEY or session)
+    if path.startswith('/api/'):
+        if not (session.get('authenticated') or _authorized_as_admin()):
+            return jsonify({'error': 'Unauthorized'}), 403
+        return None
+
+    # Web routes (use session only)
     if not session.get('authenticated'):
         return _unauthenticated_response(path)
-
-    if not secret_store.has_keys():
-        gate = _enforce_key_setup(path)
-        if gate:
-            return gate
-
-    if path.startswith('/api/'):
-        bearer_issue = _validate_api_bearer()
-        if bearer_issue:
-            return bearer_issue
 
     return None
 
@@ -1066,7 +1055,6 @@ def _active_profile_or_error():
     return profile, None
 
 
-@app.route("/status", methods=["GET"])
 @app.route("/api/server/status", methods=["GET"])
 def public_status():
     profile = store.active_profile
@@ -1074,7 +1062,6 @@ def public_status():
     return message, status_code
 
 
-@app.route("/start", methods=["POST"])
 @app.route("/api/server/start", methods=["POST"])
 def public_start():
     global public_is_restarting, public_is_stopping, public_is_stopping_since
@@ -1099,7 +1086,6 @@ def public_start():
         return "Error starting server", 500
 
 
-@app.route("/stop", methods=["POST"])
 @app.route("/api/server/stop", methods=["POST"])
 def public_stop():
     global public_is_stopping, public_is_stopping_since
@@ -1130,7 +1116,6 @@ def public_stop():
     return "Server is stopping...", 200
 
 
-@app.route("/restart", methods=["POST"])
 @app.route("/api/server/restart", methods=["POST"])
 def public_restart():
     global public_is_restarting, public_is_stopping, public_is_stopping_since
@@ -1168,13 +1153,9 @@ def public_restart():
 
 
 PUBLIC_API_ROUTES = [
-    ("/status", ["GET"], public_status),
     ("/api/server/status", ["GET"], public_status),
-    ("/start", ["POST"], public_start),
     ("/api/server/start", ["POST"], public_start),
-    ("/stop", ["POST"], public_stop),
     ("/api/server/stop", ["POST"], public_stop),
-    ("/restart", ["POST"], public_restart),
     ("/api/server/restart", ["POST"], public_restart),
 ]
 
@@ -1731,7 +1712,7 @@ def _start_public_api_service() -> None:
     if public_api_server:
         return
     try:
-        public_api_server = _BackgroundAPIServer(public_api_app, "0.0.0.0", settings.PUBLIC_API_PORT)
+        public_api_server = _BackgroundAPIServer(public_api_app, "0.0.0.0", )
         public_api_server.start()
     except Exception as exc:
         public_api_server = None
@@ -1842,8 +1823,12 @@ atexit.register(cleanup_on_exit)
 
 def main():
     # First check that app is running as admin if task scheduler task is missing
-    if not TaskSchedulerHandler.check_admin_required_for_first_setup():
-        return
+    app_exe = _current_app_executable()
+    if app_exe:
+        if not TaskSchedulerHandler.check_admin_required_for_first_setup():
+            return
+    else:
+        logger.info("Running in development mode; skipping admin check.")
 
     logger.info("Starting CubicControl")
     logger.info("Caddy is starting, please wait...")
@@ -1857,7 +1842,7 @@ def main():
         except Exception as exc:
             logger.warning("Input prompt failed: %s", exc)
         return
-    app_exe = _current_app_executable()
+
     if app_exe:
         try:
             scheduler = TaskSchedulerHandler(

@@ -6,10 +6,7 @@ RCON_PORT = 27001
 RCON_PASSWORD = os.environ.get('RCON_PASSWORD')
 last_player_count = 0
 is_restarting = False
-ALLOWED_IPS = ['127.0.0.1']  # Add your trusted IP addresses here
-# Dedicated port for the lightweight public API. Kept fixed to avoid accidental
-# collisions with the panel port (38000) and to simplify reverse-proxy setups.
-PUBLIC_API_PORT = 38001
+
 
 # AUTH keys are now persisted once in the data folder and reused everywhere.
 try:

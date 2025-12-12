@@ -59,7 +59,7 @@ let toastTimeout;
 
 function authHeaders(extra = {}) {
   const headers = { ...extra };
-  const key = globalThis.ADMIN_AUTH_KEY || globalThis.AUTH_KEY;
+  const key = globalThis.ADMIN_AUTH_KEY;
   if (key) {
     headers.Authorization = `Bearer ${key}`;
   }
