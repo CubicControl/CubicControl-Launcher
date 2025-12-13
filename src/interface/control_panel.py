@@ -1,4 +1,5 @@
 import atexit
+import ctypes
 import logging
 import os
 import secrets
@@ -26,14 +27,14 @@ from src.config import settings
 from src.config.auth_handler import AuthHandler
 from src.config.caddy_handler import CaddyManager
 from src.config.config_file_handler import ConfigFileHandler
+from src.config.firewall_rules import apply_firewall_rules, firewall_rules_missing
 from src.config.secret_store import SecretStore
 from src.config.task_scheduler_handler import TaskSchedulerHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
 
-APP_DIR = Path(__file__).resolve().parent
-BASE_DIR = APP_DIR.parent
+
 NO_ACTIVE_PROFILE_MSG = "No active profile"
 PROFILE_NOT_FOUND_MSG = "Profile not found"
 
@@ -325,7 +326,7 @@ def _sync_auth_keys_from_store() -> None:
 _sync_auth_keys_from_store()
 
 class _BackgroundAPIServer:
-    def __init__(self, app: Flask, host: str = "0.0.0.0", port: int = 38001):
+    def __init__(self, app: Flask, host: str = "127.0.0.1", port: int = 38001):
         self._app = app
         self._host = host
         self._port = port
@@ -1860,15 +1861,37 @@ def _register_signal_handlers():
     except Exception as exc:
         logger.warning("Failed to set console ctrl handler: %s", exc)
 
+def _is_admin() -> bool:
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
+    except Exception as exc:
+        logger.warning("Admin check failed: %s", exc)
+        return False
 
 _register_signal_handlers()
 atexit.register(cleanup_on_exit)
 
 
+
 def main():
     # First check that app is running as admin if task scheduler task is missing
-    # if not TaskSchedulerHandler.check_admin_required_for_first_setup():
-    #     return
+    if not TaskSchedulerHandler.check_admin_required_to_create_task():
+        return
+
+    if firewall_rules_missing() and not _is_admin():
+        logger.warning("Firewall rules are missing and admin rights are required to add them. Please run as administrator. ")
+        print("Press a key to exit...", flush=True)
+        input()
+        return
+
+    try:
+        # Ensure the Caddy binary exists so firewall rules can be applied before first start
+        caddy_manager.ensure_binary()
+    except Exception as exc:
+        logger.warning("Pre-start Caddy install check failed: %s", exc)
+
+    if not apply_firewall_rules():
+        logger.warning("Firewall rules could not be applied; Windows may prompt for network access.")
 
     logger.info("Starting CubicControl")
     logger.info("Caddy is starting, please wait...")
@@ -1893,10 +1916,11 @@ def main():
             logger.warning("Scheduler setup failed: %s", exc)
     else:
         logger.info("Skipping scheduler setup (development mode).")
+
     _start_public_api_service()
     logger.info("Starting control panel UI")
     print("Access control panel at: http://localhost:38000/", flush=True)
-    socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)
+    socketio.run(app, host="127.0.0.1", port=38000, allow_unsafe_werkzeug=True, debug=False)
 
 
 if __name__ == "__main__":

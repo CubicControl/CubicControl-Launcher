@@ -147,10 +147,7 @@ class TaskSchedulerHandler:
             self._install_task()
 
     @staticmethod
-    def check_admin_required_for_first_setup() -> bool:
-        if not _is_windows():
-            return True
-
+    def check_admin_required_to_create_task() -> bool:
         # Quick check if task exists without needing an instance
         try:
             subprocess.run(
@@ -165,7 +162,7 @@ class TaskSchedulerHandler:
             # Task doesn't exist - check if we're admin
             if not _is_admin():
                 logger.warning(
-                    "Administrator privileges are required to create the CubicControl scheduled task on first setup. "
+                    "Administrator privileges are required to create the CubicControl scheduled task. "
                     "Please run the application as an administrator."
                 )
                 try:
