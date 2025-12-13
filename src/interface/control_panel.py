@@ -10,7 +10,7 @@ import tempfile
 import time
 import warnings
 from pathlib import Path
-from threading import Thread
+from threading import Thread, Event
 from typing import Dict, List, Optional
 
 import flask.cli
@@ -20,6 +20,7 @@ from flask import Flask, jsonify, render_template, request, redirect, session, u
 from flask_socketio import SocketIO, emit, join_room
 from mcrcon import MCRcon
 from mcstatus import JavaServer
+from werkzeug.serving import make_server
 
 from src.config import settings
 from src.config.auth_handler import AuthHandler
@@ -30,7 +31,6 @@ from src.config.task_scheduler_handler import TaskSchedulerHandler
 from src.controller.server_controller import ServerController
 from src.interface.server_profiles import ServerProfile, ServerProfileStore
 from src.logging_utils.logger import logger
-from shlex import quote as shlex_quote
 
 APP_DIR = Path(__file__).resolve().parent
 BASE_DIR = APP_DIR.parent
@@ -294,6 +294,10 @@ app = Flask(
 # Secret key for sessions
 app.secret_key = secrets.token_hex(32)
 
+# Lightweight public API (no templates/static needed)
+public_api_app = Flask("cubiccontrol_public_api")
+public_api_app.secret_key = app.secret_key
+
 # Initialize auth handler
 auth_handler = AuthHandler()
 secret_store = SecretStore()
@@ -312,6 +316,46 @@ def _sync_auth_keys_from_store() -> None:
 
 
 _sync_auth_keys_from_store()
+
+class _BackgroundAPIServer:
+    """Run a dedicated public API Flask app on its own port in the background."""
+
+    def __init__(self, api_app: Flask, host="0.0.0.0", port=38000):
+        self._api_app = api_app
+        self._server = make_server(host, port, api_app)
+        self._context = api_app.app_context()
+        self._context.push()
+        self._stop_event = Event()
+        self._thread = Thread(target=self._run, name="public-api-server", daemon=True)
+
+    def start(self) -> None:
+        logger.info("Starting lightweight public API service on port 38001 (pid: %s)", os.getpid())
+        self._thread.start()
+
+    def _run(self) -> None:
+        try:
+            self._server.serve_forever()
+        except Exception as exc:
+            logger.error("Public API service stopped unexpectedly: %s", exc)
+        finally:
+            self._stop_event.set()
+
+    def stop(self) -> None:
+        if self._stop_event.is_set():
+            return
+        logger.info("Shutting down lightweight public API service (pid: %s)", os.getpid())
+        try:
+            self._server.shutdown()
+        except Exception as exc:
+            logger.warning("Failed to shut down public API service cleanly: %s", exc)
+        try:
+            self._thread.join(timeout=5)
+        except Exception as exc:
+            logger.warning("Failed to join public API service thread: %s", exc)
+        try:
+            self._context.pop()
+        except Exception as exc:
+            logger.warning("Failed to pop public API app context: %s", exc)
 
 socketio = SocketIO(
     app,
@@ -355,6 +399,17 @@ def _authorized_for_public_api() -> bool:
     provided = request.headers.get("Authorization", "")
     tokens = [auth_key, admin_key]
     return any(provided == f"Bearer {token}" for token in tokens if token)
+
+@public_api_app.before_request
+def _public_api_auth_check():
+    """Enforce AUTH_KEY bearer token for the standalone public API service."""
+    auth_key = settings.AUTH_KEY
+    if not auth_key:
+        return jsonify({'error': 'AUTH_KEY_REQUIRED'}), 428
+    provided = request.headers.get("Authorization", "")
+    if provided != f"Bearer {auth_key}":
+        return jsonify({'error': 'Unauthorized'}), 403
+    return None
 
 
 def _is_auth_route(path: str) -> bool:
@@ -1084,6 +1139,21 @@ def public_restart():
     return "Server is restarting...", 200
 
 
+PUBLIC_API_ROUTES = [
+    ("/api/server/status", ["GET"], public_status),
+    ("/api/server/start", ["POST"], public_start),
+    ("/api/server/stop", ["POST"], public_stop),
+    ("/api/server/restart", ["POST"], public_restart),
+]
+
+
+def register_public_api_routes(api_app: Flask) -> None:
+    """Attach the lightweight control endpoints to another Flask app."""
+    for rule, methods, view_func in PUBLIC_API_ROUTES:
+        api_app.add_url_rule(rule, view_func=view_func, methods=methods)
+
+
+
 # ---------- Authentication Routes ----------
 @app.route("/login")
 def login():
@@ -1581,6 +1651,8 @@ def test_socket():
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
+register_public_api_routes(public_api_app)
+public_api_server: Optional[_BackgroundAPIServer] = None
 
 def initialize_services(probe_caddy_errors: bool = False, probe_timeout: float = 45.0) -> tuple[bool, Dict[str, object]]:
     """Initialize services on startup. Caddy starts first, then other services."""
@@ -1619,6 +1691,32 @@ def _log_caddy_startup_diagnostics(status: Dict[str, object]) -> None:
     elif not running:
         logger.error("Caddy is not running after startup. Check %s for details.", log_path)
 
+
+def _start_public_api_service() -> None:
+    """Start the standalone public API server on a dedicated port."""
+    global public_api_server
+    if public_api_server:
+        return
+    try:
+        public_api_server = _BackgroundAPIServer(public_api_app)
+        public_api_server.start()
+    except Exception as exc:
+        public_api_server = None
+        logger.error("Failed to start lightweight public API service: %s", exc)
+        cleanup_on_exit(reason="public API startup failure")
+
+
+def _stop_public_api_service() -> None:
+    """Stop the standalone public API server if it is running."""
+    global public_api_server
+    if not public_api_server:
+        return
+    try:
+        public_api_server.stop()
+    finally:
+        public_api_server = None
+
+
 def wait_for_server(url, timeout=30):
     start = time.time()
     while time.time() - start < timeout:
@@ -1648,7 +1746,7 @@ def cleanup_on_exit(reason: str = "shutdown"):
             socketio.sleep(0)
         except Exception as exc:
             logger.warning("SocketIO sleep during shutdown failed: %s", exc)
-    except Exception as ex:
+    except Exception:
         pass
     # Give the browser a brief moment to receive the shutdown event before tearing everything down
     time.sleep(0.2)
@@ -1658,6 +1756,11 @@ def cleanup_on_exit(reason: str = "shutdown"):
         _stop_services(profile, stop_server=True)
     except Exception as exc:
         logger.warning("Failed to stop services during shutdown: %s", exc)
+
+    try:
+        _stop_public_api_service()
+    except Exception as exc:
+        logger.warning("Failed to stop public API service during shutdown: %s", exc)
 
     try:
         _stop_playit_process()
@@ -1708,8 +1811,8 @@ atexit.register(cleanup_on_exit)
 
 def main():
     # First check that app is running as admin if task scheduler task is missing
-    if not TaskSchedulerHandler.check_admin_required_for_first_setup():
-        return
+    # if not TaskSchedulerHandler.check_admin_required_for_first_setup():
+    #     return
 
     logger.info("Starting CubicControl")
     logger.info("Caddy is starting, please wait...")
@@ -1734,6 +1837,7 @@ def main():
             logger.warning("Scheduler setup failed: %s", exc)
     else:
         logger.info("Skipping scheduler setup (development mode).")
+    _start_public_api_service()
     logger.info("Starting control panel UI")
     print("Access control panel at: http://localhost:38000/", flush=True)
     socketio.run(app, host="0.0.0.0", port=38000, allow_unsafe_werkzeug=True, debug=False)
