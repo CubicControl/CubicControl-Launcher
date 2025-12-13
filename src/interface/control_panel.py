@@ -308,6 +308,13 @@ caddy_available_on_boot = caddy_manager.is_available()
 def _sync_auth_keys_from_store() -> None:
     """Load persisted auth keys into settings/env for reuse."""
     admin_key, auth_key = secret_store.get_keys()
+
+    # Fall back to environment-provided keys when nothing is stored yet. This
+    # allows headless deployments to configure keys without first logging into
+    # the panel to save them.
+    admin_key = admin_key or os.environ.get("ADMIN_AUTH_KEY", "").strip()
+    auth_key = auth_key or os.environ.get("AUTH_KEY", "").strip()
+
     settings.apply_auth_keys(admin_key, auth_key)
     if admin_key:
         os.environ["ADMIN_AUTH_KEY"] = admin_key
@@ -318,44 +325,80 @@ def _sync_auth_keys_from_store() -> None:
 _sync_auth_keys_from_store()
 
 class _BackgroundAPIServer:
-    """Run a dedicated public API Flask app on its own port in the background."""
-
-    def __init__(self, api_app: Flask, host="0.0.0.0", port=38000):
-        self._api_app = api_app
-        self._server = make_server(host, port, api_app)
-        self._context = api_app.app_context()
-        self._context.push()
-        self._stop_event = Event()
-        self._thread = Thread(target=self._run, name="public-api-server", daemon=True)
+    def __init__(self, app: Flask, host: str = "0.0.0.0", port: int = 38001):
+        self._app = app
+        self._host = host
+        self._port = port
+        self._server: Optional[make_server] = None
+        self._thread: Optional[Thread] = None
+        self._app_ctx = None  # Initialize as None
+        self._shutdown_event = Event()
 
     def start(self) -> None:
-        logger.info("Starting lightweight public API service on port 38001 (pid: %s)", os.getpid())
-        self._thread.start()
+        if self._thread and self._thread.is_alive():
+            logger.warning("Public API server already running")
+            return
+
+        try:
+            # Push context before starting server
+            self._app_ctx = self._app.app_context()
+            self._app_ctx.push()
+
+            self._server = make_server(
+                self._host,
+                self._port,
+                self._app,
+                threaded=True
+            )
+            self._thread = Thread(target=self._run, daemon=True)
+            self._thread.start()
+            logger.info("Starting lightweight public API service on port %d", self._port)
+        except Exception as exc:
+            logger.error("Failed to start public API server: %s", exc)
+            self._cleanup_context()
+            raise
 
     def _run(self) -> None:
-        try:
-            self._server.serve_forever()
-        except Exception as exc:
-            logger.error("Public API service stopped unexpectedly: %s", exc)
-        finally:
-            self._stop_event.set()
+        if self._server:
+            try:
+                self._server.serve_forever()
+            except Exception as exc:
+                if not self._shutdown_event.is_set():
+                    logger.error("Public API server error: %s", exc)
 
     def stop(self) -> None:
-        if self._stop_event.is_set():
+        if not self._server:
             return
-        logger.info("Shutting down lightweight public API service (pid: %s)", os.getpid())
+
         try:
+            self._shutdown_event.set()
+            logger.info("Shutting down lightweight public API service (pid: %d)", os.getpid())
             self._server.shutdown()
+            self._server.server_close()
+
+            if self._thread and self._thread.is_alive():
+                self._thread.join(timeout=2)
+
         except Exception as exc:
-            logger.warning("Failed to shut down public API service cleanly: %s", exc)
+            logger.warning("Error during public API server shutdown: %s", exc)
+        finally:
+            self._cleanup_context()
+
+    def _cleanup_context(self) -> None:
+        """Safely cleanup Flask app context."""
+        if self._app_ctx is None:
+            return
+
         try:
-            self._thread.join(timeout=5)
+            # Check if context is still valid before popping
+            from flask import has_app_context
+            if has_app_context():
+                self._app_ctx.pop()
         except Exception as exc:
-            logger.warning("Failed to join public API service thread: %s", exc)
-        try:
-            self._context.pop()
-        except Exception as exc:
-            logger.warning("Failed to pop public API app context: %s", exc)
+            logger.debug("App context already cleaned up: %s", exc)
+        finally:
+            self._app_ctx = None
+
 
 socketio = SocketIO(
     app,
@@ -383,6 +426,15 @@ KEY_SETUP_SAFE_PATHS = {
     "/api/auth-keys/status",
 }
 
+def _keys_configured() -> bool:
+    """Return True when both ADMIN and public auth keys are available."""
+    if secret_store.has_keys():
+        return True
+    admin_env = os.environ.get("ADMIN_AUTH_KEY", "").strip()
+    auth_env = os.environ.get("AUTH_KEY", "").strip()
+    return bool(admin_env and auth_env)
+
+
 STATUS_RESPONSES = {
     "fully_loaded": ("Server Machine is live!\nMinecraft Server is RUNNING", 200),
     "starting": ("Server Machine is live!\nMinecraft Server is STARTING", 205),
@@ -395,15 +447,16 @@ STATUS_RESPONSES = {
 
 def _authorized_for_public_api() -> bool:
     """Allow bearer token access for lightweight remote control endpoints."""
-    admin_key, auth_key = secret_store.get_keys()
+    _, auth_key = secret_store.get_keys()
+    if not auth_key:
+        auth_key = os.environ.get("AUTH_KEY", "").strip()
     provided = request.headers.get("Authorization", "")
-    tokens = [auth_key, admin_key]
-    return any(provided == f"Bearer {token}" for token in tokens if token)
+    return bool(auth_key and provided == f"Bearer {auth_key}")
 
 @public_api_app.before_request
 def _public_api_auth_check():
     """Enforce AUTH_KEY bearer token for the standalone public API service."""
-    auth_key = settings.AUTH_KEY
+    auth_key = settings.AUTH_KEY or os.environ.get("AUTH_KEY", "").strip()
     if not auth_key:
         return jsonify({'error': 'AUTH_KEY_REQUIRED'}), 428
     provided = request.headers.get("Authorization", "")
@@ -437,6 +490,8 @@ def _enforce_key_setup(path: str):
 def _validate_api_bearer():
     expected, _ = secret_store.get_keys()
     if not expected:
+        expected = os.environ.get("ADMIN_AUTH_KEY", "").strip()
+    if not expected:
         return None
     provided = request.headers.get('Authorization', '')
     if provided and provided != f'Bearer {expected}':
@@ -469,7 +524,7 @@ def _check_authentication():
     if not session.get('authenticated'):
         return _unauthenticated_response(path)
 
-    if not secret_store.has_keys():
+    if not _keys_configured():
         gate = _enforce_key_setup(path)
         if gate:
             return gate
@@ -1671,6 +1726,7 @@ def _log_startup_abort(status: Dict[str, object]) -> None:
     _log_caddy_startup_diagnostics(status)
     log_path = status.get("log_path") or "logs/caddy.log"
     logger.error("Startup aborted because Caddy did not start cleanly. Check %s for details.", log_path)
+    _stop_caddy()
 
 
 def _log_caddy_startup_diagnostics(status: Dict[str, object]) -> None:

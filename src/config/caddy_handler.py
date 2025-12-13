@@ -1,3 +1,4 @@
+import logging
 import os
 import platform
 import shutil
@@ -19,7 +20,8 @@ import requests
 from src.logging_utils.logger import logger
 
 GITHUB_API_LATEST = "https://api.github.com/repos/caddyserver/caddy/releases/latest"
-CADDY_PROXY_TARGET = "127.0.0.1:38000"
+CADDY_PANEL_PROXY_TARGET = "127.0.0.1:38000"
+CADDY_API_PROXY_TARGET = "127.0.0.1:38001"
 
 
 def _get_os_arch() -> tuple[str, str]:
@@ -209,17 +211,40 @@ def _validate_hostname(hostname: str) -> bool:
     return True
 
 
-def _prompt_hostname() -> str:
-    prompt = (
+def _prompt_hostname() -> tuple[str, str]:
+    # Flush all log handlers to ensure messages appear before prompt
+    root_logger = logging.getLogger()
+    for handler in root_logger.handlers:
+        handler.flush()
+
+    # Flush stdout/stderr
+    sys.stdout.flush()
+    sys.stderr.flush()
+
+    # Small delay to ensure all buffered output is processed
+    import time
+    time.sleep(0.1)
+
+    prompt_admin = (
         "CADDY SETUP\n"
-        "Enter your hostname address for Caddy to use (e.g., mc.example.com): "
+        "Enter your ADMIN PANEL hostname address for Caddy to use (e.g., admin.example.com): "
     )
     while True:
-        hostname = input(prompt).strip()
-        if _validate_hostname(hostname):
-            return hostname
+        admin_hostname = input(prompt_admin).strip()
+        if _validate_hostname(admin_hostname):
+            break
         print("Invalid hostname. Please enter a valid domain (letters, numbers, dots, and dashes).")
 
+    prompt_api = (
+        "Enter your API hostname address for Caddy to use (e.g., api.example.com): "
+    )
+    while True:
+        api_hostname = input(prompt_api).strip()
+        if _validate_hostname(api_hostname):
+            break
+        print("Invalid hostname. Please enter a valid domain (letters, numbers, dots, and dashes).")
+
+    return admin_hostname, api_hostname
 
 def _verify_binary(candidate: Path) -> bool:
     try:
@@ -248,9 +273,12 @@ def _is_warmup_proxy_error(line: str) -> bool:
         "\"status\":502",
     )
     target_markers = (
-        CADDY_PROXY_TARGET.lower(),
+        CADDY_PANEL_PROXY_TARGET.lower(),
         "127.0.0.1:38000",
         "localhost:38000",
+        CADDY_API_PROXY_TARGET.lower(),
+        "127.0.0.1:38001",
+        "localhost:38001",
     )
     if not any(marker in lower for marker in warmup_markers):
         return False
@@ -283,7 +311,8 @@ class CaddyManager:
         self._process: Optional[subprocess.Popen] = None
         self._pid: Optional[int] = None
         self._binary_path: Optional[Path] = None
-        self._hostname: Optional[str] = None
+        self._admin_hostname: Optional[str] = None
+        self._api_hostname: Optional[str] = None
         self._last_start_errors: list[str] = []
         self._last_start_exit_code: Optional[int] = None
         self._last_start_log_tail: list[str] = []
@@ -340,11 +369,14 @@ class CaddyManager:
         if self.caddyfile_path.exists():
             return
 
-        hostname = _prompt_hostname()
-        self._hostname = hostname
+        admin_hostname, api_hostname = _prompt_hostname()
+        self._admin_hostname = admin_hostname
         caddyfile_content = f"""
-{hostname} {{
-    reverse_proxy {CADDY_PROXY_TARGET}
+{admin_hostname} {{
+    reverse_proxy {CADDY_PANEL_PROXY_TARGET}
+}}
+{api_hostname} {{
+    reverse_proxy {CADDY_API_PROXY_TARGET}
 }}
 """
         with open(self.caddyfile_path, "w", encoding="utf-8") as file:
